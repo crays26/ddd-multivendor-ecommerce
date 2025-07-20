@@ -1,4 +1,4 @@
-import { Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Cascade, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { AccountRepository } from '../repositories/account.repo';
 import { EntityRepositoryType } from '@mikro-orm/core';
 import { Book } from './book.entity';
@@ -19,7 +19,7 @@ export class Account {
    @Property({ hidden: true })
    password!: string;
 
-   @OneToMany(() => Book, book => book.account) // referenced entity type can be sniffer too
+   @OneToMany(() => Book, book => book.account, {cascade: [Cascade.PERSIST] }) // referenced entity type can be sniffer too
    books = new Collection<Book>(this);
 
 

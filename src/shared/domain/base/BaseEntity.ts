@@ -1,34 +1,38 @@
 export abstract class BaseEntity<ID = string, Props = unknown> {
-  protected readonly _id: ID;
-  protected readonly _props: Props;
-  protected readonly _createdAt: Date;
-  protected _updatedAt: Date;
+  protected readonly id: ID;
+  protected readonly props: Props;
+  protected readonly createdAt: Date;
+  protected updatedAt: Date;
 
-  protected constructor(props: Props & { id: ID }, createdAt?: Date, updatedAt?: Date) {
-    this._id = props.id;
-    this._props = props;
-    this._createdAt = createdAt ?? new Date();
-    this._updatedAt = updatedAt ?? new Date();
+  protected constructor(
+    props: Props & { id: ID },
+    createdAt?: Date,
+    updatedAt?: Date,
+  ) {
+    this.id = props.id;
+    this.props = props;
+    this.createdAt = createdAt ?? new Date();
+    this.updatedAt = updatedAt ?? new Date();
   }
 
   public getId(): ID {
-    return this._id;
+    return this.id;
   }
 
   public getProps(): Props {
-    return this._props;
+    return this.props;
   }
 
-   public getCreatedAt(): Date {
-    return this._createdAt;
+  public getCreatedAt(): Date {
+    return this.createdAt;
   }
 
   public getUpdatedAt(): Date {
-    return this._updatedAt;
+    return this.updatedAt;
   }
 
   public equals(entity?: BaseEntity<ID, Props>): boolean {
     if (entity === null || entity === undefined) return false;
-    return this._id === entity._id;
+    return this.id === entity.id;
   }
 }

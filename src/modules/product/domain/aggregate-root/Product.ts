@@ -3,9 +3,10 @@ import { BaseAggregateRoot } from 'src/shared/domain/base/BaseAggregateRoot';
 
 interface ProductProps {
   id: UUID;
-  slug: string;
   name: string;
+  slug: string;
   description: string;
+  vendorId: UUID;
   categoryId: UUID;
 }
 
@@ -13,6 +14,7 @@ interface CreateProductProps {
   name: string;
   description: string;
   categoryId: UUID;
+  vendorId: UUID;
 }
 
 export class Product extends BaseAggregateRoot<UUID, ProductProps> {
@@ -35,24 +37,30 @@ export class Product extends BaseAggregateRoot<UUID, ProductProps> {
       throw new Error('Description too short');
     }
 
-    this._props.description = newDescription;
+    this.props.description = newDescription;
     // this.apply(new ProductDescriptionUpdatedEvent(this.id, newDescription));
   }
 
   public getSlug(): string {
-    return this._props.slug;
+    return this.props.slug;
   }
 
   public getName(): string {
-    return this._props.name;
+    return this.props.name;
   }
 
   public getCategoryId(): UUID {
-    return this._props.categoryId;
+    return this.props.categoryId;
   }
 
   public getDescription(): string {
-    return this._props.description;
+    return this.props.description;
   }
 }
+
+const p = Product.create({
+  name: 'a',
+  description: 'c',
+  categoryId: '4-4-4-4-4'
+})
 

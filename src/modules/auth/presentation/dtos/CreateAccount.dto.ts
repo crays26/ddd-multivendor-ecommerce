@@ -11,3 +11,14 @@ export class CreateAccountDto {
   @IsNotEmpty()
   password: string;
 }
+
+export class CreateBookDto {
+
+  @IsNotEmpty()
+  id: string;
+
+  @IsNotEmpty()
+  name: string;
+
+}
+

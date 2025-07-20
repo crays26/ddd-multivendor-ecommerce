@@ -1,31 +1,29 @@
-import { BaseEntity } from "./BaseEntity";
-import { EventEmitter2 } from "@nestjs/event-emitter";
+import { AggregateRoot as CqrsAggregateRoot } from '@nestjs/cqrs';
 
-export abstract class BaseAggregateRoot<ID = string, Props = unknown> extends BaseEntity<ID, Props> {
-  private domainEvents: any[] = [];
+export abstract class BaseAggregateRoot<
+  ID = string,
+  Props = unknown,
+> extends CqrsAggregateRoot {
+  protected readonly id: ID;
+  protected readonly props: Props;
+  protected readonly createdAt: Date;
+  protected updatedAt: Date;
 
-  protected constructor(props: Props & { id: ID }) {
-    super(props);
+  protected constructor(
+    props: Props & { id: ID; createdAt?: Date; updatedAt?: Date },
+  ) {
+    super();
+    this.id = props.id;
+    this.props = props;
+    this.createdAt = props.createdAt ?? new Date();
+    this.updatedAt = props.updatedAt ?? new Date();
   }
 
-  protected addEvent(event: any): void {
-    this.domainEvents.push(event);
+  public touch(): void {
+    this.updatedAt = new Date();
   }
 
-  public getDomainEvents(): any[] {
-    return this.domainEvents;
-  }
-
-  public clearEvents(): void {
-    this.domainEvents = [];
-  }
-
-  public async commitEvents(eventEmitter: EventEmitter2): Promise<void> {
-    const events = [...this.domainEvents];
-    this.clearEvents();
-
-    for (const event of events) {
-      await eventEmitter.emitAsync(event.constructor.name, event);
-    }
+  public getDomainEvents(): unknown[] {
+    return (this as any)._domainEvents ?? [];
   }
 }

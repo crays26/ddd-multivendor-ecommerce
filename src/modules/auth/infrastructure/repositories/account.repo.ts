@@ -3,9 +3,9 @@ import { InjectEntityManager, InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager, EntityRepository, wrap } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { Account } from '../entities/account.entity';
-import { CreateAccountDto } from '../../presentation/dtos/CreateAccount.dto';
+import { CreateAccountDto, CreateBookDto } from '../../presentation/dtos/CreateAccount.dto';
 import { Book } from '../entities/book.entity';
-import { AccountDto } from '../../presentation/dtos/AccountResponse.dto';
+import { AccountDto, BookDto } from '../../presentation/dtos/AccountResponse.dto';
 import { plainToInstance } from 'class-transformer';
 //test 
 @Injectable()
@@ -19,11 +19,12 @@ export class AccountRepository {
     private readonly em: EntityManager,
   ) {}
 
-  async createNew(data: CreateAccountDto) {
+  async createNew(data: CreateAccountDto & { books: CreateBookDto[] }) {
     const account = new Account();
     account.username = data.username;
     account.email = data.email;
     account.password = data.password;
+    account.books.set(data.books);
 
     await this.em.persistAndFlush(account);
 
