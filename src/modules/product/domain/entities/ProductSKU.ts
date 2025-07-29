@@ -26,5 +26,7 @@ export class ProductSKU extends BaseEntity<UUID, ProductSKUProps> {
     return new ProductSKU({ ...props, id: randomUUID() });
   }
 
-  public getId() { return this._props.id }
+  public getId() {
+    return this.props.id;
+  }
 }

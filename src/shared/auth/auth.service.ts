@@ -1,0 +1,34 @@
+import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { Response } from 'express';
+
+@Injectable()
+export class AuthService {
+  constructor(private jwtService: JwtService) {}
+
+  generateTokens(payload: any) {
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
+    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+    return { accessToken, refreshToken };
+  }
+
+  setAuthCookies(response: Response, tokens: { accessToken: string; refreshToken: string }) {
+    response.cookie('access_token', tokens.accessToken, {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: true,
+      maxAge: 15 * 60 * 1000,
+    });
+    response.cookie('refresh_token', tokens.refreshToken, {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+  }
+
+  clearAuthCookies(response: Response) {
+    response.clearCookie('access_token');
+    response.clearCookie('refresh_token');
+  }
+}

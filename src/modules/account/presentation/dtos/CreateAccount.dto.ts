@@ -1,4 +1,5 @@
-import { IsEmail, IsNotEmpty } from "class-validator";
+import { IsEmail, IsNotEmpty, IsArray, ValidateNested } from "class-validator";
+import { Type } from "class-transformer";
 export class CreateAccountDto {
 
   @IsEmail()
@@ -10,15 +11,5 @@ export class CreateAccountDto {
 
   @IsNotEmpty()
   password: string;
-}
-
-export class CreateBookDto {
-
-  @IsNotEmpty()
-  id: string;
-
-  @IsNotEmpty()
-  name: string;
-
 }
 

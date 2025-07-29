@@ -58,9 +58,4 @@ export class Product extends BaseAggregateRoot<UUID, ProductProps> {
   }
 }
 
-const p = Product.create({
-  name: 'a',
-  description: 'c',
-  categoryId: '4-4-4-4-4'
-})
 

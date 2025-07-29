@@ -1,35 +1,33 @@
 // account.repository.ts
-import { InjectEntityManager, InjectRepository } from '@mikro-orm/nestjs';
-import { EntityManager, EntityRepository, wrap } from '@mikro-orm/postgresql';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityManager, EntityRepository, UuidType, wrap } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { Account } from '../entities/account.entity';
-import { CreateAccountDto, CreateBookDto } from '../../presentation/dtos/CreateAccount.dto';
+
 import { Book } from '../entities/book.entity';
-import { AccountDto, BookDto } from '../../presentation/dtos/AccountResponse.dto';
+import { AccountDto } from '../../presentation/dtos/AccountResponse.dto';
 import { plainToInstance } from 'class-transformer';
-//test 
+import { AccountDomainEntity } from '../../domain/aggregate-root/account';
+import { UUID } from 'crypto';
+
 @Injectable()
 export class AccountRepository {
   constructor(
     @InjectRepository(Account)
     private readonly repo: EntityRepository<Account>,
-     @InjectRepository(Book)
-    private readonly bookRepo: EntityRepository<Book>,
-    
     private readonly em: EntityManager,
   ) {}
 
-  async createNew(data: CreateAccountDto & { books: CreateBookDto[] }) {
+  async create(domain: AccountDomainEntity) {
     const account = new Account();
-    account.username = data.username;
-    account.email = data.email;
-    account.password = data.password;
-    account.books.set(data.books);
-
+    account.id = domain.getId();
+    account.username = domain.getUsername();
+    account.email = domain.getEmail();
+    account.password = domain.getPassword();
     await this.em.persistAndFlush(account);
-
-    console.log(account.id);
+    
     return account;
+    
   }
 
   async findBooks() {
@@ -48,7 +46,7 @@ export class AccountRepository {
     }
   };
 
-  async createNewBook(data: {name: string, account: number}) {
+  async createNewBook(data: {name: string, account: string}) {
     const book = new Book();
     book.name = data.name;
     book.account = this.em.getReference(Account, data.account);
@@ -61,7 +59,7 @@ export class AccountRepository {
     
   }
 
-  async findById(id: number): Promise<Account | null> {
+  async findById(id: UUID): Promise<Account | null> {
     const userSchema = await this.repo.findOne({ id });
     if (!userSchema) return null;
 
@@ -75,14 +73,13 @@ export class AccountRepository {
   }
   
   async findAll() {
-    const accounts = await this.repo.findOneOrFail(1, { populate: ['books'] });
+    const accounts = await this.repo.findAll({ populate: ['books'] });
     console.log(accounts);
-    console.log("accounts.books:", accounts.books)
-    console.log("accounts.books.getItems()", accounts.books.getItems())
+    console.log("accounts.books:", accounts.map(a => a.books));
+    console.log("accounts.books.getItems()", accounts.map(a => a.books.getItems()))
     const wrappedAccount = wrap(accounts).toObject();
     console.log(wrappedAccount)
-    const account = await this.repo.findOneOrFail(1); 
-    const dto = wrap(account).toObject();
+    
     
     return plainToInstance(AccountDto, wrappedAccount, { excludeExtraneousValues: true });
   }
