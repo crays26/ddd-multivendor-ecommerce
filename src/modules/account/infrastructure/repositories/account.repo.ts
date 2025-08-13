@@ -1,22 +1,62 @@
 // account.repository.ts
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityManager, EntityRepository, UuidType, wrap } from '@mikro-orm/postgresql';
+import { assign, EntityManager, EntityRepository } from '@mikro-orm/postgresql';
+import { wrap } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { Account } from '../entities/account.entity';
-
-import { Book } from '../entities/book.entity';
-import { AccountDto } from '../../presentation/dtos/AccountResponse.dto';
-import { plainToInstance } from 'class-transformer';
 import { AccountDomainEntity } from '../../domain/aggregate-root/account';
-import { UUID } from 'crypto';
+import { IAccountRepository } from '../../domain/repositories/account.repo.interface';
+import { AccountDomainMapper } from '../mappers/account.mapper';
+import { Role } from '../entities/role.entity';
 
 @Injectable()
-export class AccountRepository {
+export class AccountRepository implements IAccountRepository {
   constructor(
     @InjectRepository(Account)
     private readonly repo: EntityRepository<Account>,
     private readonly em: EntityManager,
   ) {}
+
+  async save(domain: AccountDomainEntity): Promise<void> {
+    const existing = await this.repo.findOne(
+      { id: domain.getId() },
+      { populate: ['roles'] },
+    );
+    const roles = existing?.roles.getItems();
+    roles?.forEach(r => {
+      r.name = "kiki"
+    })
+
+    if (!existing) {
+      // New account
+      const account = new Account();
+      account.id = domain.getId();
+      account.username = domain.getUsername();
+      account.email = domain.getEmail();
+      account.password = domain.getPassword();
+      
+
+      const roles = domain.getRoles().map(
+        (r) => this.em.getReference(Role, r.getId()), // avoids duplicate insert
+      );
+      account.roles.add([...roles]);
+
+      return await this.em.persistAndFlush(account);
+      
+    }
+
+    // Update existing account
+    wrap(existing).assign({
+      username: domain.getUsername(),
+      email: domain.getEmail(),
+      password: domain.getPassword(),
+      roles: domain
+        .getRoles()
+        .map((r) => this.em.getReference(Role, r.getId())),
+    });
+
+    return await this.em.flush();
+  }
 
   async create(domain: AccountDomainEntity) {
     const account = new Account();
@@ -24,63 +64,26 @@ export class AccountRepository {
     account.username = domain.getUsername();
     account.email = domain.getEmail();
     account.password = domain.getPassword();
+
     await this.em.persistAndFlush(account);
-    
+
     return account;
-    
   }
 
-  async findBooks() {
-    const books = await this.em.findOneOrFail(Book, 1);
-    console.log("books: ", books);
-    console.log(wrap(books.account).toObject());
+  async findById(id: string): Promise<AccountDomainEntity> {
+    const account = await this.repo.findOneOrFail(
+      { id },
+      { populate: ['roles'] },
+    );
 
-    console.log("book.account.id: ", books.account.id);
-    console.log(books.account.email);
-    const wrappedBooks = wrap(books).toObject();
-    
-    console.log("wrapperd books: ", wrappedBooks, wrappedBooks.account.email);
-    return {
-      books,
-      wrappedBooks 
-    }
-  };
-
-  async createNewBook(data: {name: string, account: string}) {
-    const book = new Book();
-    book.name = data.name;
-    book.account = this.em.getReference(Account, data.account);
-    await this.em.persistAndFlush(book);
-    await wrap(book.account).init();
-    wrap(book.account).assign({
-      username: "Wrapped assign"
-    })
-    return book.account;
-    
+    return AccountDomainMapper.fromPersistence(account);
   }
 
-  async findById(id: UUID): Promise<Account | null> {
-    const userSchema = await this.repo.findOne({ id });
-    if (!userSchema) return null;
-
-    return {
-      id: userSchema.id,
-      username: userSchema.username,
-      email: userSchema.email,
-      password: userSchema.password,
-      books: userSchema.books
-    };
-  }
-  
-  async findAll() {
-    const accounts = await this.repo.findAll({ populate: ['books'] });
-    console.log(accounts);
-    console.log("accounts.books:", accounts.map(a => a.books));
-    console.log("accounts.books.getItems()", accounts.map(a => a.books.getItems()))
-    const wrappedAccount = wrap(accounts).toObject();
-    console.log(wrappedAccount)
-    
-    
-    return plainToInstance(AccountDto, wrappedAccount, { excludeExtraneousValues: true });
+  async findByEmail(email: string): Promise<AccountDomainEntity | null> {
+    const account = await this.repo.findOneOrFail(
+      { email },
+      { populate: ['roles'] },
+    );
+    return AccountDomainMapper.fromPersistence(account);
   }
 }

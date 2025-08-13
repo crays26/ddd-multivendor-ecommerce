@@ -1,9 +1,6 @@
-import { Cascade, Entity, OneToMany, PrimaryKey, Property, UuidType } from '@mikro-orm/core';
-import { AccountRepository } from '../repositories/account.repo';
-import { EntityRepositoryType } from '@mikro-orm/core';
-import { Book } from './book.entity';
+import { Cascade, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Role } from './role.entity';
 import { Collection } from '@mikro-orm/core';
-import { UUID } from 'crypto';
 
 @Entity()
 export class Account {
@@ -12,16 +9,17 @@ export class Account {
    id!: string;
 
    @Property()
-   username!: string;
-
-   @Property()
    email!: string;
 
-   @Property({ hidden: true })
+   @Property()
+   username!: string;
+
+  
+   @Property()
    password!: string;
 
-   @OneToMany(() => Book, book => book.account, {cascade: [Cascade.PERSIST] }) // referenced entity type can be sniffer too
-   books = new Collection<Book>(this);
+   @ManyToMany(() => Role, role => role.accounts, { owner: true }) 
+   roles = new Collection<Role>(this);
 
 
 }

@@ -4,17 +4,18 @@ import { EntityRepositoryType } from '@mikro-orm/core';
 import { Account } from './account.entity';
 import { ManyToOne } from '@mikro-orm/core';
 import { serialize } from 'v8';
+import { ManyToMany } from '@mikro-orm/core';
+import { Collection } from '@mikro-orm/core';
 
 @Entity()
-export class Book {
+export class Role {
 
    @PrimaryKey()
-   id!: number;
+   id!: string;
 
    @Property()
    name!: string;
 
-   
-  @ManyToOne(() => Account ) 
-  account!: Account;
+  @ManyToMany(() => Account, account => account.roles)
+  accounts = new Collection<Account>(this);
 }
