@@ -1,8 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+
+const SALT_ROUND = 10;
 
 export class PasswordVO {
 
-  private constructor(private readonly value: string) {
+  private constructor(private value: string) {
     if (!this.validate(value)) {
       throw new BadRequestException(
         'Password must be at least 8 characters and contain at least 1 uppercase letter'
@@ -16,6 +19,10 @@ export class PasswordVO {
 
   getValue(): string {
     return this.value;
+  }
+
+  hash(): void {
+    this.value = bcrypt.hashSync(this.value, SALT_ROUND);
   }
 
   private validate(value: string): boolean {
