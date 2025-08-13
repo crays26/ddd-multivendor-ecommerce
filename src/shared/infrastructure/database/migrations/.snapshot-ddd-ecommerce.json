@@ -8,12 +8,13 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "varchar(255)",
           "unsigned": false,
-          "autoincrement": true,
-          "primary": true,
+          "autoincrement": false,
+          "primary": false,
           "nullable": false,
-          "mappedType": "integer"
+          "length": 255,
+          "mappedType": "string"
         },
         "username": {
           "name": "username",
@@ -85,21 +86,32 @@
           "length": 255,
           "mappedType": "string"
         },
-        "account_id": {
-          "name": "account_id",
-          "type": "int",
+        "slug": {
+          "name": "slug",
+          "type": "varchar(255)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "mappedType": "integer"
+          "length": 255,
+          "mappedType": "string"
+        },
+        "password": {
+          "name": "password",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
         }
       },
-      "name": "book",
+      "name": "product_entity",
       "schema": "public",
       "indexes": [
         {
-          "keyName": "book_pkey",
+          "keyName": "product_entity_pkey",
           "columnNames": [
             "id"
           ],
@@ -110,17 +122,114 @@
         }
       ],
       "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
+        }
+      },
+      "name": "role",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "role_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "account_id": {
+          "name": "account_id",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
+        },
+        "role_id": {
+          "name": "role_id",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
+        }
+      },
+      "name": "account_roles",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "account_roles_pkey",
+          "columnNames": [
+            "account_id",
+            "role_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
       "foreignKeys": {
-        "book_account_id_foreign": {
-          "constraintName": "book_account_id_foreign",
+        "account_roles_account_id_foreign": {
+          "constraintName": "account_roles_account_id_foreign",
           "columnNames": [
             "account_id"
           ],
-          "localTableName": "public.book",
+          "localTableName": "public.account_roles",
           "referencedColumnNames": [
             "id"
           ],
           "referencedTableName": "public.account",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "account_roles_role_id_foreign": {
+          "constraintName": "account_roles_role_id_foreign",
+          "columnNames": [
+            "role_id"
+          ],
+          "localTableName": "public.account_roles",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.role",
+          "deleteRule": "cascade",
           "updateRule": "cascade"
         }
       },
