@@ -2,15 +2,27 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { SignUpAccountCommand } from './command';
 import { AccountRepository } from 'src/modules/account/infrastructure/repositories/account.repo';
 import { AccountDomainEntity } from 'src/modules/account/domain/aggregate-root/account';
+import { AuthService } from 'src/shared/auth/auth.service';
+import { AccountDomainMapper } from 'src/modules/account/infrastructure/mappers/account.mapper';
 
 @CommandHandler(SignUpAccountCommand)
-export class SignUpAccountCommandHandler implements ICommandHandler<SignUpAccountCommand>
+export class SignUpAccountCommandHandler
+  implements ICommandHandler<SignUpAccountCommand>
 {
-  constructor(private accountRepo: AccountRepository) {}
-  
+  constructor(
+    private readonly accountRepo: AccountRepository,
+    private readonly authService: AuthService,
+  ) {}
+
   async execute(command: SignUpAccountCommand) {
-    const accountDomainEntity = AccountDomainEntity.create(command);
-    const newAccount = await this.accountRepo.create(accountDomainEntity);
+    const accountDomainEntity = AccountDomainEntity.create(command.data);
+    const hashedPassword = await this.authService.hash(
+      accountDomainEntity.getPassword(),
+    );
+    accountDomainEntity.setPassword(hashedPassword);
+    
+
+    const newAccount = await this.accountRepo.save(accountDomainEntity);
     return newAccount;
   }
 }

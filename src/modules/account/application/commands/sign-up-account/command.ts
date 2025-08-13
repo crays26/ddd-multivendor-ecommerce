@@ -1,7 +1,9 @@
-export class SignUpAccountCommand {
+export class SignUpAccountCommand  {
   constructor(
-    public readonly username: string,
-    public readonly email: string,
-    public readonly password: string
+    public readonly data: {
+      readonly email: string;
+      readonly username: string;
+      readonly password: string;
+    },
   ) {}
 }
