@@ -1,20 +1,14 @@
 import { isArray, ValidateNested } from "class-validator";
-import { Book } from "../../infrastructure/entities/book.entity";
 import { IsArray } from "class-validator";
 import { Expose, Type } from 'class-transformer';
-import { Validate } from "class-validator";
 
-export class BookDto {
+
+export class RoleDto {
   @Expose()
   id: number;
 
   @Expose()
   name: string;
-
-  @Expose()
-  account: number;
-
-
 }
 
 export class AccountDto {
@@ -31,8 +25,8 @@ export class AccountDto {
   email: string;
 
   @Expose()
-  @Type(() => BookDto)
+  @Type(() => RoleDto)
   @IsArray()
   @ValidateNested({ each: true })
-  books: BookDto[];
+  roles: RoleDto[];
 }

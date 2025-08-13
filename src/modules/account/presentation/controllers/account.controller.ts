@@ -1,45 +1,64 @@
-import {
-  Body,
-  ClassSerializerInterceptor,
-  Controller,
-  Get,
-  Post,
-  SerializeOptions,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { AccountRepository } from '../../infrastructure/repositories/account.repo';
-import { CreateAccountDto } from '../dtos/CreateAccount.dto';
-import { plainToClass, plainToInstance } from 'class-transformer';
-import { AccountDto } from '../dtos/AccountResponse.dto';
+import { SignUpAccountDto } from '../dtos/SignUpAccount.dto';
+import { LogInAccountDto } from '../dtos/LogInAccount.dto';
+import { AccountDto } from '../dtos/response/account.response.dto';
 import { wrap } from '@mikro-orm/postgresql';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { SignUpAccountCommandHandler } from '../../application/commands/sign-up-account/handler';
 import { SignUpAccountCommand } from '../../application/commands/sign-up-account/command';
-
+import { AuthService } from 'src/shared/auth/auth.service';
+import { LogInAccountCommand } from '../../application/commands/log-in-account/command';
+import { Response } from 'express';
+import {
+  OptionalAuthGuard,
+  RequiredAuthGuard,
+} from 'src/shared/auth/auth.guard';
+import { AuthPayload } from 'src/shared/auth/AuthPayload';
+import { CurrentUser } from 'src/shared/auth/currentUser.decorator';
+import { GetAccountOfCurrentUserQuery } from '../../application/queries/get-account-of-current-user/query';
 
 @Controller('account')
 export class AuthController {
   constructor(
-    private readonly accountRepo: AccountRepository,
     private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
   ) {}
 
-  @Post()
-  async signUpAccount(@Body() body: CreateAccountDto) {
-    
-    const command = new SignUpAccountCommand(body.email, body.username, body.password);
+  @Post('sign-up')
+  async signUpAccount(@Body() body: SignUpAccountDto) {
+    const command = new SignUpAccountCommand(body);
     return await this.commandBus.execute(command);
   }
 
-  @Get()
-  async findAll() {
-    const accounts = await this.accountRepo.findAll();
+  @Post('log-in')
+  async logInAccount(@Body() body: LogInAccountDto, @Res() response: Response) {
+    const command = new LogInAccountCommand(body);
+    const { accessToken, refreshToken } =
+      await this.commandBus.execute(command);
 
-    return accounts;
+    response
+      .cookie('access_token', accessToken, {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: false,
+        maxAge: 15 * 60 * 1000,
+      })
+      .cookie('refresh_token', refreshToken, {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: false,
+        maxAge: 14 * 24 * 60 * 60 * 1000,
+      })
+      .send({ accessToken, refreshToken });
   }
 
-  @Get('books')
-  async findBooks() {
-    return await this.accountRepo.findBooks();
+  @Get('')
+  @UseGuards(RequiredAuthGuard)
+  async getCurrentUser(@CurrentUser() currentUser: AuthPayload | null): Promise<AccountDto | null> {
+    
+    console.log(currentUser);
+    const query = new GetAccountOfCurrentUserQuery(currentUser!.id);
+    return await this.queryBus.execute(query);
   }
 }
