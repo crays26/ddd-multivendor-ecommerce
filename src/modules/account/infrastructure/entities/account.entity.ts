@@ -1,4 +1,4 @@
-import { Cascade, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Cascade, Entity, ManyToMany, OneToMany, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Role } from './role.entity';
 import { Collection } from '@mikro-orm/core';
 
@@ -9,6 +9,7 @@ export class Account {
    id!: string;
 
    @Property()
+   @Unique()
    email!: string;
 
    @Property()

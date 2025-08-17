@@ -3,7 +3,7 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { ProductEntity } from '../entities/Product.entity';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import { ProductAggRoot } from '../../domain/aggregate-root/Product';
+import { ProductAggRoot } from '../../domain/aggregate-roots/Product';
 import { ppid } from 'process';
 import { ProductVariantEntity } from '../entities/ProductVariant.entity';
 import { ProductAttributeEntity } from '../entities/ProductAttribute.entity';
