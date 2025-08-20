@@ -1,5 +1,5 @@
 import { Command } from '@nestjs/cqrs';
-import { AuthPayload } from 'src/shared/auth/AuthPayload';
+import { AuthPayload } from 'src/shared/auth/AuthPayload.interface';
 
 export class LogInAccountCommand extends Command<{
   accessToken: string;

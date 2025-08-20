@@ -13,8 +13,8 @@ import { Response } from 'express';
 import { JwtRequiredGuard } from 'src/shared/auth/guards/jwt.required.guard';
 import { JwtOptionalGuard } from 'src/shared/auth/guards/jwt.optional.guard';
 import { JwtRefreshGuard } from 'src/shared/auth/guards/jwt.refresh.guard';
-import { AuthPayload } from 'src/shared/auth/AuthPayload';
-import { CurrentUser } from 'src/shared/auth/currentUser.decorator';
+import { AuthPayload } from 'src/shared/auth/AuthPayload.interface';
+import { CurrentUser } from 'src/shared/auth/current.user.decorator';
 import { GetAccountOfCurrentUserQuery } from '../../application/queries/get-account-of-current-user/query';
 import { emit } from 'process';
 
