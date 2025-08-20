@@ -10,19 +10,21 @@ import { SignUpAccountCommand } from '../../application/commands/sign-up-account
 import { AuthService } from 'src/shared/auth/auth.service';
 import { LogInAccountCommand } from '../../application/commands/log-in-account/command';
 import { Response } from 'express';
-import {
-  OptionalAuthGuard,
-  RequiredAuthGuard,
-} from 'src/shared/auth/auth.guard';
+import { JwtRequiredGuard } from 'src/shared/auth/guards/jwt.required.guard';
+import { JwtOptionalGuard } from 'src/shared/auth/guards/jwt.optional.guard';
+import { JwtRefreshGuard } from 'src/shared/auth/guards/jwt.refresh.guard';
 import { AuthPayload } from 'src/shared/auth/AuthPayload';
 import { CurrentUser } from 'src/shared/auth/currentUser.decorator';
 import { GetAccountOfCurrentUserQuery } from '../../application/queries/get-account-of-current-user/query';
+import { emit } from 'process';
+
 
 @Controller('account')
 export class AuthController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
+    private readonly authService: AuthService,
   ) {}
 
   @Post('sign-up')
@@ -34,30 +36,44 @@ export class AuthController {
   @Post('log-in')
   async logInAccount(@Body() body: LogInAccountDto, @Res() response: Response) {
     const command = new LogInAccountCommand(body);
-    const { accessToken, refreshToken } =
+    const tokenPair =
       await this.commandBus.execute(command);
 
-    response
-      .cookie('access_token', accessToken, {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: false,
-        maxAge: 15 * 60 * 1000,
-      })
-      .cookie('refresh_token', refreshToken, {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: false,
-        maxAge: 14 * 24 * 60 * 60 * 1000,
-      })
-      .send({ accessToken, refreshToken });
+    this.authService.setAuthCookies(response, tokenPair);
+    response.send(tokenPair);
+  }
+
+  @Post('refresh')
+  @UseGuards(JwtRefreshGuard)
+  async refreshTokenPair(@CurrentUser() currentUser: AuthPayload, @Res() response: Response) {
+    const payload = {
+      id: currentUser.id,
+      username: currentUser.username,
+      email: currentUser.email,
+      roles: currentUser.roles,
+    }
+    const tokenPair = this.authService.generateTokens(payload);
+    this.authService.setAuthCookies(response, tokenPair);
+    response.send(tokenPair);
   }
 
   @Get('')
-  @UseGuards(RequiredAuthGuard)
-  async getCurrentUser(@CurrentUser() currentUser: AuthPayload | null): Promise<AccountDto | null> {
-    
+  @UseGuards(JwtRequiredGuard)
+  async getCurrentUser(
+    @CurrentUser() currentUser: AuthPayload | null,
+  ): Promise<AccountDto | null> {
     console.log(currentUser);
+    const query = new GetAccountOfCurrentUserQuery(currentUser!.id);
+    return await this.queryBus.execute(query);
+  }
+
+  @Get('/optional')
+  @UseGuards(JwtOptionalGuard)
+  async getOptionalCurrentUser(
+    @CurrentUser() currentUser: AuthPayload | null,
+  ): Promise<AccountDto | null> {
+    console.log(currentUser);
+    if (!currentUser) return null;
     const query = new GetAccountOfCurrentUserQuery(currentUser!.id);
     return await this.queryBus.execute(query);
   }

@@ -6,6 +6,7 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from 'src/shared/auth/auth.service';
 import { AccountDomainMapper } from 'src/modules/account/infrastructure/mappers/account.mapper';
+import { AuthPayload } from 'src/shared/auth/AuthPayload';
 
 @CommandHandler(LogInAccountCommand)
 export class LogInAccountCommandHandler
@@ -30,7 +31,7 @@ export class LogInAccountCommandHandler
     if (!isPasswordValid)
       throw new ConflictException('Password does not match');
 
-    const tokenPayload = {
+    const tokenPayload: AuthPayload = {
       id: accountDomain.getId(),
       username: accountDomain.getUsername(),
       email: accountDomain.getEmail(),

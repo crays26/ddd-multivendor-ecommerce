@@ -4,6 +4,7 @@ import { AccountRepository } from 'src/modules/account/infrastructure/repositori
 import { AccountDomainEntity } from 'src/modules/account/domain/aggregate-root/account';
 import { AuthService } from 'src/shared/auth/auth.service';
 import { AccountDomainMapper } from 'src/modules/account/infrastructure/mappers/account.mapper';
+import { ConflictException } from '@nestjs/common';
 
 @CommandHandler(SignUpAccountCommand)
 export class SignUpAccountCommandHandler
@@ -15,6 +16,9 @@ export class SignUpAccountCommandHandler
   ) {}
 
   async execute(command: SignUpAccountCommand) {
+    const accountExists = await this.accountRepo.findByEmail(command.data.email);
+    if (accountExists) throw new ConflictException("This email has already been used");
+
     const accountDomainEntity = AccountDomainEntity.create(command.data);
     const hashedPassword = await this.authService.hash(
       accountDomainEntity.getPassword(),
@@ -23,6 +27,6 @@ export class SignUpAccountCommandHandler
     
 
     const newAccount = await this.accountRepo.save(accountDomainEntity);
-    return newAccount;
+    return "Account registered successfully";
   }
 }
