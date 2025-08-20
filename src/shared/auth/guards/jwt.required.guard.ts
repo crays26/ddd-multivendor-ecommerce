@@ -2,20 +2,12 @@ import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/com
 import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
-export class RequiredAuthGuard extends AuthGuard('jwt') {
+export class JwtRequiredGuard extends AuthGuard('jwt-access') {
     
     handleRequest<TUser = any>(err: any, user: any, info: any, context: ExecutionContext, status?: any): TUser {
         if (err || !user) {
             throw err || new UnauthorizedException('Access Token Required');
         }
         return user;
-    }
-}
-
-@Injectable()
-export class OptionalAuthGuard extends AuthGuard('jwt') {
-    
-    handleRequest<TUser = any>(err: any, user: any, info: any, context: ExecutionContext, status?: any): TUser {
-        return user || null;
     }
 }

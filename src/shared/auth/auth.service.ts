@@ -11,8 +11,8 @@ export class AuthService {
   constructor(private jwtService: JwtService) {}
 
   generateTokens(payload: AuthPayload) {
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m', secret: process.env.ACCESS_TOKEN_SECRET_KEY! });
+    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d', secret: process.env.REFRESH_TOKEN_SECRET_KEY! });
     return { accessToken, refreshToken };
   }
 
