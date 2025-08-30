@@ -1,6 +1,8 @@
 import { EntityManager } from '@mikro-orm/postgresql';
 import { IUnitOfWork } from './unit.of.work.interface';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class UnitOfWork implements IUnitOfWork {
     
   constructor(private readonly em: EntityManager) {}

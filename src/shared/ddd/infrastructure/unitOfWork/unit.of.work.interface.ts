@@ -1,5 +1,7 @@
 export interface IUnitOfWork {
-    begin(): void;
-    commit(): void;
-    rollback(): void;
+    begin(): Promise<void>;
+    commit(): Promise<void>;
+    rollback(): Promise<void>;
 }
+
+export const UNIT_OF_WORK = Symbol('UNIT_OF_WORK')
