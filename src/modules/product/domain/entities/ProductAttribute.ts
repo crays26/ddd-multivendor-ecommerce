@@ -1,4 +1,4 @@
-import { BaseEntity } from 'src/shared/domain/base/BaseEntity';
+import { BaseEntity } from 'src/shared/ddd/domain/base/BaseEntity';
 import { randomUUID, UUID } from 'crypto';
 
 interface ProductAttributeProps {
@@ -20,7 +20,7 @@ export class ProductAttribute extends BaseEntity<string, ProductAttributeProps> 
   }
 
   public static create(props: CreateProductAttributeProps) {
-    return new ProductAttribute({ ...props, id: randomUUID() });
+    return new ProductAttribute({ ...props, id: props.id ?? randomUUID() });
   }
 
   public getId(): string {

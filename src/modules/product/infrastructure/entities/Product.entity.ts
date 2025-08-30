@@ -3,7 +3,7 @@ import { Collection } from '@mikro-orm/core';
 import { ProductVariantEntity } from './ProductVariant.entity';
 import { ProductAttributeEntity } from './ProductAttribute.entity';
 
-@Entity()
+@Entity({ tableName: 'product' })
 export class ProductEntity {
 
    @PrimaryKey()

@@ -8,7 +8,7 @@ import {
 } from '@mikro-orm/core';
 import { ProductEntity } from './Product.entity';
 
-@Entity()
+@Entity({ tableName: 'product_variant' })
 export class ProductVariantEntity {
   @PrimaryKey()
   id!: string;
@@ -25,8 +25,14 @@ export class ProductVariantEntity {
   @Property()
   stock!: number;
 
+  @Property()
+  isBase!: boolean;
+
   @Property({ type: 'json', nullable: false })
   associatedAttributes!: { key: string; value: string }[];
+
+  @Property()
+  isSoftDeleted!: boolean;
 
   @ManyToOne(() => ProductEntity)
   product!: ProductEntity;

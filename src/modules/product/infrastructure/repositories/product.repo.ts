@@ -7,7 +7,7 @@ import { ProductAggRoot } from '../../domain/aggregate-roots/Product';
 import { ppid } from 'process';
 import { ProductVariantEntity } from '../entities/ProductVariant.entity';
 import { ProductAttributeEntity } from '../entities/ProductAttribute.entity';
-
+import { wrap } from '@mikro-orm/postgresql';
 @Injectable()
 export class ProductRepository {
   constructor(
@@ -27,26 +27,31 @@ export class ProductRepository {
     }
 
     product.name = domain.getName();
+    product.slug = domain.getName();
 
     const existingVariants = product.variants.getItems();
-    
+  
     existingVariants
       .filter((v) => !domain.getVariants().some((dv) => dv.getId() === v.id))
-      .forEach((v) => product!.variants.remove(v));
+      .forEach((v) => v.isSoftDeleted = true);
 
     for (const v of domain.getVariants()) {
       let variant = existingVariants.find((ev) => ev.id === v.getId());
       if (!variant) {
         variant = new ProductVariantEntity();
         variant.id = v.getId();
+        variant.isBase = false;
+        variant.isSoftDeleted = false;
+
+        product.variants.add(variant);
       }
       variant.name = v.getName();
       variant.price = v.getPrice();
       variant.skuCode = v.getSkuCode();
       variant.stock = v.getStock();
-      variant.associatedAttributes = v.getAttributes();
+      variant.associatedAttributes = v.getAssociatedAttributes();
 
-      product.variants.add(variant);
+      
 
       const existingAttributes = product.attributes.getItems();
 
@@ -55,34 +60,59 @@ export class ProductRepository {
           (attr) =>
             !domain.getAttributes().some((da) => da.getId() === attr.id),
         )
-        .forEach((attr) => product!.attributes.remove(attr));
+        .forEach((attr) => attr.isSoftDeleted = true);
 
-      // Add or update attributes
+
       for (const a of domain.getAttributes()) {
         let attribute = existingAttributes.find((ea) => ea.id === a.getId());
         if (!attribute) {
           attribute = new ProductAttributeEntity();
           attribute.id = a.getId();
+          attribute.isSoftDeleted = false;
+          product.attributes.add(attribute);
         }
         attribute.key = a.getKey();
         attribute.values = a.getValues();
-        product.attributes.add(attribute);
+        
       }
-
-      await this.em.persistAndFlush(product);
     }
+    
+    await this.em.persistAndFlush(product);
   }
 
-  // const variants = domain.getVariants().map(v => {
-  //     const variant = new ProductVariantEntity();
-  //     variant.id = v.getId();
-  //     variant.name = v.getName();
-  //     variant.price = v.getPrice();
-  //     variant.skuCode = v.getSkuCode();
-  //     variant.stock = v.getStock();
-  //     variant.associatedAttributes = v.getAttributes();
+  async save2(domain: ProductAggRoot): Promise<void> {
+    const product = this.em.merge(ProductEntity, {
+      id: domain.getId(),
+      name: domain.getName(),
+      slug: domain.getName(),
+      variants: domain.getVariants().map((v) => ({
+        id: v.getId(),
+        name: v.getName(),
+        price: v.getPrice(),
+        skuCode: v.getSkuCode(),
+        stock: v.getStock(),
+        associatedAttributes: v.getAssociatedAttributes(),
+      })),
+      attributes: domain.getAttributes().map((a) => ({
+        id: a.getId(),
+        key: a.getKey(),
+        values: a.getValues(),
+      })),
+    });
 
-  //     return variants;
-  // })
-  // product.variants.set(variants)
+    await this.em.flush();
+  }
 }
+
+// const variants = domain.getVariants().map(v => {
+//     const variant = new ProductVariantEntity();
+//     variant.id = v.getId();
+//     variant.name = v.getName();
+//     variant.price = v.getPrice();
+//     variant.skuCode = v.getSkuCode();
+//     variant.stock = v.getStock();
+//     variant.associatedAttributes = v.getAttributes();
+
+//     return variants;
+// })
+// product.variants.set(variants);

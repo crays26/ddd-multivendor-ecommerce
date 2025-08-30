@@ -1,29 +1,30 @@
 import { randomUUID, UUID } from 'crypto';
-import { BaseAggregateRoot } from 'src/shared/domain/base/BaseAggregateRoot';
+import { BaseAggregateRoot } from 'src/shared/ddd/domain/base/BaseAggregateRoot';
 import { ProductVariant } from '../entities/ProductVariant';
 import { ProductAttribute } from '../entities/ProductAttribute';
 
 interface ProductProps {
-  id: UUID;
+  id: string;
   name: string;
   slug: string;
   description: string;
-  vendorId: UUID;
-  categoryId: UUID;
+  vendorId: string;
+  categoryId: string;
   variants: ProductVariant[];
   attributes: ProductAttribute[];
 }
 
 interface CreateProductProps {
+  id?: string;
   name: string;
   description: string;
-  categoryId: UUID;
-  vendorId: UUID;
+  categoryId: string;
+  vendorId: string;
   variants?: ProductVariant[];
   attributes?: ProductAttribute[];
 }
 
-export class ProductAggRoot extends BaseAggregateRoot<UUID, ProductProps> {
+export class ProductAggRoot extends BaseAggregateRoot<string, ProductProps> {
   private constructor(props: ProductProps) {
     super(props);
   }
@@ -31,7 +32,7 @@ export class ProductAggRoot extends BaseAggregateRoot<UUID, ProductProps> {
   static create(props: CreateProductProps): ProductAggRoot {
     const product = new ProductAggRoot({
       ...props,
-      id: randomUUID(),
+      id: props.id ?? randomUUID(),
       slug: 'slugify name example',
       variants: props.variants ?? [],
       attributes: props.attributes ?? [],
@@ -61,7 +62,7 @@ export class ProductAggRoot extends BaseAggregateRoot<UUID, ProductProps> {
     return this.props.name;
   }
 
-  public getCategoryId(): UUID {
+  public getCategoryId(): string {
     return this.props.categoryId;
   }
 
@@ -76,6 +77,7 @@ export class ProductAggRoot extends BaseAggregateRoot<UUID, ProductProps> {
   public getAttributes(): ProductAttribute[] {
     return this.props.attributes;
   }
-}
 
+  
+}
 

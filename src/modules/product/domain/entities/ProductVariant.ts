@@ -1,4 +1,4 @@
-import { BaseEntity } from 'src/shared/domain/base/BaseEntity';
+import { BaseEntity } from 'src/shared/ddd/domain/base/BaseEntity';
 import { randomUUID, UUID } from 'crypto';
 import { VariantAttributeValueVO } from '../value-objects/VariantAttributeValue';
 
@@ -8,16 +8,16 @@ interface ProductVariantProps {
   stock: number;
   skuCode: string;
   price: number;
-  attributes: VariantAttributeValueVO[];
+  associatedAttributes: VariantAttributeValueVO[];
 }
 
 interface CreateProductVariantProps {
-  id: string;
+  id?: string;
   name: string;
   stock: number;
   skuCode: string;
   price: number;
-  attributes: VariantAttributeValueVO[];
+  associatedAttributes: VariantAttributeValueVO[];
 }
 
 export class ProductVariant extends BaseEntity<string, ProductVariantProps> {
@@ -28,8 +28,8 @@ export class ProductVariant extends BaseEntity<string, ProductVariantProps> {
   public static create(props: CreateProductVariantProps) {
     return new ProductVariant({
       ...props,
-      id: randomUUID(),
-      attributes: props.attributes ?? [],
+      id: props.id ?? randomUUID(),
+      associatedAttributes: props.associatedAttributes ?? [],
     });
   }
 
@@ -53,8 +53,8 @@ export class ProductVariant extends BaseEntity<string, ProductVariantProps> {
     return this.props.price;
   }
 
-  public getAttributes(): { key: string; value: string }[] {
-    return this.props.attributes.map((a) => ({
+  public getAssociatedAttributes(): { key: string; value: string }[] {
+    return this.props.associatedAttributes.map((a) => ({
       key: a.getKey(),
       value: a.getValue(),
     }));

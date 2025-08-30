@@ -6,7 +6,7 @@ import {
 } from '@mikro-orm/core';
 import { ProductEntity } from './Product.entity';
 
-@Entity()
+@Entity({ tableName: 'product_attribute' })
 export class ProductAttributeEntity {
   @PrimaryKey()
   id!: string;
@@ -16,6 +16,9 @@ export class ProductAttributeEntity {
 
   @Property({ type: 'json', nullable: false })
   values!: string[];
+
+  @Property()
+  isSoftDeleted!: boolean;
 
   @ManyToOne(() => ProductEntity)
   product!: ProductEntity;
