@@ -1,18 +1,18 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { LogInAccountCommand } from './command';
 import { AccountRepository } from 'src/modules/account/infrastructure/repositories/account.repo';
-import { AccountDomainEntity } from 'src/modules/account/domain/aggregate-root/account';
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import { ConflictException, Inject, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from 'src/shared/auth/auth.service';
-import { AccountDomainMapper } from 'src/modules/account/infrastructure/mappers/account.mapper';
 import { AuthPayload } from 'src/shared/auth/AuthPayload.interface';
+import { ACCOUNT_REPO } from 'src/modules/account/domain/repositories/account.repo.interface';
 
 @CommandHandler(LogInAccountCommand)
 export class LogInAccountCommandHandler
   implements ICommandHandler<LogInAccountCommand>
 {
   constructor(
+    @Inject(ACCOUNT_REPO)
     private readonly accountRepo: AccountRepository,
     private readonly authService: AuthService,
   ) {}

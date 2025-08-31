@@ -1,4 +1,5 @@
 import { Command } from '@nestjs/cqrs';
+import { LogInAccountDto } from 'src/modules/account/presentation/dtos/LogInAccount.dto';
 import { AuthPayload } from 'src/shared/auth/AuthPayload.interface';
 
 export class LogInAccountCommand extends Command<{
@@ -6,10 +7,7 @@ export class LogInAccountCommand extends Command<{
   refreshToken: string;
 }> {
   constructor(
-    public readonly data: {
-      readonly email: string;
-      readonly password: string;
-    },
+    public readonly data: LogInAccountDto
   ) {
     super();
   }

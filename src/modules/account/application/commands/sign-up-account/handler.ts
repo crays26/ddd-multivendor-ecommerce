@@ -1,18 +1,23 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { SignUpAccountCommand } from './command';
-import { AccountRepository } from 'src/modules/account/infrastructure/repositories/account.repo';
 import { AccountDomainEntity } from 'src/modules/account/domain/aggregate-root/account';
 import { AuthService } from 'src/shared/auth/auth.service';
-import { AccountDomainMapper } from 'src/modules/account/infrastructure/mappers/account.mapper';
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, Inject } from '@nestjs/common';
+import { IUnitOfWork, UNIT_OF_WORK } from '../../../../../shared/ddd/infrastructure/unitOfWork/unit.of.work.interface';
+import { EntityManager } from '@mikro-orm/postgresql';
+import { ACCOUNT_REPO, IAccountRepository } from 'src/modules/account/domain/repositories/account.repo.interface';
 
 @CommandHandler(SignUpAccountCommand)
 export class SignUpAccountCommandHandler
   implements ICommandHandler<SignUpAccountCommand>
 {
   constructor(
-    private readonly accountRepo: AccountRepository,
+    @Inject(UNIT_OF_WORK)
+    private readonly unitOfWork: IUnitOfWork,
+    @Inject(ACCOUNT_REPO)
+    private readonly accountRepo: IAccountRepository,
     private readonly authService: AuthService,
+    private readonly em: EntityManager,
   ) {}
 
   async execute(command: SignUpAccountCommand) {
@@ -25,8 +30,15 @@ export class SignUpAccountCommandHandler
     );
     accountDomainEntity.setPassword(hashedPassword);
     
-
-    const newAccount = await this.accountRepo.save(accountDomainEntity);
+    await this.unitOfWork.begin();
+    try {
+      await this.accountRepo.save(accountDomainEntity);
+      await this.unitOfWork.commit();
+    }
+    catch(error) {
+      await this.unitOfWork.rollback();
+    }
+    
     return "Account registered successfully";
   }
 }
