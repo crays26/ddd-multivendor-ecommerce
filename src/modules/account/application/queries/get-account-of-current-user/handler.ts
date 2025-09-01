@@ -4,15 +4,20 @@ import { AccountRepository } from 'src/modules/account/infrastructure/repositori
 import { AccountDto } from 'src/modules/account/presentation/dtos/response/account.response.dto';
 import { plainToInstance } from 'class-transformer';
 import { AccountDtoMapper } from '../../mappers/account.mapper';
+import { Inject } from '@nestjs/common';
+import { ACCOUNT_REPO } from 'src/modules/account/domain/repositories/account.repo.interface';
 
 @QueryHandler(GetAccountOfCurrentUserQuery)
 export class GetAccountOfCurrentUserQueryHandler
   implements IQueryHandler<GetAccountOfCurrentUserQuery>
 {
-  constructor(private readonly accountRepo: AccountRepository) {}
+  constructor(
+    @Inject(ACCOUNT_REPO)
+    private readonly accountRepo: AccountRepository) {}
 
-  async execute(query: GetAccountOfCurrentUserQuery): Promise<AccountDto> {
+  async execute(query: GetAccountOfCurrentUserQuery): Promise<AccountDto | null> {
     const accountDomain = await this.accountRepo.findById(query.id);
+    if (!accountDomain) return null;
     return AccountDtoMapper.fromDomain(accountDomain);
   }
 }

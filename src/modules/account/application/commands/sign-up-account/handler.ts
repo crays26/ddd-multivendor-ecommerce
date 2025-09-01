@@ -29,7 +29,7 @@ export class SignUpAccountCommandHandler
       accountDomainEntity.getPassword(),
     );
     accountDomainEntity.setPassword(hashedPassword);
-    
+    console.log(accountDomainEntity)
     await this.unitOfWork.begin();
     try {
       await this.accountRepo.save(accountDomainEntity);

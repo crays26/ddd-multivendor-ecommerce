@@ -3,7 +3,6 @@ import { Account } from './infrastructure/entities/account.entity';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { AuthController } from './presentation/controllers/account.controller';
 import { AccountRepository } from './infrastructure/repositories/account.repo';
-import { EntityManager } from '@mikro-orm/postgresql';
 import { Role } from './infrastructure/entities/role.entity';
 import { SignUpAccountCommandHandler } from './application/commands/sign-up-account/handler';
 import { LogInAccountCommandHandler } from './application/commands/log-in-account/handler';
@@ -11,6 +10,10 @@ import { AuthService } from 'src/shared/auth/auth.service';
 import { ShareAuthModule } from 'src/shared/auth/auth.module';
 import { CqrsModule } from '@nestjs/cqrs';
 import { GetAccountOfCurrentUserQueryHandler } from './application/queries/get-account-of-current-user/handler';
+import { UnitOfWork } from 'src/shared/ddd/infrastructure/unitOfWork/unit.of.work';
+import { UNIT_OF_WORK } from '../../shared/ddd/infrastructure/unitOfWork/unit.of.work.interface';
+import { ACCOUNT_REPO } from './domain/repositories/account.repo.interface';
+import { UnitOfWorkModule } from 'src/shared/ddd/infrastructure/unitOfWork/unit.of.work.module';
 
 const CommandHandlers = [
   SignUpAccountCommandHandler,
@@ -23,14 +26,22 @@ const QueryHandlers = [GetAccountOfCurrentUserQueryHandler];
     MikroOrmModule.forFeature([Account, Role]),
     ShareAuthModule,
     CqrsModule,
+    UnitOfWorkModule
   ],
 
   controllers: [AuthController],
   providers: [
-    AccountRepository,
+    {
+      provide: ACCOUNT_REPO,
+      useClass: AccountRepository
+    },
     AuthService,
     ...CommandHandlers,
     ...QueryHandlers,
+    {
+      provide: UNIT_OF_WORK,
+      useClass: UnitOfWork
+    }
   ],
   exports: [],
 })

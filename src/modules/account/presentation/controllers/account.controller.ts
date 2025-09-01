@@ -1,11 +1,8 @@
 import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
-import { AccountRepository } from '../../infrastructure/repositories/account.repo';
 import { SignUpAccountDto } from '../dtos/SignUpAccount.dto';
 import { LogInAccountDto } from '../dtos/LogInAccount.dto';
 import { AccountDto } from '../dtos/response/account.response.dto';
-import { wrap } from '@mikro-orm/postgresql';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { SignUpAccountCommandHandler } from '../../application/commands/sign-up-account/handler';
 import { SignUpAccountCommand } from '../../application/commands/sign-up-account/command';
 import { AuthService } from 'src/shared/auth/auth.service';
 import { LogInAccountCommand } from '../../application/commands/log-in-account/command';
@@ -16,8 +13,6 @@ import { JwtRefreshGuard } from 'src/shared/auth/guards/jwt.refresh.guard';
 import { AuthPayload } from 'src/shared/auth/AuthPayload.interface';
 import { CurrentUser } from 'src/shared/auth/current.user.decorator';
 import { GetAccountOfCurrentUserQuery } from '../../application/queries/get-account-of-current-user/query';
-import { emit } from 'process';
-
 
 @Controller('account')
 export class AuthController {
@@ -77,4 +72,6 @@ export class AuthController {
     const query = new GetAccountOfCurrentUserQuery(currentUser!.id);
     return await this.queryBus.execute(query);
   }
+
+  
 }

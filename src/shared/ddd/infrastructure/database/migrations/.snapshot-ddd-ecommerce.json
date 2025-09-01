@@ -108,11 +108,11 @@
           "mappedType": "string"
         }
       },
-      "name": "product_entity",
+      "name": "product",
       "schema": "public",
       "indexes": [
         {
-          "keyName": "product_entity_pkey",
+          "keyName": "product_pkey",
           "columnNames": [
             "id"
           ],
@@ -177,11 +177,11 @@
           "mappedType": "string"
         }
       },
-      "name": "product_attribute_entity",
+      "name": "product_attribute",
       "schema": "public",
       "indexes": [
         {
-          "keyName": "product_attribute_entity_pkey",
+          "keyName": "product_attribute_pkey",
           "columnNames": [
             "id"
           ],
@@ -193,16 +193,16 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "product_attribute_entity_product_id_foreign": {
-          "constraintName": "product_attribute_entity_product_id_foreign",
+        "product_attribute_product_id_foreign": {
+          "constraintName": "product_attribute_product_id_foreign",
           "columnNames": [
             "product_id"
           ],
-          "localTableName": "public.product_attribute_entity",
+          "localTableName": "public.product_attribute",
           "referencedColumnNames": [
             "id"
           ],
-          "referencedTableName": "public.product_entity",
+          "referencedTableName": "public.product",
           "updateRule": "cascade"
         }
       },
@@ -296,11 +296,11 @@
           "mappedType": "string"
         }
       },
-      "name": "product_variant_entity",
+      "name": "product_variant",
       "schema": "public",
       "indexes": [
         {
-          "keyName": "product_variant_entity_pkey",
+          "keyName": "product_variant_pkey",
           "columnNames": [
             "id"
           ],
@@ -312,16 +312,16 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "product_variant_entity_product_id_foreign": {
-          "constraintName": "product_variant_entity_product_id_foreign",
+        "product_variant_product_id_foreign": {
+          "constraintName": "product_variant_product_id_foreign",
           "columnNames": [
             "product_id"
           ],
-          "localTableName": "public.product_variant_entity",
+          "localTableName": "public.product_variant",
           "referencedColumnNames": [
             "id"
           ],
-          "referencedTableName": "public.product_entity",
+          "referencedTableName": "public.product",
           "updateRule": "cascade"
         }
       },
