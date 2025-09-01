@@ -11,11 +11,6 @@ import { UnitOfWork } from './unit.of.work';
       useClass: UnitOfWork,
     },
   ],
-  exports: [
-    {
-      provide: UNIT_OF_WORK,
-      useClass: UnitOfWork,
-    },
-  ],
+  exports: [ UNIT_OF_WORK ],
 })
 export class UnitOfWorkModule {}
