@@ -7,3 +7,5 @@ export interface IAccountRepository {
   findById(id: string): Promise<AccountDomainEntity | null>;
   findByEmail(email: string): Promise<AccountDomainEntity | null>;
 }
+
+export const ACCOUNT_REPO = Symbol('ACCOUNT_REPO')
