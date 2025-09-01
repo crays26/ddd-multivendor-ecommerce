@@ -1,4 +1,4 @@
-import { BaseEntity } from 'src/shared/domain/base/BaseEntity';
+import { BaseEntity } from 'src/shared/ddd/domain/base/BaseEntity';
 import { v4 } from 'uuid';
 interface RoleProps {
   id: string;

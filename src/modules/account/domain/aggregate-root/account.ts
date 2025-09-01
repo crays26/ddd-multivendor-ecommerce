@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { BaseAggregateRoot } from 'src/shared/domain/base/BaseAggregateRoot';
+import { BaseAggregateRoot } from 'src/shared/ddd/domain/base/BaseAggregateRoot';
 import { PasswordVO } from '../value-objects/password.vo';
 import { EmailVO } from '../value-objects/email.vo';
 import { v4 } from 'uuid';
@@ -45,10 +45,6 @@ export class AccountDomainEntity extends BaseAggregateRoot<
     return new AccountDomainEntity(props);
   }
 
-  // GETTERS
-  public getId(): string {
-    return this.props.id;
-  }
 
   public getUsername(): string {
     return this.props.username;
@@ -66,7 +62,6 @@ export class AccountDomainEntity extends BaseAggregateRoot<
     return this.props.roles;
   }
 
-  // SETTERS / DOMAIN BEHAVIORS
   public setUsername(newUsername: string): void {
     if (!newUsername || newUsername.length < 4) {
       throw new BadRequestException('Username must be at least 4 characters');
