@@ -1,8 +1,8 @@
-import { Cascade, Entity, ManyToMany, OneToMany, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Entity, ManyToMany, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Role } from './role.entity';
 import { Collection } from '@mikro-orm/core';
 
-@Entity()
+@Entity({ tableName: 'account' })
 export class Account {
 
    @PrimaryKey()
