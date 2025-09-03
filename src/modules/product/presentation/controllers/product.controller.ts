@@ -16,7 +16,7 @@ export class ProductController {
     return await this.commandBus.execute(command);
   }
 
-  @Put(':/productId')
+  @Put('/:productId')
   async updateProduct(@Param('productId') productId: string, @Body() body: ProductUpdateDto) {
     const command = new UpdateProductCommand({ ...body, id: productId });
     return await this.commandBus.execute(command);
