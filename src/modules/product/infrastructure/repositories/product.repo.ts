@@ -4,10 +4,9 @@ import { ProductEntity } from '../entities/Product.entity';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { ProductAggRoot } from '../../domain/aggregate-roots/Product';
-import { ppid } from 'process';
 import { ProductVariantEntity } from '../entities/ProductVariant.entity';
 import { ProductAttributeEntity } from '../entities/ProductAttribute.entity';
-import { wrap } from '@mikro-orm/postgresql';
+
 @Injectable()
 export class ProductRepository {
   constructor(
