@@ -7,11 +7,11 @@ export class ProductDto {
   @Expose()
   name: string;
 
-  @Expose()
-  vendorId: string;
+//   @Expose()
+//   vendorId: string;
 
-  @Expose()
-  categoryId: string;
+//   @Expose()
+//   categoryId: string;
 
   @Expose()
   description: string;

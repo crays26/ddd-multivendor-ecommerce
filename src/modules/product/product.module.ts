@@ -8,8 +8,12 @@ import { ProductRepository } from './infrastructure/repositories/product.repo';
 import { ProductController } from './presentation/controllers/product.controller';
 import { CreateProductCommandHandler } from './application/commands/create-product/handler';
 import { UpdateProductCommandHandler } from './application/commands/update-product/handler';
+import { GetAccountOfCurrentUserQueryHandler } from '../account/application/queries/get-account-of-current-user/handler';
+import { GetProductByIdQueryHandler } from './application/queries/queries/get-product-by-id/handler';
+import { ProductReadRepository } from './infrastructure/repositories/product.read.repo';
 
 const CommandHandlers = [CreateProductCommandHandler, UpdateProductCommandHandler]
+const QueryHandlers = [GetProductByIdQueryHandler]
 
 @Module({
   imports: [
@@ -20,10 +24,9 @@ const CommandHandlers = [CreateProductCommandHandler, UpdateProductCommandHandle
   controllers: [ProductController],
   providers: [
     ProductRepository,
-    // AccountRepository,
-    // AuthService,
+    ProductReadRepository,
     ...CommandHandlers,
-    // ...QueryHandlers,
+    ...QueryHandlers,
   ],
   exports: [],
 })
