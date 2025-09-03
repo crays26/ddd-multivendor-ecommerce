@@ -1,4 +1,4 @@
-import { Controller, Post, Put } from '@nestjs/common';
+import { Controller, Param, Post, Put } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ProductCreateDto } from '../dtos/requests/product.create.dto';
 import { Body } from '@nestjs/common';
@@ -16,9 +16,9 @@ export class ProductController {
     return await this.commandBus.execute(command);
   }
 
-  @Put()
-  async updateProduct(@Body() body: ProductUpdateDto) {
-    const command = new UpdateProductCommand(body);
+  @Put(':/productId')
+  async updateProduct(@Param('productId') productId: string, @Body() body: ProductUpdateDto) {
+    const command = new UpdateProductCommand({ ...body, id: productId });
     return await this.commandBus.execute(command);
   }
 }
