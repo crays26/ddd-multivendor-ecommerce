@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ProductCreateDto } from '../dtos/requests/product.create.dto';
 import { Body } from '@nestjs/common';
@@ -7,6 +7,10 @@ import { ProductUpdateDto } from '../dtos/requests/product.update.dto';
 import { UpdateProductCommand } from '../../application/commands/update-product/command';
 import { GetProductByIdQuery } from '../../application/queries/queries/get-product-by-id/query';
 import { ProductDto } from '../dtos/responses/product.dto';
+import { JwtRequiredGuard } from 'src/shared/auth/guards/jwt/jwt.required.guard';
+import { RequiredRolesGuard } from 'src/shared/auth/guards/role/roles.guard';
+import { Roles } from 'src/shared/auth/decorators/class-decorators/roles.decorator';
+import { Role } from 'src/shared/auth/enums/role.enum';
 
 @Controller('products')
 export class ProductController {
@@ -15,6 +19,8 @@ export class ProductController {
     private readonly queryBus: QueryBus,
   ) {}
 
+  @Roles(Role.VENDOR)
+  @UseGuards(JwtRequiredGuard, RequiredRolesGuard)
   @Post()
   async createProduct(@Body() body: ProductCreateDto): Promise<string> {
     const command = new CreateProductCommand(body);
@@ -27,6 +33,9 @@ export class ProductController {
     return await this.queryBus.execute(query)
   }
 
+  
+  @Roles(Role.VENDOR)
+  @UseGuards(JwtRequiredGuard, RequiredRolesGuard)
   @Put(':productId')
   async updateProduct(@Param('productId') productId: string, @Body() body: ProductUpdateDto): Promise<string | null> {
     const command = new UpdateProductCommand({ ...body, id: productId });
