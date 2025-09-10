@@ -21,24 +21,29 @@ export class CreateProductCommandHandler
       vendorId: payload.vendorId,
       categoryId: payload.categoryId,
       description: payload.description,
-      variants: payload.variants.map((v) =>
-        ProductVariant.create({
-          name: v.name,
-          skuCode: v.skuCode,
-          stock: v.stock,
-          price: v.price,
-          associatedAttributes: v.associatedAttributes.map((a) =>
-            VariantAttributeValueVO.create(a.key, a.value),
-          ),
-        }),
-      ),
-      attributes: payload.attributes.map((a) =>
-        ProductAttribute.create({ key: a.key, values: a.values }),
-      ),
     };
 
     const productAggRoot = ProductAggRoot.create(product);
-    // Persist to DB
+
+    const variants = payload.variants.map((v) =>
+      ProductVariant.create({
+        name: v.name,
+        skuCode: v.skuCode,
+        stock: v.stock,
+        price: v.price,
+        associatedAttributes: v.associatedAttributes.map((a) =>
+          VariantAttributeValueVO.create(a.key, a.value),
+        ),
+      }),
+    );
+
+    const attributes = payload.attributes.map((a) =>
+      ProductAttribute.create({ key: a.key, values: a.values }),
+    );
+
+    productAggRoot.setVariants(variants);
+    productAggRoot.setAttributes(attributes);
+    
     await this.productRepository.save(productAggRoot);
 
     return `Product with id ${productAggRoot.getId()} created successfully!`;

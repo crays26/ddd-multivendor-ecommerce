@@ -17,30 +17,33 @@ export class UpdateProductCommandHandler
     const { payload } = command;
 
     const product = {
-      id: payload.id,  
       name: payload.name,
       vendorId: payload.vendorId,
       categoryId: payload.categoryId,
       description: payload.description,
-      variants: payload.variants.map((v) =>
-        ProductVariant.create({
-          id: v.id,  
-          name: v.name,
-          skuCode: v.skuCode,
-          stock: v.stock,
-          price: v.price,
-          associatedAttributes: v.associatedAttributes.map((a) =>
-            VariantAttributeValueVO.create(a.key, a.value),
-          ),
-        }),
-      ),
-      attributes: payload.attributes.map((a) =>
-        ProductAttribute.create({ id: a.id, key: a.key, values: a.values }),
-      ),
     };
 
     const productAggRoot = ProductAggRoot.create(product);
-    
+
+    const variants = payload.variants.map((v) =>
+      ProductVariant.create({
+        name: v.name,
+        skuCode: v.skuCode,
+        stock: v.stock,
+        price: v.price,
+        associatedAttributes: v.associatedAttributes.map((a) =>
+          VariantAttributeValueVO.create(a.key, a.value),
+        ),
+      }),
+    );
+
+    const attributes = payload.attributes.map((a) =>
+      ProductAttribute.create({ key: a.key, values: a.values }),
+    );
+
+    productAggRoot.setVariants(variants);
+    productAggRoot.setAttributes(attributes);
+
     await this.productRepository.save(productAggRoot);
 
     return `Product with id ${productAggRoot.getId()} update successfully!`;
