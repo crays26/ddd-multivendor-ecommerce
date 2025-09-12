@@ -8,6 +8,8 @@ import { ConfigModule } from '@nestjs/config';
 import { ShareAuthModule } from './shared/auth/auth.module';
 import { CustomerModule } from './modules/customer/customer.module';
 import { ProductModule } from './modules/product/product.module';
+import { VendorModule } from './modules/vendor/vendor.module';
+import { ShareCacheModule } from './shared/ddd/infrastructure/cache/cache.module';
 
 @Module({
 
@@ -19,7 +21,9 @@ import { ProductModule } from './modules/product/product.module';
     AccountModule,
     ProductModule,
     CustomerModule,
-    ShareAuthModule
+    VendorModule,
+    ShareAuthModule,
+    ShareCacheModule
     
   ],
   controllers: [AppController],
