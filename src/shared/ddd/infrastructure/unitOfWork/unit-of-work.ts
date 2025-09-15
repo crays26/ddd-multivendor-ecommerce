@@ -1,5 +1,5 @@
-import { EntityManager } from '@mikro-orm/postgresql';
-import { IUnitOfWork } from './unit.of.work.interface';
+import { AnyEntity, EntityManager } from '@mikro-orm/postgresql';
+import { IUnitOfWork } from './unit-of-work.interface';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -7,6 +7,9 @@ export class UnitOfWork implements IUnitOfWork {
     
   constructor(private readonly em: EntityManager) {}
 
+  getEntityManager(): EntityManager {
+    return this.em;
+  }
   public async begin(): Promise<void> {
     await this.em.begin();
   }
@@ -17,5 +20,9 @@ export class UnitOfWork implements IUnitOfWork {
 
   public async rollback(): Promise<void> {
     await this.em.rollback();
+  }
+
+  getRepository<T>(repo: new (em: EntityManager) => T): T {
+    return new repo(this.em);
   }
 }
