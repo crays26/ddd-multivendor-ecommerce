@@ -1,4 +1,4 @@
-import { Cascade, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { Collection } from '@mikro-orm/core';
 import { ProductVariantEntity } from './ProductVariant.entity';
 import { ProductAttributeEntity } from './ProductAttribute.entity';
@@ -14,6 +14,9 @@ export class ProductEntity {
 
    @Property()
    slug!: string;
+
+   @Property({ type: 'text', nullable: true })
+   description?: string;
    
    @OneToMany(() => ProductAttributeEntity, attribute => attribute.product)
    attributes = new Collection<ProductAttributeEntity>(this);
