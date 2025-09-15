@@ -3,9 +3,15 @@ import { SignUpAccountCommand } from './command';
 import { AccountDomainEntity } from 'src/modules/account/domain/aggregate-root/account';
 import { AuthService } from 'src/shared/auth/auth.service';
 import { ConflictException, Inject } from '@nestjs/common';
-import { IUnitOfWork, UNIT_OF_WORK } from '../../../../../shared/ddd/infrastructure/unitOfWork/unit.of.work.interface';
-import { EntityManager } from '@mikro-orm/postgresql';
-import { ACCOUNT_REPO, IAccountRepository } from 'src/modules/account/domain/repositories/account.repo.interface';
+import {
+  IUnitOfWork,
+  UNIT_OF_WORK,
+} from 'src/shared/ddd/infrastructure/unitOfWork/unit-of-work.interface';
+import {
+  ACCOUNT_REPO,
+  IAccountRepository,
+} from 'src/modules/account/domain/repositories/account.repo.interface';
+import { AccountRepository } from 'src/modules/account/infrastructure/repositories/account.repo';
 
 @CommandHandler(SignUpAccountCommand)
 export class SignUpAccountCommandHandler
@@ -14,31 +20,33 @@ export class SignUpAccountCommandHandler
   constructor(
     @Inject(UNIT_OF_WORK)
     private readonly unitOfWork: IUnitOfWork,
-    @Inject(ACCOUNT_REPO)
-    private readonly accountRepo: IAccountRepository,
+    // @Inject(ACCOUNT_REPO)
+    // private readonly accountRepo: IAccountRepository,
     private readonly authService: AuthService,
-    private readonly em: EntityManager,
   ) {}
 
   async execute(command: SignUpAccountCommand) {
-    const accountExists = await this.accountRepo.findByEmail(command.data.email);
-    if (accountExists) throw new ConflictException("This email has already been used");
-
-    const accountDomainEntity = AccountDomainEntity.create(command.data);
-    const hashedPassword = await this.authService.hash(
-      accountDomainEntity.getPassword(),
-    );
-    accountDomainEntity.setPassword(hashedPassword);
-    console.log(accountDomainEntity)
     await this.unitOfWork.begin();
+    const accountRepo = this.unitOfWork.getRepository(AccountRepository);
     try {
-      await this.accountRepo.save(accountDomainEntity);
+      const accountExists = await accountRepo.findByEmail(command.data.email);
+      if (accountExists)
+        throw new ConflictException('This email has already been used');
+
+      const accountDomainEntity = AccountDomainEntity.create(command.data);
+      const hashedPassword = await this.authService.hash(
+        accountDomainEntity.getPassword(),
+      );
+      accountDomainEntity.setPassword(hashedPassword);
+      await accountRepo.save(accountDomainEntity);
       await this.unitOfWork.commit();
-    }
-    catch(error) {
+
+      return `Account with id ${accountDomainEntity.getId()} registered successfully`;
+    } catch (error) {
       await this.unitOfWork.rollback();
+      throw error;
     }
+
     
-    return "Account registered successfully";
   }
 }
