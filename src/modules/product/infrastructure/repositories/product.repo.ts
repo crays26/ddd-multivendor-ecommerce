@@ -24,9 +24,9 @@ export class ProductRepository {
       product = new ProductEntity();
       product.id = domain.getId();
     }
-
     product.name = domain.getName();
-    product.slug = domain.getName();
+    product.slug = domain.getSlug();
+
 
     const existingVariants = product.variants.getItems();
   
@@ -49,10 +49,10 @@ export class ProductRepository {
       variant.skuCode = v.getSkuCode();
       variant.stock = v.getStock();
       variant.associatedAttributes = v.getAssociatedAttributes();
+    }
 
-      
 
-      const existingAttributes = product.attributes.getItems();
+    const existingAttributes = product.attributes.getItems();
 
       existingAttributes
         .filter(
@@ -74,7 +74,6 @@ export class ProductRepository {
         attribute.values = a.getValues();
         
       }
-    }
     
     await this.em.persistAndFlush(product);
   }
