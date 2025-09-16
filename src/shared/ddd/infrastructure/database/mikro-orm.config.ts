@@ -1,6 +1,7 @@
 import { defineConfig } from '@mikro-orm/postgresql';
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 import { Migrator } from '@mikro-orm/migrations';
+import { SeedManager } from '@mikro-orm/seeder';
 
 export default defineConfig({
   host: process.env.DB_HOST || 'localhost',
@@ -14,7 +15,12 @@ export default defineConfig({
     path: './dist/shared/ddd/infrastructure/database/migrations',
     pathTs: './src/shared/ddd/infrastructure/database/migrations',
   },
+   seeder: {
+    path: './dist/shared/ddd/infrastructure/database/seeders',
+    pathTs: './src/shared/ddd/infrastructure/database/seeders',
+    fileName: (className: string) => className, // seeder file naming convention
+  },
   highlighter: new SqlHighlighter(),
   debug: process.env.NODE_ENV === 'dev',
-  extensions: [Migrator],
+  extensions: [Migrator, SeedManager],
 });
