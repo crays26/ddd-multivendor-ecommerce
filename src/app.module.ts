@@ -10,6 +10,7 @@ import { CustomerModule } from './modules/customer/customer.module';
 import { ProductModule } from './modules/product/product.module';
 import { VendorModule } from './modules/vendor/vendor.module';
 import { ShareCacheModule } from './shared/ddd/infrastructure/cache/cache.module';
+import { ShareDistributedLockModule } from './shared/ddd/infrastructure/distributed-lock/distributed-lock.module';
 
 @Module({
 
@@ -23,7 +24,8 @@ import { ShareCacheModule } from './shared/ddd/infrastructure/cache/cache.module
     CustomerModule,
     VendorModule,
     ShareAuthModule,
-    ShareCacheModule
+    ShareCacheModule,
+    ShareDistributedLockModule
     
   ],
   controllers: [AppController],
