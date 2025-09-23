@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { BaseAggregateRoot } from 'src/shared/ddd/domain/base/BaseAggregateRoot';
 import { PasswordVO } from '../value-objects/password.vo';
 import { EmailVO } from '../value-objects/email.vo';
-import { v4 } from 'uuid';
+import { v7 as uuidV7 } from 'uuid';
 import { RoleDomainEntity } from '../entities/role';
 
 interface AccountProps {
@@ -31,7 +31,7 @@ export class AccountDomainEntity extends BaseAggregateRoot<
 
   static create(props: CreateAccountProps): AccountDomainEntity {
     const account = new AccountDomainEntity({
-      id: props.id ? props.id : v4(),
+      id: props.id ? props.id : uuidV7(),
       username: props.username,
       email: EmailVO.create(props.email),
       password: PasswordVO.create(props.password),

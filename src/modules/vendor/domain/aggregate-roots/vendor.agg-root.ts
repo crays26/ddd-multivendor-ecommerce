@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { BaseAggregateRoot } from 'src/shared/ddd/domain/base/BaseAggregateRoot';
-import { v4 } from 'uuid';
+import { v7 as uuidV7 } from 'uuid';
 
 
 interface VendorProps {
@@ -28,7 +28,7 @@ export class VendorAggRoot extends BaseAggregateRoot<
 
   static create(props: CreateVendorProps): VendorAggRoot {
     return new VendorAggRoot({
-      id: props.id ? props.id : v4(),
+      id: props.id ? props.id : uuidV7(),
       name: props.name,
       description: props.description,
       accountId: props.accountId,
@@ -41,7 +41,7 @@ export class VendorAggRoot extends BaseAggregateRoot<
 //   }
 
 
-  public getUsername(): string {
+  public getName(): string {
     return this.props.name;
   }
 
@@ -60,7 +60,7 @@ export class VendorAggRoot extends BaseAggregateRoot<
 
   public setName(newName: string): void {
     if (!newName || newName.length < 4) {
-      throw new BadRequestException('Username must be at least 4 characters');
+      throw new BadRequestException('Name must be at least 4 characters');
     }
     this.props.name = newName;
   }

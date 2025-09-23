@@ -1,9 +1,9 @@
-import { randomUUID, UUID } from 'crypto';
 import { BaseAggregateRoot } from 'src/shared/ddd/domain/base/BaseAggregateRoot';
 import { ProductVariant } from '../entities/ProductVariant';
 import { ProductAttribute } from '../entities/ProductAttribute';
 import { slugifyWithNanoid } from 'src/shared/utilities/slugify-with-nanoid';
 import { BadRequestException, ConflictException } from '@nestjs/common';
+import { v7 as uuidV7 } from 'uuid';
 
 interface ProductProps {
   id: string;
@@ -34,7 +34,7 @@ export class ProductAggRoot extends BaseAggregateRoot<string, ProductProps> {
   static create(props: CreateProductProps): ProductAggRoot {
     const product = new ProductAggRoot({
       ...props,
-      id: props.id ?? randomUUID(),
+      id: props.id ?? uuidV7(),
       slug: slugifyWithNanoid(this.name, 8),
       variants: props.variants ?? [],
       attributes: props.attributes ?? [],

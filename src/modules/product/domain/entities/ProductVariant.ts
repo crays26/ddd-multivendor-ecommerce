@@ -1,5 +1,5 @@
 import { BaseEntity } from 'src/shared/ddd/domain/base/BaseEntity';
-import { randomUUID, UUID } from 'crypto';
+import { v7 as uuidV7 } from 'uuid';
 import { VariantAttributeValueVO } from '../value-objects/VariantAttributeValue';
 
 interface ProductVariantProps {
@@ -28,7 +28,7 @@ export class ProductVariant extends BaseEntity<string, ProductVariantProps> {
   public static create(props: CreateProductVariantProps) {
     return new ProductVariant({
       ...props,
-      id: props.id ?? randomUUID(),
+      id: props.id ?? uuidV7(),
       associatedAttributes: props.associatedAttributes ?? [],
     });
   }

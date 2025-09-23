@@ -1,5 +1,5 @@
 import { BaseEntity } from 'src/shared/ddd/domain/base/BaseEntity';
-import { v4 } from 'uuid';
+import { v7 as uuidV7 } from 'uuid';
 interface RoleProps {
   id: string;
   name: string;
@@ -17,7 +17,7 @@ export class RoleDomainEntity extends BaseEntity<string, RoleProps> {
 
   static create(props: CreateRoleProps): RoleDomainEntity {
     const role = new RoleDomainEntity({
-      id: props.id ? props.id : v4(),
+      id: props.id ? props.id : uuidV7(),
       name: props.name,
     });
 
