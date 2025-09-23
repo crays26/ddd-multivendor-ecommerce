@@ -4,7 +4,7 @@ import { Account } from 'src/modules/account/infrastructure/entities/account.ent
 @Entity({ tableName: 'vendor' })
 export class VendorEntity {
 
-   @PrimaryKey()
+   @PrimaryKey({ type: 'uuid' })
    id!: string;
 
    @Property()

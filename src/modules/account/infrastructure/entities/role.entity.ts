@@ -6,7 +6,7 @@ import { Collection } from '@mikro-orm/core';
 @Entity({ tableName: 'role' })
 export class Role {
 
-   @PrimaryKey()
+   @PrimaryKey({ type: 'uuid' })
    id!: string;
 
    @Property()

@@ -8,7 +8,7 @@ import { ProductEntity } from './Product.entity';
 
 @Entity({ tableName: 'product_attribute' })
 export class ProductAttributeEntity {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'uuid' })
   id!: string;
 
   @Property()

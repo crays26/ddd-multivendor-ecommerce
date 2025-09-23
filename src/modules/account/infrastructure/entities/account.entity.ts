@@ -6,7 +6,7 @@ import { Collection } from '@mikro-orm/core';
 @Entity({ tableName: 'account' })
 export class Account {
 
-   @PrimaryKey()
+   @PrimaryKey({ type: 'uuid' })
    id!: string;
 
    @Property()

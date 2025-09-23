@@ -10,7 +10,7 @@ import { ProductEntity } from './Product.entity';
 
 @Entity({ tableName: 'product_variant' })
 export class ProductVariantEntity {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'uuid' })
   id!: string;
 
   @Property()
