@@ -1,13 +1,14 @@
 import { BadRequestException } from '@nestjs/common';
 import { BaseAggregateRoot } from 'src/shared/ddd/domain/base/BaseAggregateRoot';
 import { v7 as uuidV7 } from 'uuid';
+import { AccountId } from '../value-objects/account-id.vo';
 
 
 interface VendorProps {
   id: string;
   name: string;
   description: string;
-  accountId: string;
+  accountId: AccountId;
   rating: number;
 }
 
@@ -31,7 +32,7 @@ export class VendorAggRoot extends BaseAggregateRoot<
       id: props.id ? props.id : uuidV7(),
       name: props.name,
       description: props.description,
-      accountId: props.accountId,
+      accountId: AccountId.create({ id: props.accountId }),
       rating: 0,
     });
   }
@@ -50,7 +51,7 @@ export class VendorAggRoot extends BaseAggregateRoot<
   }
 
   public getAccountId(): string {
-    return this.props.accountId;
+    return this.props.accountId.getId();
   }
 
   public getRating(): number {
