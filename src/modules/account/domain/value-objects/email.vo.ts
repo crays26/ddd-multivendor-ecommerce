@@ -1,19 +1,25 @@
 import { BadRequestException } from "@nestjs/common";
+import { BaseValueObject } from "src/shared/ddd/domain/base/BaseValueObject";
 
-export class EmailVO {
+interface EmailProps {
+  value: string;
+}
+
+export class EmailVO extends BaseValueObject<EmailProps> {
     
-  private constructor(private readonly value: string) {
+  private constructor(props: EmailProps) {
     // if (!this.validate(value)) {
     //   throw new BadRequestException('Invalid email format');
     // }
+    super(props)
   }
 
-  static create(value: string): EmailVO {
-    return new EmailVO(value);
+  static create(props: EmailProps): EmailVO {
+    return new EmailVO(props);
   }
 
   getValue(): string {
-    return this.value;
+    return this.props.value;
   }
 
   private validate(value: string): boolean {
