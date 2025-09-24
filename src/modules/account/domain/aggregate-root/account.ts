@@ -33,8 +33,8 @@ export class AccountDomainEntity extends BaseAggregateRoot<
     const account = new AccountDomainEntity({
       id: props.id ? props.id : uuidV7(),
       username: props.username,
-      email: EmailVO.create(props.email),
-      password: PasswordVO.create(props.password),
+      email: EmailVO.create({value: props.email }),
+      password: PasswordVO.create({ value: props.password }),
       roles: props.roles ? props.roles : [],
     });
 
@@ -70,10 +70,10 @@ export class AccountDomainEntity extends BaseAggregateRoot<
   }
 
   public setEmail(newEmail: string): void {
-    this.props.email = EmailVO.create(newEmail);
+    this.props.email = EmailVO.create({ value: newEmail });
   }
 
   public setPassword(newPassword: string): void {
-    this.props.password = PasswordVO.create(newPassword);
+    this.props.password = PasswordVO.create({ value: newPassword });
   }
 }
