@@ -16,10 +16,10 @@ export class RedLockService implements IDistributedLock {
   }
 
   async release(lock: Lock): Promise<void> {
-      await this.redlock.release(lock);
+    await this.redlock.release(lock);
   }
 
   async extend(lock: Lock, ttl: number): Promise<Lock> {
-      return await this.redlock.extend(lock, ttl);
+    return await this.redlock.extend(lock, ttl);
   }
 }
