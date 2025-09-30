@@ -4,11 +4,15 @@ import { BaseValueObject } from 'src/shared/ddd/domain/base/BaseValueObject';
 
 const SALT_ROUND = 10;
 
-export class PasswordVO extends BaseValueObject {
+interface PasswordProps {
+  value: string;
+}
 
-  private constructor(private value: string) {
-    super(value);
-    if (!this.validate(value)) {
+export class PasswordVO extends BaseValueObject<PasswordProps> {
+  
+  private constructor(props: PasswordProps) {
+    super(props);
+    if (!this.validate(props.value)) {
       throw new BadRequestException(
         'Password must be at least 8 characters and contain at least 1 uppercase letter'
       );
@@ -16,16 +20,16 @@ export class PasswordVO extends BaseValueObject {
     
   }
 
-  static create(value: string): PasswordVO {
-    return new PasswordVO(value);
+  static create(props: PasswordProps): PasswordVO {
+    return new PasswordVO(props);
   }
 
   getValue(): string {
-    return this.value;
+    return this.props.value;
   }
 
   hash(): void {
-    this.value = bcrypt.hashSync(this.value, SALT_ROUND);
+    this.props.value = bcrypt.hashSync(this.props.value, SALT_ROUND);
   }
 
   private validate(value: string): boolean {
