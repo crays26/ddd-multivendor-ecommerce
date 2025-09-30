@@ -1,4 +1,4 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, EventPublisher, ICommandHandler } from '@nestjs/cqrs';
 import { LogInAccountCommand } from './command';
 import { AccountRepository } from 'src/modules/account/infrastructure/repositories/account.repo';
 import { ConflictException, Inject, NotFoundException } from '@nestjs/common';
@@ -15,6 +15,7 @@ export class LogInAccountCommandHandler
     @Inject(ACCOUNT_REPO)
     private readonly accountRepo: AccountRepository,
     private readonly authService: AuthService,
+    private readonly eventPublisher: EventPublisher,
   ) {}
 
   async execute(
@@ -30,6 +31,10 @@ export class LogInAccountCommandHandler
     );
     if (!isPasswordValid)
       throw new ConflictException('Password does not match');
+
+    const accountWithContext = this.eventPublisher.mergeObjectContext(accountDomain);
+    accountWithContext.logIn();
+    accountWithContext.commit();
 
     const tokenPayload: AuthPayload = {
       id: accountDomain.getId(),

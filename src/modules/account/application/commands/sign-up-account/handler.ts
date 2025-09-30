@@ -3,14 +3,7 @@ import { SignUpAccountCommand } from './command';
 import { AccountDomainEntity } from 'src/modules/account/domain/aggregate-root/account';
 import { AuthService } from 'src/shared/auth/auth.service';
 import { ConflictException, Inject } from '@nestjs/common';
-import {
-  IUnitOfWork,
-  UNIT_OF_WORK,
-} from 'src/shared/ddd/infrastructure/unitOfWork/unit-of-work.interface';
-import {
-  ACCOUNT_REPO,
-  IAccountRepository,
-} from 'src/modules/account/domain/repositories/account.repo.interface';
+import { UNIT_OF_WORK, IUnitOfWork } from 'src/shared/ddd/infrastructure/unit-of-work/unit-of-work.interface';
 import { AccountRepository } from 'src/modules/account/infrastructure/repositories/account.repo';
 
 @CommandHandler(SignUpAccountCommand)
