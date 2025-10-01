@@ -7,11 +7,11 @@ import { SignUpAccountCommand } from '../../application/commands/sign-up-account
 import { AuthService } from 'src/shared/auth/auth.service';
 import { LogInAccountCommand } from '../../application/commands/log-in-account/command';
 import { Response } from 'express';
-import { JwtRequiredGuard } from 'src/shared/auth/guards/jwt.required.guard';
-import { JwtOptionalGuard } from 'src/shared/auth/guards/jwt.optional.guard';
-import { JwtRefreshGuard } from 'src/shared/auth/guards/jwt.refresh.guard';
+import { JwtRequiredGuard } from 'src/shared/auth/guards/jwt/jwt.required.guard';
+import { JwtOptionalGuard } from 'src/shared/auth/guards/jwt/jwt.optional.guard';
+import { JwtRefreshGuard } from 'src/shared/auth/guards/jwt/jwt.refresh.guard';
 import { AuthPayload } from 'src/shared/auth/AuthPayload.interface';
-import { CurrentUser } from 'src/shared/auth/current.user.decorator';
+import { CurrentUser } from 'src/shared/auth/decorators/param-decorators/current-user.decorator';
 import { GetAccountOfCurrentUserQuery } from '../../application/queries/get-account-of-current-user/query';
 
 @Controller('account')
@@ -31,8 +31,7 @@ export class AuthController {
   @Post('log-in')
   async logInAccount(@Body() body: LogInAccountDto, @Res() response: Response) {
     const command = new LogInAccountCommand(body);
-    const tokenPair =
-      await this.commandBus.execute(command);
+    const tokenPair = await this.commandBus.execute(command);
 
     this.authService.setAuthCookies(response, tokenPair);
     response.send(tokenPair);
@@ -40,13 +39,16 @@ export class AuthController {
 
   @Post('refresh')
   @UseGuards(JwtRefreshGuard)
-  async refreshTokenPair(@CurrentUser() currentUser: AuthPayload, @Res() response: Response) {
+  async refreshTokenPair(
+    @CurrentUser() currentUser: AuthPayload,
+    @Res() response: Response,
+  ) {
     const payload = {
       id: currentUser.id,
       username: currentUser.username,
       email: currentUser.email,
       roles: currentUser.roles,
-    }
+    };
     const tokenPair = this.authService.generateTokens(payload);
     this.authService.setAuthCookies(response, tokenPair);
     response.send(tokenPair);
@@ -72,6 +74,4 @@ export class AuthController {
     const query = new GetAccountOfCurrentUserQuery(currentUser!.id);
     return await this.queryBus.execute(query);
   }
-
-  
 }
