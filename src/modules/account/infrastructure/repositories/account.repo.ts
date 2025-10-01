@@ -10,13 +10,17 @@ import { Role } from '../entities/role.entity';
 @Injectable()
 export class AccountRepository implements IAccountRepository {
   constructor(
-    @InjectRepository(Account)
-    private readonly repo: EntityRepository<Account>,
-    private readonly em: EntityManager,
+    private readonly em: EntityManager
+    // @InjectRepository(Account)
+    // private readonly accountRepo: EntityRepository<Account>,
+    // @InjectRepository(Role)
+    // private readonly roleRepo: EntityRepository<Role>,
+    
   ) {}
 
-  async save(domain: AccountDomainEntity): Promise<void> {
-    let account: Account | null = await this.repo.findOne(
+  async save(domain: AccountDomainEntity) {
+
+    let account: Account | null = await this.em.findOne(Account,
       { id: domain.getId() },
       { populate: ['roles'] },
     );
@@ -28,28 +32,26 @@ export class AccountRepository implements IAccountRepository {
     account.username = domain.getUsername();
     account.email = domain.getEmail();
     account.password = domain.getPassword();
+    account.roles.set(domain.getRoles().map(r => this.em.getReference(Role, r.getId())));
 
-    const roles = domain.getRoles().map(
-      (r) => this.em.getReference(Role, r.getId())
-    );
-    account.roles.set(roles);
     this.em.persist(account);
   }
 
-  async create(domain: AccountDomainEntity) {
-    const account = new Account();
-    account.id = domain.getId();
-    account.username = domain.getUsername();
-    account.email = domain.getEmail();
-    account.password = domain.getPassword();
 
-    await this.em.persistAndFlush(account);
+  // async create(domain: AccountDomainEntity) {
+  //   const account = new Account();
+  //   account.id = domain.getId();
+  //   account.username = domain.getUsername();
+  //   account.email = domain.getEmail();
+  //   account.password = domain.getPassword();
 
-    return account;
-  }
+  //   await this.em.persistAndFlush(account);
+
+  //   return account;
+  // }
 
   async findById(id: string): Promise<AccountDomainEntity | null> {
-    const account = await this.repo.findOne(
+    const account = await this.em.findOne(Account,
       { id },
       { populate: ['roles'] },
     );
@@ -58,7 +60,7 @@ export class AccountRepository implements IAccountRepository {
   }
 
   async findByEmail(email: string): Promise<AccountDomainEntity | null> {
-    const account = await this.repo.findOne(
+    const account = await this.em.findOne(Account,
       { email },
       { populate: ['roles'] },
     );

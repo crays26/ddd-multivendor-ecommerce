@@ -10,8 +10,8 @@ export class AccountDomainMapper {
   static fromPersistence(accountEntity: Account): AccountDomainEntity {
     return AccountDomainEntity.rehydrate({
       ...accountEntity,
-      password: PasswordVO.create(accountEntity.password),
-      email: EmailVO.create(accountEntity.email),
+      password: PasswordVO.create({ value: accountEntity.password }),
+      email: EmailVO.create({ value: accountEntity.email }),
       roles: accountEntity.roles.map((r) =>
         RoleDomainEntity.create({ id: r.id, name: r.name }),
       ),
