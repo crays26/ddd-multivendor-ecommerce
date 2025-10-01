@@ -5,6 +5,7 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { ProductDto } from '../../presentation/dtos/responses/product.dto';
 import { plainToInstance } from 'class-transformer';
+import { sql } from '@mikro-orm/postgresql';
 
 @Injectable()
 export class ProductReadRepository {
@@ -22,7 +23,27 @@ export class ProductReadRepository {
     if (!product) return null;
 
     return plainToInstance(ProductDto, wrap(product).toObject(), {
-      excludeExtraneousValues: true
+      excludeExtraneousValues: true,
     });
+  }
+
+  async findAllByName(searchTerm: string) {
+    // const offset = (page - 1) * limit;
+
+    const qb = this.em.createQueryBuilder(ProductEntity, 'p');
+    qb.select('p.*');
+    qb.leftJoinAndSelect('p.variants', 'v');
+    qb.leftJoinAndSelect('p.attributes', 'a');
+    qb.where(
+      sql`to_tsvector('english', ${sql.ref('p.name')}) @@ plainto_tsquery('english', ${searchTerm})`,
+    ).orWhere(sql`${sql.ref('p.name')} % ${searchTerm}`);
+
+    // qb.limit(limit).offset(offset);
+
+    // qb.orderBy({
+    //   'p.created_at': sortOrder === 'asc' ? 'asc' : 'desc',
+    // });
+
+    return await qb.execute('all');
   }
 }
