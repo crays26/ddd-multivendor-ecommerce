@@ -10,10 +10,10 @@ import { AuthService } from 'src/shared/auth/auth.service';
 import { ShareAuthModule } from 'src/shared/auth/auth.module';
 import { CqrsModule } from '@nestjs/cqrs';
 import { GetAccountOfCurrentUserQueryHandler } from './application/queries/get-account-of-current-user/handler';
-import { UnitOfWork } from 'src/shared/ddd/infrastructure/unitOfWork/unit.of.work';
-import { UNIT_OF_WORK } from '../../shared/ddd/infrastructure/unitOfWork/unit.of.work.interface';
+import { UnitOfWork } from 'src/shared/ddd/infrastructure/unit-of-work/unit-of-work';
+import { UNIT_OF_WORK } from 'src/shared/ddd/infrastructure/unit-of-work/unit-of-work.interface';
+import { UnitOfWorkModule } from 'src/shared/ddd/infrastructure/unit-of-work/unit-of-work.module';
 import { ACCOUNT_REPO } from './domain/repositories/account.repo.interface';
-import { UnitOfWorkModule } from 'src/shared/ddd/infrastructure/unitOfWork/unit.of.work.module';
 
 const CommandHandlers = [
   SignUpAccountCommandHandler,
