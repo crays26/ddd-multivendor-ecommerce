@@ -4,6 +4,7 @@ import { PasswordVO } from '../value-objects/password.vo';
 import { EmailVO } from '../value-objects/email.vo';
 import { v7 as uuidV7 } from 'uuid';
 import { RoleDomainEntity } from '../entities/role';
+import { AccountLoggedInEvent } from '../events/account-logged-in.event';
 
 interface AccountProps {
   id: string;
@@ -14,7 +15,6 @@ interface AccountProps {
 }
 
 interface CreateAccountProps {
-  id?: string;
   username: string;
   email: string;
   password: string;
@@ -31,11 +31,11 @@ export class AccountDomainEntity extends BaseAggregateRoot<
 
   static create(props: CreateAccountProps): AccountDomainEntity {
     const account = new AccountDomainEntity({
-      id: props.id ? props.id : uuidV7(),
+      id: uuidV7(),
       username: props.username,
       email: EmailVO.create({value: props.email }),
       password: PasswordVO.create({ value: props.password }),
-      roles: props.roles ? props.roles : [],
+      roles: props.roles ?? [],
     });
 
     return account;
@@ -75,5 +75,9 @@ export class AccountDomainEntity extends BaseAggregateRoot<
 
   public setPassword(newPassword: string): void {
     this.props.password = PasswordVO.create({ value: newPassword });
+  }
+
+  public logIn() {
+    this.apply(new AccountLoggedInEvent(this.getId()));
   }
 }
