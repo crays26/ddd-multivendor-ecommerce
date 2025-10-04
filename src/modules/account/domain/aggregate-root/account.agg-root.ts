@@ -21,7 +21,7 @@ interface CreateAccountProps {
   roles?: RoleDomainEntity[];
 }
 
-export class AccountDomainEntity extends BaseAggregateRoot<
+export class AccountAggRoot extends BaseAggregateRoot<
   string,
   AccountProps
 > {
@@ -29,8 +29,8 @@ export class AccountDomainEntity extends BaseAggregateRoot<
     super(props);
   }
 
-  static create(props: CreateAccountProps): AccountDomainEntity {
-    const account = new AccountDomainEntity({
+  static create(props: CreateAccountProps): AccountAggRoot {
+    const account = new AccountAggRoot({
       id: uuidV7(),
       username: props.username,
       email: EmailVO.create({value: props.email }),
@@ -41,8 +41,8 @@ export class AccountDomainEntity extends BaseAggregateRoot<
     return account;
   }
 
-  static rehydrate(props: AccountProps): AccountDomainEntity {
-    return new AccountDomainEntity(props);
+  static rehydrate(props: AccountProps): AccountAggRoot {
+    return new AccountAggRoot(props);
   }
 
 

@@ -2,7 +2,7 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { Account } from '../entities/account.entity';
-import { AccountDomainEntity } from '../../domain/aggregate-root/account';
+import { AccountAggRoot } from '../../domain/aggregate-root/account.agg-root';
 import { IAccountRepository } from '../../domain/repositories/account.repo.interface';
 import { AccountDomainMapper } from '../mappers/account.mapper';
 import { Role } from '../entities/role.entity';
@@ -18,7 +18,7 @@ export class AccountRepository implements IAccountRepository {
     
   ) {}
 
-  async save(domain: AccountDomainEntity) {
+  async save(domain: AccountAggRoot) {
 
     let account: Account | null = await this.em.findOne(Account,
       { id: domain.getId() },
@@ -50,7 +50,7 @@ export class AccountRepository implements IAccountRepository {
   //   return account;
   // }
 
-  async findById(id: string): Promise<AccountDomainEntity | null> {
+  async findById(id: string): Promise<AccountAggRoot | null> {
     const account = await this.em.findOne(Account,
       { id },
       { populate: ['roles'] },
@@ -59,7 +59,7 @@ export class AccountRepository implements IAccountRepository {
     return AccountDomainMapper.fromPersistence(account);
   }
 
-  async findByEmail(email: string): Promise<AccountDomainEntity | null> {
+  async findByEmail(email: string): Promise<AccountAggRoot | null> {
     const account = await this.em.findOne(Account,
       { email },
       { populate: ['roles'] },

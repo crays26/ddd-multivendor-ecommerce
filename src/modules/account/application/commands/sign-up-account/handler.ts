@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { SignUpAccountCommand } from './command';
-import { AccountDomainEntity } from 'src/modules/account/domain/aggregate-root/account';
+import { AccountAggRoot } from 'src/modules/account/domain/aggregate-root/account.agg-root';
 import { AuthService } from 'src/shared/auth/auth.service';
 import { ConflictException, Inject } from '@nestjs/common';
 import { UNIT_OF_WORK, IUnitOfWork } from 'src/shared/ddd/infrastructure/unit-of-work/unit-of-work.interface';
@@ -26,7 +26,7 @@ export class SignUpAccountCommandHandler
       if (accountExists)
         throw new ConflictException('This email has already been used');
 
-      const accountDomainEntity = AccountDomainEntity.create(command.data);
+      const accountDomainEntity = AccountAggRoot.create(command.data);
       const hashedPassword = await this.authService.hash(
         accountDomainEntity.getPassword(),
       );

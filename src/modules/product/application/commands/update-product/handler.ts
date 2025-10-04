@@ -2,7 +2,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateProductCommand } from './command';
 import { ProductRepository } from 'src/modules/product/infrastructure/repositories/product.repo';
-import { ProductAggRoot } from 'src/modules/product/domain/aggregate-roots/Product';
+import { ProductAggRoot } from 'src/modules/product/domain/aggregate-roots/product.agg-root';
 import { ProductVariant } from 'src/modules/product/domain/entities/ProductVariant';
 import { VariantAttributeValueVO } from '../../../domain/value-objects/VariantAttributeValue';
 import { ProductAttribute } from 'src/modules/product/domain/entities/ProductAttribute';

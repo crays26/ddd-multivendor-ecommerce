@@ -58,15 +58,16 @@ export class ProductAggRoot extends BaseAggregateRoot<string, ProductProps> {
     this.props.description = description;
   }
 
-   public addVariant(variant: ProductVariant): void {
+  public addVariant(variant: ProductVariant): void {
     if (this.props.variants.some((v) => v.getId() === variant.getId())) {
-      throw new ConflictException(`Variant with SKU ${variant.getId()} already exists`);
+      throw new ConflictException(
+        `Variant with SKU ${variant.getId()} already exists`,
+      );
     }
     this.props.variants.push(variant);
   }
 
   public setVariants(variants: ProductVariant[]): void {
-    
     const skuSet = new Set(variants.map((v) => v.getId()));
     if (skuSet.size !== variants.length) {
       throw new ConflictException('Duplicate variant ID found in variants');
@@ -76,13 +77,14 @@ export class ProductAggRoot extends BaseAggregateRoot<string, ProductProps> {
 
   public addAttribute(attribute: ProductAttribute): void {
     if (this.props.attributes.some((a) => a.getKey() === attribute.getKey())) {
-      throw new ConflictException(`Attribute with key ${attribute.getKey()} already exists`);
+      throw new ConflictException(
+        `Attribute with key ${attribute.getKey()} already exists`,
+      );
     }
     this.props.attributes.push(attribute);
   }
 
   public setAttributes(attributes: ProductAttribute[]): void {
-
     const keySet = new Set(attributes.map((a) => a.getKey()));
     if (keySet.size !== attributes.length) {
       throw new ConflictException('Duplicate attribute keys found');
@@ -117,7 +119,4 @@ export class ProductAggRoot extends BaseAggregateRoot<string, ProductProps> {
   public getAttributes(): ProductAttribute[] {
     return this.props.attributes;
   }
-
-  
 }
-

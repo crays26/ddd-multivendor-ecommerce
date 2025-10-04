@@ -3,7 +3,7 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { ProductEntity } from '../entities/Product.entity';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import { ProductAggRoot } from '../../domain/aggregate-roots/Product';
+import { ProductAggRoot } from '../../domain/aggregate-roots/product.agg-root';
 import { ProductVariantEntity } from '../entities/ProductVariant.entity';
 import { ProductAttributeEntity } from '../entities/ProductAttribute.entity';
 
@@ -27,12 +27,11 @@ export class ProductRepository {
     product.name = domain.getName();
     product.slug = domain.getSlug();
 
-
     const existingVariants = product.variants.getItems();
-  
+
     existingVariants
       .filter((v) => !domain.getVariants().some((dv) => dv.getId() === v.id))
-      .forEach((v) => v.isSoftDeleted = true);
+      .forEach((v) => (v.isSoftDeleted = true));
 
     for (const v of domain.getVariants()) {
       let variant = existingVariants.find((ev) => ev.id === v.getId());
@@ -54,27 +53,24 @@ export class ProductRepository {
 
     const existingAttributes = product.attributes.getItems();
 
-      existingAttributes
-        .filter(
-          (attr) =>
-            !domain.getAttributes().some((da) => da.getId() === attr.id),
-        )
-        .forEach((attr) => attr.isSoftDeleted = true);
+    existingAttributes
+      .filter(
+        (attr) => !domain.getAttributes().some((da) => da.getId() === attr.id),
+      )
+      .forEach((attr) => (attr.isSoftDeleted = true));
 
-
-      for (const a of domain.getAttributes()) {
-        let attribute = existingAttributes.find((ea) => ea.id === a.getId());
-        if (!attribute) {
-          attribute = new ProductAttributeEntity();
-          attribute.id = a.getId();
-          attribute.isSoftDeleted = false;
-          product.attributes.add(attribute);
-        }
-        attribute.key = a.getKey();
-        attribute.values = a.getValues();
-        
+    for (const a of domain.getAttributes()) {
+      let attribute = existingAttributes.find((ea) => ea.id === a.getId());
+      if (!attribute) {
+        attribute = new ProductAttributeEntity();
+        attribute.id = a.getId();
+        attribute.isSoftDeleted = false;
+        product.attributes.add(attribute);
       }
-    
+      attribute.key = a.getKey();
+      attribute.values = a.getValues();
+    }
+
     await this.em.persistAndFlush(product);
   }
 

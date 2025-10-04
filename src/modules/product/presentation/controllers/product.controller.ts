@@ -28,16 +28,20 @@ export class ProductController {
   }
 
   @Get(':productId')
-  async findProductById(@Param('productId') productId: string): Promise<ProductDto> {
+  async findProductById(
+    @Param('productId') productId: string,
+  ): Promise<ProductDto> {
     const query = new GetProductByIdQuery(productId);
-    return await this.queryBus.execute(query)
+    return await this.queryBus.execute(query);
   }
 
-  
   @Roles(Role.VENDOR)
   @UseGuards(JwtRequiredGuard, RequiredRolesGuard)
   @Put(':productId')
-  async updateProduct(@Param('productId') productId: string, @Body() body: ProductUpdateDto): Promise<string | null> {
+  async updateProduct(
+    @Param('productId') productId: string,
+    @Body() body: ProductUpdateDto,
+  ): Promise<string | null> {
     const command = new UpdateProductCommand({ ...body, id: productId });
     return await this.commandBus.execute(command);
   }
