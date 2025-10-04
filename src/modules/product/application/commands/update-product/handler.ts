@@ -44,7 +44,7 @@ export class UpdateProductCommandHandler
     productAggRoot.setVariants(variants);
     productAggRoot.setAttributes(attributes);
 
-    await this.productRepository.save(productAggRoot);
+    await this.productRepository.update(productAggRoot);
 
     return `Product with id ${productAggRoot.getId()} update successfully!`;
   }

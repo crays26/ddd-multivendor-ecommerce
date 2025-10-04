@@ -44,7 +44,7 @@ export class CreateProductCommandHandler
     productAggRoot.setVariants(variants);
     productAggRoot.setAttributes(attributes);
     
-    await this.productRepository.save(productAggRoot);
+    await this.productRepository.insert(productAggRoot);
 
     return `Product with id ${productAggRoot.getId()} created successfully!`;
   }
