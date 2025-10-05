@@ -3,10 +3,10 @@ import { BaseAggregateRoot } from 'src/shared/ddd/domain/base/BaseAggregateRoot'
 import { v7 as uuidV7 } from 'uuid';
 import { AccountId } from '../value-objects/account-id.vo';
 
-
 interface VendorProps {
   id: string;
   name: string;
+  slug: string;
   description: string;
   accountId: AccountId;
   rating: number;
@@ -15,35 +15,37 @@ interface VendorProps {
 interface CreateVendorProps {
   id?: string;
   name: string;
+  slug: string;
   description: string;
   accountId: string;
 }
 
-export class VendorAggRoot extends BaseAggregateRoot<
-  string,
-  VendorProps
-> {
+export class VendorAggRoot extends BaseAggregateRoot<string, VendorProps> {
   private constructor(props: VendorProps) {
     super(props);
   }
 
   static create(props: CreateVendorProps): VendorAggRoot {
     return new VendorAggRoot({
-      id: props.id ? props.id : uuidV7(),
+      id: uuidV7(),
       name: props.name,
+      slug: props.slug,
       description: props.description,
       accountId: AccountId.create({ id: props.accountId }),
       rating: 0,
     });
   }
 
-//   static rehydrate(props: AccountProps): AccountDomainEntity {
-//     return new AccountDomainEntity(props);
-//   }
-
+  static rehydrate(props: VendorProps): VendorAggRoot {
+    return new VendorAggRoot(props);
+  }
 
   public getName(): string {
     return this.props.name;
+  }
+
+  public getSlug(): string {
+    return this.props.slug;
   }
 
   public getDescription(): string {
@@ -58,12 +60,14 @@ export class VendorAggRoot extends BaseAggregateRoot<
     return this.props.rating;
   }
 
-
   public setName(newName: string): void {
     if (!newName || newName.length < 4) {
       throw new BadRequestException('Name must be at least 4 characters');
     }
     this.props.name = newName;
+  }
+  public setSlug(newSlug: string): void {
+    this.props.slug = newSlug;
   }
 
   public setDescription(newDescription: string): void {
