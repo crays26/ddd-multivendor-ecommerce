@@ -1,14 +1,14 @@
 import { BadRequestException } from '@nestjs/common';
 import { BaseAggregateRoot } from 'src/shared/ddd/domain/base/BaseAggregateRoot';
 import { v7 as uuidV7 } from 'uuid';
-import { AccountId } from '../value-objects/account-id.vo';
+import { AccountIdVO } from '../value-objects/account-id.vo';
 
 interface VendorProps {
   id: string;
   name: string;
   slug: string;
   description: string;
-  accountId: AccountId;
+  accountId: AccountIdVO;
   rating: number;
 }
 
@@ -31,7 +31,7 @@ export class VendorAggRoot extends BaseAggregateRoot<string, VendorProps> {
       name: props.name,
       slug: props.slug,
       description: props.description,
-      accountId: AccountId.create({ id: props.accountId }),
+      accountId: AccountIdVO.create({ id: props.accountId }),
       rating: 0,
     });
   }
