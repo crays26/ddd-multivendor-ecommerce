@@ -4,14 +4,16 @@ import { ProductAttribute } from '../entities/ProductAttribute';
 import { slugifyWithNanoid } from 'src/shared/utilities/slugify-with-nanoid';
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { v7 as uuidV7 } from 'uuid';
+import { VendorIdVO } from 'src/modules/product/domain/value-objects/vendor-id.vo';
+import { CategoryIdVO } from 'src/modules/product/domain/value-objects/category-id.vo';
 
 interface ProductProps {
   id: string;
   name: string;
   slug: string;
   description: string;
-  vendorId: string;
-  categoryId: string;
+  vendorId: VendorIdVO;
+  categoryId: CategoryIdVO;
   variants: ProductVariant[];
   attributes: ProductAttribute[];
 }
@@ -36,6 +38,8 @@ export class ProductAggRoot extends BaseAggregateRoot<string, ProductProps> {
       ...props,
       id: props.id ?? uuidV7(),
       slug: slugifyWithNanoid(this.name, 8),
+      vendorId: VendorIdVO.create({ id: props.vendorId }),
+      categoryId: CategoryIdVO.create({ id: props.categoryId }),
       variants: props.variants ?? [],
       attributes: props.attributes ?? [],
     });
@@ -105,7 +109,11 @@ export class ProductAggRoot extends BaseAggregateRoot<string, ProductProps> {
   }
 
   public getCategoryId(): string {
-    return this.props.categoryId;
+    return this.props.categoryId.getId();
+  }
+
+  public getVendorId(): string {
+    return this.props.vendorId.getId();
   }
 
   public getDescription(): string {
