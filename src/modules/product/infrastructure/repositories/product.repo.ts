@@ -58,9 +58,11 @@ export class ProductRepository {
     const existingVariants = product.variants.getItems();
 
     const domainVariantIdList = domain.getVariants().map((v) => v.getId());
-    existingVariants
-      .filter((v) => !domainVariantIdList.includes(v.id))
-      .forEach((v) => (v.isSoftDeleted = true));
+      for (const ev of existingVariants) {
+          if (!domainVariantIdList.includes(ev.id)) {
+              ev.isSoftDeleted = true;
+          }
+      }
 
     for (const v of domain.getVariants()) {
       let variant = existingVariants.find((ev) => ev.id === v.getId());
@@ -82,9 +84,11 @@ export class ProductRepository {
     const existingAttributes = product.attributes.getItems();
 
     const domainAttributeIdList = domain.getAttributes().map((a) => a.getId());
-    existingAttributes
-      .filter((a) => !domainAttributeIdList.includes(a.id))
-      .forEach((attr) => (attr.isSoftDeleted = true));
+    for (const v of existingAttributes) {
+        if (!domainAttributeIdList.includes(v.id)) {
+            v.isSoftDeleted = true;
+        }
+    }
 
     for (const a of domain.getAttributes()) {
       let attribute = existingAttributes.find((ea) => ea.id === a.getId());
