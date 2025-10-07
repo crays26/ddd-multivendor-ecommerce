@@ -1,6 +1,6 @@
 import { EntityRepository, wrap } from '@mikro-orm/postgresql';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { ProductEntity } from '../entities/Product.entity';
+import { ProductEntity } from '../entities/product.entity';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { ProductDto } from '../../presentation/dtos/responses/product.dto';

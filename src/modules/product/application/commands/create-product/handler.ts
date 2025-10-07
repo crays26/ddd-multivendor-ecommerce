@@ -3,9 +3,9 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateProductCommand } from './command';
 import { ProductRepository } from 'src/modules/product/infrastructure/repositories/product.repo';
 import { ProductAggRoot } from 'src/modules/product/domain/aggregate-roots/product.agg-root';
-import { ProductVariant } from 'src/modules/product/domain/entities/ProductVariant';
-import { VariantAttributeValueVO } from '../../../domain/value-objects/VariantAttributeValue';
-import { ProductAttribute } from 'src/modules/product/domain/entities/ProductAttribute';
+import { ProductVariant } from 'src/modules/product/domain/entities/product-variant';
+import { VariantAttributeValueVO } from '../../../domain/value-objects/variant-attribute-value';
+import { ProductAttribute } from 'src/modules/product/domain/entities/product-attribute';
 
 @CommandHandler(CreateProductCommand)
 export class CreateProductCommandHandler

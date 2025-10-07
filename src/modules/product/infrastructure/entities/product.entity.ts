@@ -6,8 +6,8 @@ import {
   Property,
 } from '@mikro-orm/core';
 import { Collection } from '@mikro-orm/core';
-import { ProductVariantEntity } from './ProductVariant.entity';
-import { ProductAttributeEntity } from './ProductAttribute.entity';
+import { ProductVariantEntity } from './product-variant.entity';
+import { ProductAttributeEntity } from './product-attribute.entity';
 import { VendorEntity } from 'src/modules/vendor/infrastructure/entities/vendor.entity';
 
 @Entity({ tableName: 'product' })

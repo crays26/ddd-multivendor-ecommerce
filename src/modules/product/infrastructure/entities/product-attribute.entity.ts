@@ -4,7 +4,7 @@ import {
   PrimaryKey,
   Property,
 } from '@mikro-orm/core';
-import { ProductEntity } from './Product.entity';
+import { ProductEntity } from './product.entity';
 
 @Entity({ tableName: 'product_attribute' })
 export class ProductAttributeEntity {

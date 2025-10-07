@@ -1,11 +1,11 @@
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { ProductEntity } from '../entities/Product.entity';
+import { ProductEntity } from '../entities/product.entity';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { ProductAggRoot } from '../../domain/aggregate-roots/product.agg-root';
-import { ProductVariantEntity } from '../entities/ProductVariant.entity';
-import { ProductAttributeEntity } from '../entities/ProductAttribute.entity';
+import { ProductVariantEntity } from '../entities/product-variant.entity';
+import { ProductAttributeEntity } from '../entities/product-attribute.entity';
 
 @Injectable()
 export class ProductRepository {

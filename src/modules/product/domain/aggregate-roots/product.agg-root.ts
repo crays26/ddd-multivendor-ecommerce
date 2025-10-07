@@ -1,6 +1,6 @@
 import { BaseAggregateRoot } from 'src/shared/ddd/domain/base/BaseAggregateRoot';
-import { ProductVariant } from '../entities/ProductVariant';
-import { ProductAttribute } from '../entities/ProductAttribute';
+import { ProductVariant } from '../entities/product-variant';
+import { ProductAttribute } from '../entities/product-attribute';
 import { slugifyWithNanoid } from 'src/shared/utilities/slugify-with-nanoid';
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { v7 as uuidV7 } from 'uuid';

@@ -1,6 +1,6 @@
 import { BaseEntity } from 'src/shared/ddd/domain/base/BaseEntity';
 import { v7 as uuidV7 } from 'uuid';
-import { VariantAttributeValueVO } from '../value-objects/VariantAttributeValue';
+import { VariantAttributeValueVO } from '../value-objects/variant-attribute-value';
 
 interface ProductVariantProps {
   id: string;
