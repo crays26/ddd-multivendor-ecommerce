@@ -4,7 +4,7 @@ import { UpdateProductCommand } from './command';
 import { ProductRepository } from 'src/modules/product/infrastructure/repositories/product.repo';
 import { ProductAggRoot } from 'src/modules/product/domain/aggregate-roots/product.agg-root';
 import { ProductVariant } from 'src/modules/product/domain/entities/product-variant';
-import { VariantAttributeValueVO } from '../../../domain/value-objects/variant-attribute-value';
+import { VariantAssociatedAttributeVO } from '../../../domain/value-objects/variant-associated-attribute.vo';
 import { ProductAttribute } from 'src/modules/product/domain/entities/product-attribute';
 
 @CommandHandler(UpdateProductCommand)
@@ -32,7 +32,7 @@ export class UpdateProductCommandHandler
         stock: v.stock,
         price: v.price,
         associatedAttributes: v.associatedAttributes.map((a) =>
-          VariantAttributeValueVO.create(a.key, a.value),
+          VariantAssociatedAttributeVO.create(a),
         ),
       }),
     );
