@@ -1,6 +1,6 @@
 import { BaseEntity } from 'src/shared/ddd/domain/base/BaseEntity';
 import { v7 as uuidV7 } from 'uuid';
-import { VariantAttributeValueVO } from '../value-objects/variant-attribute-value';
+import { VariantAssociatedAttributeVO } from '../value-objects/variant-associated-attribute.vo';
 
 interface ProductVariantProps {
   id: string;
@@ -8,7 +8,7 @@ interface ProductVariantProps {
   stock: number;
   skuCode: string;
   price: number;
-  associatedAttributes: VariantAttributeValueVO[];
+  associatedAttributes: VariantAssociatedAttributeVO[];
 }
 
 interface CreateProductVariantProps {
@@ -17,7 +17,7 @@ interface CreateProductVariantProps {
   stock: number;
   skuCode: string;
   price: number;
-  associatedAttributes: VariantAttributeValueVO[];
+  associatedAttributes: VariantAssociatedAttributeVO[];
 }
 
 export class ProductVariant extends BaseEntity<string, ProductVariantProps> {

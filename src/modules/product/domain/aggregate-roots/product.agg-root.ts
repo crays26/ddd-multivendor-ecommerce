@@ -47,6 +47,10 @@ export class ProductAggRoot extends BaseAggregateRoot<string, ProductProps> {
     return product;
   }
 
+  static rehydrate(props: ProductProps): ProductAggRoot {
+      return new ProductAggRoot(props)
+  }
+
   public setName(name: string) {
     this.props.name = name;
   }
