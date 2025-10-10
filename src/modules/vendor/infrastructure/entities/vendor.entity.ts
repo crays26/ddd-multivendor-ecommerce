@@ -8,7 +8,7 @@ import {
   Unique,
 } from '@mikro-orm/core';
 import { Account } from 'src/modules/account/infrastructure/entities/account.entity';
-import { ProductEntity } from 'src/modules/product/infrastructure/entities/Product.entity';
+import { ProductEntity } from 'src/modules/product/infrastructure/entities/product.entity';
 
 @Entity({ tableName: 'vendor' })
 export class VendorEntity {
