@@ -18,7 +18,7 @@ export class ProductReadRepository {
   async findOneById(productId: string): Promise<ProductDto | null> {
     const product: ProductEntity | null = await this.repo.findOne(
       { id: productId },
-      { populate: ['variants', 'attributes'] },
+      { populate: ['variants', 'attributes', 'category', 'vendor'] },
     );
     if (!product) return null;
 
@@ -34,6 +34,8 @@ export class ProductReadRepository {
     qb.select('p.*');
     qb.leftJoinAndSelect('p.variants', 'v');
     qb.leftJoinAndSelect('p.attributes', 'a');
+    qb.leftJoinAndSelect('p.category', 'c');
+    qb.leftJoinAndSelect('p.vendor', 'v');
     qb.where(
       sql`to_tsvector('english', ${sql.ref('p.name')}) @@ plainto_tsquery('english', ${searchTerm})`,
     ).orWhere(sql`${sql.ref('p.name')} % ${searchTerm}`);
@@ -43,7 +45,7 @@ export class ProductReadRepository {
     // qb.orderBy({
     //   'p.created_at': sortOrder === 'asc' ? 'asc' : 'desc',
     // });
-
+    const count = await qb.getCount();
     return await qb.execute('all');
   }
 }
