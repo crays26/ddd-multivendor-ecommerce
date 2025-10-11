@@ -16,6 +16,7 @@ export class VendorRepository {
     const vendor = new VendorEntity();
     vendor.id = domain.getId();
     vendor.name = domain.getName();
+    vendor.slug = domain.getSlug();
     vendor.description = domain.getDescription();
     vendor.account = this.em.getReference(Account, domain.getAccountId());
 
