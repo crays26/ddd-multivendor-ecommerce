@@ -7,11 +7,13 @@ export class ProductDto {
   @Expose()
   name: string;
 
-//   @Expose()
-//   vendorId: string;
+  @Expose()
+  @Type(() => CategoryResponseDto)
+  category: CategoryResponseDto;
 
-//   @Expose()
-//   categoryId: string;
+  @Expose()
+  @Type(() => VendorResponseDto)
+  vendor: VendorResponseDto;
 
   @Expose()
   description: string;
@@ -60,4 +62,26 @@ export class AttributeResponseDto {
 
   @Expose()
   values: string[];
+}
+
+class VendorResponseDto {
+    @Expose()
+    id: string;
+
+    @Expose()
+    name: string;
+
+    @Expose()
+    description: string;
+
+    @Expose()
+    rating: number;
+}
+
+class CategoryResponseDto {
+    @Expose()
+    id: string;
+
+    @Expose()
+    name: string;
 }

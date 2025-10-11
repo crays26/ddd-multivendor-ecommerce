@@ -8,10 +8,6 @@ export class ProductCreateDto {
 
   @IsNotEmpty()
   @IsString()
-  vendorId: string;
-
-  @IsNotEmpty()
-  @IsString()
   categoryId: string;
 
   @IsNotEmpty()

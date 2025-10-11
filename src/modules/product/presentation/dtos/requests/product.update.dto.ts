@@ -1,23 +1,22 @@
-import { Type } from "class-transformer";
-import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 export class ProductUpdateDto {
-
-  @IsNotEmpty()
-  @IsString()
-  id: string;
-
   @IsNotEmpty()
   @IsString()
   name: string;
 
   @IsNotEmpty()
   @IsString()
-  vendorId: string;
-
-  @IsNotEmpty()
-  @IsString()
   categoryId: string;
+  
 
   @IsNotEmpty()
   @IsString()
@@ -35,7 +34,6 @@ export class ProductUpdateDto {
 }
 
 class VariantDto {
-
   @IsOptional()
   @IsString()
   id: string;
@@ -75,7 +73,6 @@ class VariantAttributeDto {
 }
 
 class AttributeDto {
-
   @IsOptional()
   @IsString()
   id: string;
