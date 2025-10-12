@@ -16,7 +16,7 @@ export class CreateVendorCommandHandler
   constructor(
     @Inject(UNIT_OF_WORK)
     private readonly uow: IUnitOfWork,
-    // private readonly vendorRepository: VendorRepository
+    private readonly vendorRepo: VendorRepository,
   ) {}
 
   async execute(command: CreateVendorCommand): Promise<string> {
@@ -26,10 +26,10 @@ export class CreateVendorCommandHandler
       ...payload,
       slug: slugifyWithNanoid(payload.name),
     });
+
     await this.uow.begin();
     try {
-      const repo = this.uow.getRepository(VendorRepository);
-      await repo.insert(vendorAggRoot);
+      await this.vendorRepo.insert(vendorAggRoot);
       await this.uow.commit();
     } catch (error) {
       await this.uow.rollback();
