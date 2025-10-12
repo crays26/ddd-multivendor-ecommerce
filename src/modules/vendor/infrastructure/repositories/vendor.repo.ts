@@ -8,9 +8,7 @@ import { Account } from '../../../account/infrastructure/entities/account.entity
 
 @Injectable()
 export class VendorRepository {
-  constructor(
-    private readonly em: EntityManager,
-  ) {}
+  constructor(private readonly em: EntityManager) {}
 
   async insert(domain: VendorAggRoot): Promise<void> {
     const vendor = new VendorEntity();
@@ -18,8 +16,19 @@ export class VendorRepository {
     vendor.name = domain.getName();
     vendor.slug = domain.getSlug();
     vendor.description = domain.getDescription();
+    vendor.rating = domain.getRating();
     vendor.account = this.em.getReference(Account, domain.getAccountId());
 
     this.em.persist(vendor);
+  }
+
+  async update(domain: VendorAggRoot): Promise<void> {
+    let vendor: VendorEntity = await this.em.findOneOrFail(VendorEntity, {
+      id: domain.getId(),
+    });
+    vendor.name = domain.getName();
+    vendor.slug = domain.getSlug();
+    vendor.description = domain.getDescription();
+    vendor.rating = domain.getRating();
   }
 }
