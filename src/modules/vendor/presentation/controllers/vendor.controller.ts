@@ -18,14 +18,13 @@ import { VendorCreateDto } from 'src/modules/vendor/presentation/dtos/requests/v
 import { CreateVendorCommand } from 'src/modules/vendor/application/commands/create-vendor/command';
 
 @Controller('vendors')
-export class ProductController {
+export class VendorController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
   ) {}
 
-  @Roles(Role.CUSTOMER)
-  @UseGuards(JwtRequiredGuard, RequiredRolesGuard)
+  @UseGuards(JwtRequiredGuard)
   @Post()
   async createVendor(
     @CurrentUser() user: AuthPayload,
