@@ -16,7 +16,7 @@ interface CreateVendorProps {
   id?: string;
   name: string;
   slug: string;
-  description: string;
+  description?: string;
   accountId: string;
 }
 
@@ -30,7 +30,7 @@ export class VendorAggRoot extends BaseAggregateRoot<string, VendorProps> {
       id: uuidV7(),
       name: props.name,
       slug: props.slug,
-      description: props.description,
+      description: props.description ?? '',
       accountId: AccountIdVO.create({ id: props.accountId }),
       rating: 0,
     });
