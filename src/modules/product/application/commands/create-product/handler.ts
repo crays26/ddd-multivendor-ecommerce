@@ -6,12 +6,20 @@ import { ProductAggRoot } from 'src/modules/product/domain/aggregate-roots/produ
 import { ProductVariant } from 'src/modules/product/domain/entities/product-variant';
 import { VariantAssociatedAttributeVO } from '../../../domain/value-objects/variant-associated-attribute.vo';
 import { ProductAttribute } from 'src/modules/product/domain/entities/product-attribute';
-
+import {
+  IUnitOfWork,
+  UNIT_OF_WORK,
+} from 'src/shared/ddd/infrastructure/unit-of-work/unit-of-work.interface';
+import { Inject } from '@nestjs/common';
 @CommandHandler(CreateProductCommand)
 export class CreateProductCommandHandler
   implements ICommandHandler<CreateProductCommand>
 {
-  constructor(private readonly productRepository: ProductRepository) {}
+  constructor(
+    private readonly productRepository: ProductRepository,
+    @Inject(UNIT_OF_WORK)
+    private readonly uow: IUnitOfWork,
+  ) {}
 
   async execute(command: CreateProductCommand): Promise<string> {
     const { payload } = command;
@@ -43,9 +51,15 @@ export class CreateProductCommandHandler
 
     productAggRoot.setVariants(variants);
     productAggRoot.setAttributes(attributes);
-    
-    await this.productRepository.insert(productAggRoot);
 
+    await this.uow.begin();
+    try {
+      await this.productRepository.insert(productAggRoot);
+      await this.uow.commit();
+    } catch (error) {
+      await this.uow.rollback();
+      throw error;
+    }
     return `Product with id ${productAggRoot.getId()} created successfully!`;
   }
 }
