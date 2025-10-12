@@ -40,8 +40,10 @@ export class ProductController {
     const vendor = await this.queryBus.execute(
       new GetVendorByAccountIdQuery(currentUser.id),
     );
+    console.log(vendor);
     if (!vendor) throw new BadRequestException('Vendor not found.');
     const command = new CreateProductCommand({ ...body, vendorId: vendor!.id });
+    console.log(command);
     return await this.commandBus.execute(command);
   }
 
