@@ -5,7 +5,9 @@ import { ProductAggRoot } from '../../domain/aggregate-roots/product.agg-root';
 import { ProductVariantEntity } from '../entities/product-variant.entity';
 import { ProductAttributeEntity } from '../entities/product-attribute.entity';
 import { IProductRepository } from 'src/modules/product/application/repositories/product.repo.interface';
-import {ProductDomainMapper} from "src/modules/product/infrastructure/mappers/product.mapper";
+import { ProductDomainMapper } from 'src/modules/product/infrastructure/mappers/product.mapper';
+import { VendorEntity } from 'src/modules/vendor/infrastructure/entities/vendor.entity';
+import { CategoryEntity } from 'src/modules/product/infrastructure/entities/category.entity';
 
 @Injectable()
 export class ProductRepository implements IProductRepository {
@@ -21,21 +23,26 @@ export class ProductRepository implements IProductRepository {
     return ProductDomainMapper.fromPersistence(product);
   }
 
-    async findByVariantId(id: string): Promise<ProductAggRoot | null> {
-        const product: ProductEntity | null = await this.em.findOne(
-            ProductEntity,
-            { variants: id },
-            { populate: ['attributes', 'variants'] },
-        );
-        if (!product) return null;
-        return ProductDomainMapper.fromPersistence(product);
-    }
+  async findByVariantId(id: string): Promise<ProductAggRoot | null> {
+    const product: ProductEntity | null = await this.em.findOne(
+      ProductEntity,
+      { variants: id },
+      { populate: ['attributes', 'variants'] },
+    );
+    if (!product) return null;
+    return ProductDomainMapper.fromPersistence(product);
+  }
 
   async insert(domain: ProductAggRoot): Promise<void> {
     const product = new ProductEntity();
     product.id = domain.getId();
     product.name = domain.getName();
     product.slug = domain.getSlug();
+    product.vendor = this.em.getReference(VendorEntity, domain.getVendorId());
+    product.category = this.em.getReference(
+      CategoryEntity,
+      domain.getCategoryId(),
+    );
 
     for (const v of domain.getVariants()) {
       const variant = new ProductVariantEntity();
@@ -48,22 +55,22 @@ export class ProductRepository implements IProductRepository {
       variant.stock = v.getStock();
       variant.associatedAttributes = v.getAssociatedAttributes();
       product.variants.add(variant);
-
-      for (const a of domain.getAttributes()) {
-        const attribute = new ProductAttributeEntity();
-        attribute.id = a.getId();
-        attribute.isSoftDeleted = false;
-        attribute.key = a.getKey();
-        attribute.values = a.getValues();
-        product.attributes.add(attribute);
-      }
-
-      this.em.persist(product);
     }
+    for (const a of domain.getAttributes()) {
+      const attribute = new ProductAttributeEntity();
+      attribute.id = a.getId();
+      attribute.isSoftDeleted = false;
+      attribute.key = a.getKey();
+      attribute.values = a.getValues();
+      product.attributes.add(attribute);
+    }
+
+    this.em.persist(product);
   }
 
   async update(domain: ProductAggRoot): Promise<void> {
-    const product: ProductEntity = await this.em.findOneOrFail(ProductEntity,
+    const product: ProductEntity = await this.em.findOneOrFail(
+      ProductEntity,
       { id: domain.getId() },
       { populate: ['variants', 'attributes'] },
     );

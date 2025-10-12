@@ -18,10 +18,9 @@ export class ProductReadRepository {
   async findOneById(productId: string): Promise<ProductDto | null> {
     const product: ProductEntity | null = await this.repo.findOne(
       { id: productId },
-      { populate: ['variants', 'attributes', 'category', 'vendor'] },
+      { populate: ['variants', 'attributes', 'vendor', 'category'] },
     );
     if (!product) return null;
-
     return plainToInstance(ProductDto, wrap(product).toObject(), {
       excludeExtraneousValues: true,
     });

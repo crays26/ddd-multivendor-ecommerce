@@ -29,7 +29,7 @@ export class ProductEntity {
   vendor!: VendorEntity;
 
   @ManyToOne(() => CategoryEntity)
-  category!: VendorEntity;
+  category!: CategoryEntity;
 
   @OneToMany(() => ProductAttributeEntity, (attribute) => attribute.product)
   attributes = new Collection<ProductAttributeEntity>(this);
