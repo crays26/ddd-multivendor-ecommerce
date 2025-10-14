@@ -1,30 +1,28 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 import { BaseAggregateRoot } from 'src/shared/ddd/domain/base/BaseAggregateRoot';
 import { PasswordVO } from '../value-objects/password.vo';
 import { EmailVO } from '../value-objects/email.vo';
 import { v7 as uuidV7 } from 'uuid';
-import { RoleDomainEntity } from '../entities/role';
 import { AccountLoggedInEvent } from '../events/account-logged-in.event';
+import { AccountSignedUpEvent } from 'src/modules/account/domain/events/account-signed-up.event';
+import {RoleIdVO} from "src/modules/account/domain/value-objects/role-id.vo";
 
 interface AccountProps {
   id: string;
   username: string;
   email: EmailVO;
   password: PasswordVO;
-  roles: RoleDomainEntity[];
+  roles: RoleIdVO[];
 }
 
 interface CreateAccountProps {
   username: string;
   email: string;
   password: string;
-  roles?: RoleDomainEntity[];
+  roles?: RoleIdVO[];
 }
 
-export class AccountAggRoot extends BaseAggregateRoot<
-  string,
-  AccountProps
-> {
+export class AccountAggRoot extends BaseAggregateRoot<string, AccountProps> {
   private constructor(props: AccountProps) {
     super(props);
   }
@@ -33,18 +31,17 @@ export class AccountAggRoot extends BaseAggregateRoot<
     const account = new AccountAggRoot({
       id: uuidV7(),
       username: props.username,
-      email: EmailVO.create({value: props.email }),
+      email: EmailVO.create({ value: props.email }),
       password: PasswordVO.create({ value: props.password }),
       roles: props.roles ?? [],
     });
-
+    this.apply(new AccountSignedUpEvent(account.id));
     return account;
   }
 
   static rehydrate(props: AccountProps): AccountAggRoot {
     return new AccountAggRoot(props);
   }
-
 
   public getUsername(): string {
     return this.props.username;
@@ -58,7 +55,7 @@ export class AccountAggRoot extends BaseAggregateRoot<
     return this.props.password.getValue();
   }
 
-  public getRoles(): RoleDomainEntity[] {
+  public getRoles(): RoleIdVO[] {
     return this.props.roles;
   }
 
@@ -75,6 +72,12 @@ export class AccountAggRoot extends BaseAggregateRoot<
 
   public setPassword(newPassword: string): void {
     this.props.password = PasswordVO.create({ value: newPassword });
+  }
+
+  public addRole(newRole: RoleIdVO): void {
+    if (this.props.roles.some((r) => r.getId() === newRole.getId()))
+      throw new ConflictException('Role already exists');
+    this.props.roles.push(newRole);
   }
 
   public logIn() {

@@ -1,3 +1,3 @@
-export class AccountLoggedInEvent {
+export class AccountSignedUpEvent {
   constructor(public readonly accountId: string) {}
 }
