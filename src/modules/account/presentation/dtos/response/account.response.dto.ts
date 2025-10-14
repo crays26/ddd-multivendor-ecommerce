@@ -5,7 +5,7 @@ import { Expose, Type } from 'class-transformer';
 
 export class RoleDto {
   @Expose()
-  id: number;
+  id: string;
 
   @Expose()
   name: string;
@@ -13,7 +13,7 @@ export class RoleDto {
 
 export class AccountDto {
   @Expose()
-  id: number;
+  id: string;
 
   @Expose()
   username: string;
