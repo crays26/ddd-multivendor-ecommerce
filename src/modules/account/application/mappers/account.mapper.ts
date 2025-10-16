@@ -15,7 +15,6 @@ export class AccountDtoMapper {
       roles: account.getRoles().map((role) =>
         plainToInstance(RoleDto, {
           id: role.getId(),
-          name: role.getName(),
         }),
       ),
     });
