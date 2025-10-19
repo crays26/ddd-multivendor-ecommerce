@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { AuthPayload } from './types/auth-payload.type';
 import * as bcrypt from 'bcrypt';
+import {JwtTokenPair} from "src/shared/auth/types/jwt-token-pair.type";
 
 const SALT_ROUND = 10;
 
@@ -10,13 +11,13 @@ const SALT_ROUND = 10;
 export class AuthService {
   constructor(private jwtService: JwtService) {}
 
-  generateTokens(payload: AuthPayload) {
+  generateTokens(payload: AuthPayload): JwtTokenPair {
     const accessToken = this.jwtService.sign(payload, { expiresIn: '15m', secret: process.env.ACCESS_TOKEN_SECRET_KEY! });
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d', secret: process.env.REFRESH_TOKEN_SECRET_KEY! });
     return { accessToken, refreshToken };
   }
 
-  setAuthCookies(response: Response, tokens: { accessToken: string; refreshToken: string }) {
+  setAuthCookies(response: Response, tokens: JwtTokenPair): void {
     response.cookie('access_token', tokens.accessToken, {
       httpOnly: true,
       sameSite: 'strict',
@@ -31,12 +32,12 @@ export class AuthService {
     });
   }
 
-  clearAuthCookies(response: Response) {
+  clearAuthCookies(response: Response): void {
     response.clearCookie('access_token');
     response.clearCookie('refresh_token');
   }
 
-  async hash(string: string) {
+  async hash(string: string): Promise<string> {
     return await bcrypt.hash(string, SALT_ROUND);
   }
 }
