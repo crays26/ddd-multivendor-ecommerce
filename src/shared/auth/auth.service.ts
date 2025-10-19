@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
-import { AuthPayload } from './AuthPayload.interface';
+import { AuthPayload } from './types/auth-payload.type';
 import * as bcrypt from 'bcrypt';
 
 const SALT_ROUND = 10;
