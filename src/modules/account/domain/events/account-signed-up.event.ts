@@ -1,3 +1,5 @@
 export class AccountSignedUpEvent {
-  constructor(public readonly accountId: string) {}
+  constructor(
+    public readonly accountId: string
+  ) {}
 }

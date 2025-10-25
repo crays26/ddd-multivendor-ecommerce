@@ -5,7 +5,7 @@ import { EmailVO } from '../value-objects/email.vo';
 import { v7 as uuidV7 } from 'uuid';
 import { AccountLoggedInEvent } from '../events/account-logged-in.event';
 import { AccountSignedUpEvent } from 'src/modules/account/domain/events/account-signed-up.event';
-import {RoleIdVO} from "src/modules/account/domain/value-objects/role-id.vo";
+import { RoleIdVO } from 'src/modules/account/domain/value-objects/role-id.vo';
 
 interface AccountProps {
   id: string;
@@ -35,7 +35,7 @@ export class AccountAggRoot extends BaseAggregateRoot<string, AccountProps> {
       password: PasswordVO.create({ value: props.password }),
       roles: props.roles ?? [],
     });
-    this.apply(new AccountSignedUpEvent(account.id));
+    account.apply(new AccountSignedUpEvent(account.id));
     return account;
   }
 
