@@ -9,13 +9,14 @@ import { LogInAccountCommandHandler } from './application/commands/log-in-accoun
 import { AuthService } from 'src/shared/auth/auth.service';
 import { ShareAuthModule } from 'src/shared/auth/auth.module';
 import { CqrsModule } from '@nestjs/cqrs';
-import { GetAccountOfCurrentUserQueryHandler } from './application/queries/get-account-of-current-user/handler';
 import { UnitOfWork } from 'src/shared/ddd/infrastructure/unit-of-work/unit-of-work';
 import { UNIT_OF_WORK } from 'src/shared/ddd/infrastructure/unit-of-work/unit-of-work.interface';
 import { UnitOfWorkModule } from 'src/shared/ddd/infrastructure/unit-of-work/unit-of-work.module';
 import { ACCOUNT_REPO } from './domain/repositories/account.repo.interface';
 import { AddCustomerRoleEventHandler } from 'src/modules/account/application/event-handlers/add-customer-role.event-handler';
 import { AddRoleToAccountCommandHandler } from 'src/modules/account/application/commands/add-role-to-account/handler';
+import { AccountReadRepository } from 'src/modules/account/infrastructure/repositories/account.read.repo';
+import { GetAccountByIdQuery } from 'src/modules/account/application/queries/get-account-by-id/query';
 
 const CommandHandlers = [
   SignUpAccountCommandHandler,
@@ -23,7 +24,7 @@ const CommandHandlers = [
   AddRoleToAccountCommandHandler,
 ];
 
-const QueryHandlers = [GetAccountOfCurrentUserQueryHandler];
+const QueryHandlers = [GetAccountByIdQuery];
 
 const EventHandlers = [AddCustomerRoleEventHandler];
 @Module({
@@ -40,6 +41,7 @@ const EventHandlers = [AddCustomerRoleEventHandler];
       provide: ACCOUNT_REPO,
       useClass: AccountRepository,
     },
+    AccountReadRepository,
     AuthService,
     ...CommandHandlers,
     ...QueryHandlers,
