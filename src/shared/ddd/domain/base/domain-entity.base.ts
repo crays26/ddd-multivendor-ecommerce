@@ -1,4 +1,4 @@
-export abstract class BaseEntity<ID = string, Props = unknown> {
+export abstract class DomainEntityBase<ID = string, Props = unknown> {
   protected readonly id: ID;
   protected readonly props: Props;
   protected readonly createdAt: Date;
@@ -31,7 +31,7 @@ export abstract class BaseEntity<ID = string, Props = unknown> {
     return this.updatedAt;
   }
 
-  public equals(entity?: BaseEntity<ID, Props>): boolean {
+  public equals(entity?: DomainEntityBase<ID, Props>): boolean {
     if (entity === null || entity === undefined) return false;
     return this.id === entity.id;
   }

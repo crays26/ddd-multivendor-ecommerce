@@ -1,6 +1,6 @@
 import { AggregateRoot as CqrsAggregateRoot } from '@nestjs/cqrs';
 
-export abstract class BaseAggregateRoot<
+export abstract class AggregateRootBase<
   ID = string,
   Props = unknown,
 > extends CqrsAggregateRoot {

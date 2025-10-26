@@ -1,4 +1,4 @@
-export abstract class BaseValueObject<Props> {
+export abstract class ValueObjectBase<Props> {
   protected readonly props: Props;
 
   protected constructor(props: Props) {
