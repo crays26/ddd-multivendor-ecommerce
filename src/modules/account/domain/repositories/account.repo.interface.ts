@@ -1,10 +1,8 @@
 import { Account } from '../../infrastructure/entities/account.entity';
 import { AccountAggRoot } from '../aggregate-root/account.agg-root';
+import {BaseRepository} from "src/shared/ddd/domain/base/repository.base";
 
-export interface IAccountRepository {
-    
-  save(domain: AccountAggRoot): Promise<void>;
-  findById(id: string): Promise<AccountAggRoot | null>;
+export interface IAccountRepository extends BaseRepository<AccountAggRoot> {
   findByEmail(email: string): Promise<AccountAggRoot | null>;
 }
 
