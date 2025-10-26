@@ -21,7 +21,7 @@ import { JwtOptionalGuard } from 'src/shared/auth/guards/jwt/jwt.optional.guard'
 import { JwtRefreshGuard } from 'src/shared/auth/guards/jwt/jwt.refresh.guard';
 import { AuthPayload } from 'src/shared/auth/types/auth-payload.type';
 import { CurrentUser } from 'src/shared/auth/decorators/param-decorators/current-user.decorator';
-import { GetAccountOfCurrentUserQuery } from '../../application/queries/get-account-of-current-user/query';
+import { GetAccountByIdQuery } from 'src/modules/account/application/queries/get-account-by-id/query';
 
 @Controller('account')
 export class AuthController {
@@ -48,10 +48,7 @@ export class AuthController {
 
   @UseGuards(JwtRequiredGuard)
   @Post('log-out')
-  async logOutAccount(
-    @Req() request: Request,
-    @Res() response: Response,
-  ) {
+  async logOutAccount(@Req() request: Request, @Res() response: Response) {
     const tokenPair = {
       accessToken: request.cookies['access_token'],
       refreshToken: request.cookies['refresh_token'],
@@ -82,10 +79,9 @@ export class AuthController {
   @Get('')
   @UseGuards(JwtRequiredGuard)
   async getCurrentUser(
-    @CurrentUser() currentUser: AuthPayload | null,
+    @CurrentUser() currentUser: AuthPayload,
   ): Promise<AccountDto | null> {
-    console.log(currentUser);
-    const query = new GetAccountOfCurrentUserQuery(currentUser!.id);
+    const query = new GetAccountByIdQuery(currentUser!.id);
     return await this.queryBus.execute(query);
   }
 
@@ -96,7 +92,7 @@ export class AuthController {
   ): Promise<AccountDto | null> {
     console.log(currentUser);
     if (!currentUser) return null;
-    const query = new GetAccountOfCurrentUserQuery(currentUser!.id);
+    const query = new GetAccountByIdQuery(currentUser!.id);
     return await this.queryBus.execute(query);
   }
 }
