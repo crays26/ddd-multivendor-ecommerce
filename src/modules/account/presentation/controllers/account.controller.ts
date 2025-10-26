@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { SignUpAccountDto } from '../dtos/SignUpAccount.dto';
 import { LogInAccountDto } from '../dtos/LogInAccount.dto';
 import { AccountDto } from '../dtos/response/account.response.dto';
@@ -6,11 +15,11 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { SignUpAccountCommand } from '../../application/commands/sign-up-account/command';
 import { AuthService } from 'src/shared/auth/auth.service';
 import { LogInAccountCommand } from '../../application/commands/log-in-account/command';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { JwtRequiredGuard } from 'src/shared/auth/guards/jwt/jwt.required.guard';
 import { JwtOptionalGuard } from 'src/shared/auth/guards/jwt/jwt.optional.guard';
 import { JwtRefreshGuard } from 'src/shared/auth/guards/jwt/jwt.refresh.guard';
-import { AuthPayload } from 'src/shared/auth/AuthPayload.interface';
+import { AuthPayload } from 'src/shared/auth/types/auth-payload.type';
 import { CurrentUser } from 'src/shared/auth/decorators/param-decorators/current-user.decorator';
 import { GetAccountOfCurrentUserQuery } from '../../application/queries/get-account-of-current-user/query';
 
@@ -23,7 +32,7 @@ export class AuthController {
   ) {}
 
   @Post('sign-up')
-  async signUpAccount(@Body() body: SignUpAccountDto) {
+  async signUpAccount(@Body() body: SignUpAccountDto, req: Request) {
     const command = new SignUpAccountCommand(body);
     return await this.commandBus.execute(command);
   }
@@ -35,6 +44,22 @@ export class AuthController {
 
     this.authService.setAuthCookies(response, tokenPair);
     response.send(tokenPair);
+  }
+
+  @UseGuards(JwtRequiredGuard)
+  @Post('log-out')
+  async logOutAccount(
+    @Req() request: Request,
+    @Res() response: Response,
+  ) {
+    const tokenPair = {
+      accessToken: request.cookies['access_token'],
+      refreshToken: request.cookies['refresh_token'],
+    };
+    await this.authService.blacklistTokenPair(tokenPair);
+
+    this.authService.clearAuthCookies(response);
+    response.send('Logged out successfully');
   }
 
   @Post('refresh')
