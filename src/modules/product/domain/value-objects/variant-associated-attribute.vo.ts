@@ -1,11 +1,11 @@
-import { BaseValueObject } from 'src/shared/ddd/domain/base/BaseValueObject';
+import { ValueObjectBase } from 'src/shared/ddd/domain/base/value-object.base';
 
 export interface VariantAssociatedAttributeProps {
   key: string;
   value: string;
 }
 
-export class VariantAssociatedAttributeVO extends BaseValueObject<VariantAssociatedAttributeProps> {
+export class VariantAssociatedAttributeVO extends ValueObjectBase<VariantAssociatedAttributeProps> {
   private constructor(props: VariantAssociatedAttributeProps) {
     super(props);
   }

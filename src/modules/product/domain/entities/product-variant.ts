@@ -1,4 +1,4 @@
-import { BaseEntity } from 'src/shared/ddd/domain/base/BaseEntity';
+import { DomainEntityBase } from 'src/shared/ddd/domain/base/domain-entity.base';
 import { v7 as uuidV7 } from 'uuid';
 import { VariantAssociatedAttributeVO } from '../value-objects/variant-associated-attribute.vo';
 
@@ -20,7 +20,7 @@ interface CreateProductVariantProps {
   associatedAttributes: VariantAssociatedAttributeVO[];
 }
 
-export class ProductVariant extends BaseEntity<string, ProductVariantProps> {
+export class ProductVariant extends DomainEntityBase<string, ProductVariantProps> {
   private constructor(props: ProductVariantProps) {
     super(props);
   }

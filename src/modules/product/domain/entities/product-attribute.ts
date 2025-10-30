@@ -1,4 +1,4 @@
-import { BaseEntity } from 'src/shared/ddd/domain/base/BaseEntity';
+import { DomainEntityBase } from 'src/shared/ddd/domain/base/domain-entity.base';
 import { v7 as uuidV7 } from 'uuid';
 
 interface ProductAttributeProps {
@@ -14,7 +14,7 @@ interface CreateProductAttributeProps {
   
 }
 
-export class ProductAttribute extends BaseEntity<string, ProductAttributeProps> {
+export class ProductAttribute extends DomainEntityBase<string, ProductAttributeProps> {
   private constructor(props: ProductAttributeProps) {
     super(props);
   }

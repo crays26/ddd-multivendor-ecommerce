@@ -1,10 +1,10 @@
-import {BaseValueObject} from "src/shared/ddd/domain/base/BaseValueObject";
+import {ValueObjectBase} from "src/shared/ddd/domain/base/value-object.base";
 
 interface VendorIdProps {
     id: string;
 }
 
-export class VendorIdVO extends BaseValueObject<VendorIdProps> {
+export class VendorIdVO extends ValueObjectBase<VendorIdProps> {
     private constructor(props: VendorIdProps) {
         super(props);
     }
