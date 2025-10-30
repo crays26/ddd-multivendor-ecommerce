@@ -26,19 +26,18 @@ export class SignUpAccountCommandHandler
   async execute(command: SignUpAccountCommand) {
     await this.unitOfWork.begin();
     const accountRepo = this.unitOfWork.getRepository(AccountRepository);
-    try {
-      const accountExists = await accountRepo.findByEmail(command.data.email);
-      if (accountExists)
-        throw new ConflictException('This email has already been used');
 
-      const accountDomainEntity =
-        AccountAggRoot.create(command.data)
+    const accountExists = await accountRepo.findByEmail(command.data.email);
+    if (accountExists)
+      throw new ConflictException('This email has already been used');
+    try {
+      const accountDomainEntity = AccountAggRoot.create(command.data);
 
       const hashedPassword = await this.authService.hash(
         accountDomainEntity.getPassword(),
       );
       accountDomainEntity.setPassword(hashedPassword);
-      await accountRepo.save(accountDomainEntity);
+      await accountRepo.insert(accountDomainEntity);
 
       await this.unitOfWork.commit();
       this.eventPublisher.mergeObjectContext(accountDomainEntity).commit();

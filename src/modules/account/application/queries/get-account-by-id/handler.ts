@@ -1,23 +1,25 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetAccountByIdQuery } from './query';
-import { AccountRepository } from 'src/modules/account/infrastructure/repositories/account.repo';
 import { AccountDto } from 'src/modules/account/presentation/dtos/response/account.response.dto';
 import { plainToInstance } from 'class-transformer';
-import { AccountDtoMapper } from '../../mappers/account.mapper';
-import { Inject } from '@nestjs/common';
-import { ACCOUNT_REPO } from 'src/modules/account/domain/repositories/account.repo.interface';
-
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { Account } from 'src/modules/account/infrastructure/entities/account.entity';
+import { EntityRepository } from '@mikro-orm/postgresql';
+import { wrap } from '@mikro-orm/postgresql';
 @QueryHandler(GetAccountByIdQuery)
 export class GetAccountOfCurrentUserQueryHandler
-    implements IQueryHandler<GetAccountByIdQuery>
+  implements IQueryHandler<GetAccountByIdQuery>
 {
-    constructor(
-        @Inject(ACCOUNT_REPO)
-        private readonly accountRepo: AccountRepository) {}
-
-    async execute(query: GetAccountByIdQuery): Promise<AccountDto | null> {
-        const accountDomain = await this.accountRepo.findById(query.id);
-        if (!accountDomain) return null;
-        return AccountDtoMapper.fromDomain(accountDomain);
-    }
+  constructor(
+    @InjectRepository(Account)
+    private readonly accountRepo: EntityRepository<Account>,
+  ) {}
+  async execute(query: GetAccountByIdQuery): Promise<AccountDto | null> {
+    const account: Account | null = await this.accountRepo.findOne(
+      { id: query.id },
+      { populate: ['roles'] },
+    );
+    if (!account) return null;
+    return plainToInstance(AccountDto, wrap(account).toObject());
+  }
 }

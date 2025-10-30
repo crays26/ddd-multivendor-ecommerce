@@ -24,22 +24,24 @@ export class AddRoleToAccountCommandHandler
 
   async execute(command: AddRoleToAccountCommand): Promise<string> {
     await this.uow.begin();
-    try {
-      const accountAggRoot = await this.accountRepository.findById(
-        command.accountId,
-      );
-      if (!accountAggRoot)
-        throw new NotFoundException(
-          `Account with id ${command.accountId} not found`,
-        );
-      accountAggRoot.addRole(RoleIdVO.create({ id: command.roleId }));
 
-      await this.accountRepository.save(accountAggRoot);
+    const accountAggRoot = await this.accountRepository.findById(
+      command.accountId,
+    );
+    if (!accountAggRoot) {
+      await this.uow.rollback();
+      throw new NotFoundException(
+        `Account with id ${command.accountId} not found`,
+      );
+    }
+    try {
+      accountAggRoot.addRole(RoleIdVO.create({ id: command.roleId }));
+      await this.accountRepository.update(accountAggRoot);
       await this.uow.commit();
+
       return `${command.roleId} added successfully`;
     } catch (error) {
       await this.uow.rollback();
-
       throw error;
     }
   }
