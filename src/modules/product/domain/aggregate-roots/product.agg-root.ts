@@ -1,4 +1,4 @@
-import { BaseAggregateRoot } from 'src/shared/ddd/domain/base/BaseAggregateRoot';
+import { AggregateRootBase } from 'src/shared/ddd/domain/base/aggregate-root.base';
 import { ProductVariant } from '../entities/product-variant';
 import { ProductAttribute } from '../entities/product-attribute';
 import { slugifyWithNanoid } from 'src/shared/utilities/slugify-with-nanoid';
@@ -28,9 +28,10 @@ interface CreateProductProps {
   attributes?: ProductAttribute[];
 }
 
-export class ProductAggRoot extends BaseAggregateRoot<string, ProductProps> {
+export class ProductAggRoot extends AggregateRootBase<string, ProductProps> {
   private constructor(props: ProductProps) {
     super(props);
+    this.validate(props);
   }
 
   static create(props: CreateProductProps): ProductAggRoot {
@@ -48,7 +49,54 @@ export class ProductAggRoot extends BaseAggregateRoot<string, ProductProps> {
   }
 
   static rehydrate(props: ProductProps): ProductAggRoot {
-      return new ProductAggRoot(props)
+    return new ProductAggRoot(props);
+  }
+
+  private validate(props: ProductProps): void {
+    for (const variant of props.variants) {
+      if (
+        variant.getAssociatedAttributes().length !== props.attributes.length
+      ) {
+        throw new BadRequestException(
+          `Variant ${variant.getId?.() ?? ''} does not have the same number of attributes as defined.`,
+        );
+      }
+
+      for (const associatedAttr of variant.getAssociatedAttributes()) {
+        const attr = props.attributes.find(
+          (a) => a.getKey() === associatedAttr.key,
+        );
+        if (!attr) {
+          throw new BadRequestException(
+            `Variant ${variant.getId?.() ?? ''} contains invalid attribute key "${associatedAttr.key}".`,
+          );
+        }
+
+        if (!attr.getValues().includes(associatedAttr.value)) {
+          throw new BadRequestException(
+            `Variant ${variant.getId?.() ?? ''} has invalid value "${associatedAttr.value}" for attribute "${associatedAttr.key}".`,
+          );
+        }
+      }
+    }
+
+    const seenCombinations = new Set<string>();
+
+    for (const variant of props.variants) {
+      const comboKey = variant
+        .getAssociatedAttributes()
+        .map((a) => `${a.key}:${a.value}`)
+        .sort()
+        .join('|');
+
+      if (seenCombinations.has(comboKey)) {
+        throw new BadRequestException(
+          `Duplicate variant combination found: ${comboKey}. Each variant must have a unique combination of attributes.`,
+        );
+      }
+
+      seenCombinations.add(comboKey);
+    }
   }
 
   public setName(name: string) {

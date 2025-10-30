@@ -1,4 +1,4 @@
-import { BaseAggregateRoot } from 'src/shared/ddd/domain/base/BaseAggregateRoot';
+import { AggregateRootBase } from 'src/shared/ddd/domain/base/aggregate-root.base';
 import { v7 as uuidV7 } from 'uuid';
 
 interface CategoryProps {
@@ -12,7 +12,7 @@ interface CreateCategoryProps {
   parentCategoryId?: string;
 }
 
-export class CategoryAggRoot extends BaseAggregateRoot<string, CategoryProps> {
+export class CategoryAggRoot extends AggregateRootBase<string, CategoryProps> {
   private constructor(props: CategoryProps) {
     super(props);
   }
