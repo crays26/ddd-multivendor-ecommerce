@@ -5,7 +5,7 @@ import { Lock } from 'redlock';
 import { IDistributedLock } from './distributed-lock.interface';
 
 @Injectable()
-export class RedLockService implements IDistributedLock {
+export class RedLockService implements IDistributedLock<Lock> {
   constructor(
     @Inject(RED_LOCK)
     private readonly redlock: Redlock,

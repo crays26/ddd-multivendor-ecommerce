@@ -1,8 +1,5 @@
-import { Lock } from "redlock";
-
-export interface IDistributedLock {
-  
-  acquire(keys: string[], ttl: number): Promise<Lock>;
-  release(lock: Lock): Promise<void>;
-  extend(lock: Lock, ttl: number): Promise<Lock>;
+export interface IDistributedLock<TLock> {
+    acquire(keys: string[], ttl: number): Promise<TLock>;
+    release(lock: TLock): Promise<void>;
+    extend(lock: TLock, ttl: number): Promise<TLock>;
 }
