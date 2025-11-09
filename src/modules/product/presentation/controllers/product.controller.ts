@@ -7,6 +7,7 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
+import { Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ProductCreateDto } from '../dtos/requests/product.create.dto';
 import { Body } from '@nestjs/common';
@@ -18,10 +19,11 @@ import { ProductDto } from '../dtos/responses/product.dto';
 import { JwtRequiredGuard } from 'src/shared/auth/guards/jwt/jwt.required.guard';
 import { RequiredRolesGuard } from 'src/shared/auth/guards/role/roles.guard';
 import { Roles } from 'src/shared/auth/decorators/class-decorators/roles.decorator';
-import { Role } from 'src/shared/auth/enums/role.enum';
-import { AuthPayload } from 'src/shared/auth/AuthPayload.interface';
+import { RoleList } from 'src/shared/auth/types/role.type';
+import { AuthPayload } from 'src/shared/auth/types/auth-payload.type';
 import { CurrentUser } from 'src/shared/auth/decorators/param-decorators/current-user.decorator';
 import { GetVendorByAccountIdQuery } from 'src/modules/vendor/application/queries/get-vendor-by-account-id/query';
+import { GetProductsByVendorId } from 'src/modules/product/application/queries/queries/get-products-by-vendor-id/query';
 
 @Controller('products')
 export class ProductController {
@@ -30,7 +32,7 @@ export class ProductController {
     private readonly queryBus: QueryBus,
   ) {}
 
-  @Roles(Role.VENDOR)
+  @Roles(RoleList.VENDOR)
   @UseGuards(JwtRequiredGuard, RequiredRolesGuard)
   @Post()
   async createProduct(
@@ -55,7 +57,31 @@ export class ProductController {
     return await this.queryBus.execute(query);
   }
 
-  @Roles(Role.VENDOR)
+  @Roles(RoleList.VENDOR)
+  @UseGuards(JwtRequiredGuard, RequiredRolesGuard)
+  @Get('vendors/:vendorId')
+  async findProductsByVendorId(
+    @Param('vendorId') vendorId: string,
+    @Query()
+    queries: {
+      page?: number;
+      limit?: number;
+      orderBy?: 'name' | 'createdAt' | 'updatedAt';
+      sort?: 'asc' | 'desc';
+    },
+  ) {
+    const {
+      page = 1,
+      limit = 10,
+      orderBy = 'createdAt',
+      sort = 'desc',
+    } = queries;
+    return await this.queryBus.execute(
+      new GetProductsByVendorId(vendorId, { page, limit, orderBy, sort }),
+    );
+  }
+
+  @Roles(RoleList.VENDOR)
   @UseGuards(JwtRequiredGuard, RequiredRolesGuard)
   @Put(':productId')
   async updateProduct(
@@ -63,10 +89,14 @@ export class ProductController {
     @Param('productId') productId: string,
     @Body() body: ProductUpdateDto,
   ): Promise<string | null> {
-      const vendor = await this.queryBus.execute(
-          new GetVendorByAccountIdQuery(currentUser.id),
-      );
-    const command = new UpdateProductCommand({ ...body, id: productId, vendorId: vendor!.id });
+    const vendor = await this.queryBus.execute(
+      new GetVendorByAccountIdQuery(currentUser.id),
+    );
+    const command = new UpdateProductCommand({
+      ...body,
+      id: productId,
+      vendorId: vendor!.id,
+    });
     return await this.commandBus.execute(command);
   }
 }
