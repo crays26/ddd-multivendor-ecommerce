@@ -19,7 +19,8 @@ export class GetProductsByVendorIdQueryHandler
   async execute(
     query: GetProductsByVendorId,
   ): Promise<PaginatedDto<ProductDto>> {
-      const { vendorId, queries: { page, limit, orderBy, sort } } = query;
+      const { vendorId, pagination } = query;
+      const { page, limit, orderBy, sort } = pagination;
       const offset = (page - 1) * limit;
 
     const [products, count] = await this.productRepository.findAndCount(
