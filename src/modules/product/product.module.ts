@@ -10,9 +10,12 @@ import { CreateProductCommandHandler } from './application/commands/create-produ
 import { UpdateProductCommandHandler } from './application/commands/update-product/handler';
 import { GetProductByIdQueryHandler } from './application/queries/queries/get-product-by-id/handler';
 import { ProductReadRepository } from './infrastructure/repositories/product.read.repo';
+import {
+    GetProductsByVendorIdQueryHandler
+} from "src/modules/product/application/queries/queries/get-products-by-vendor-id/handler";
 
 const CommandHandlers = [CreateProductCommandHandler, UpdateProductCommandHandler]
-const QueryHandlers = [GetProductByIdQueryHandler]
+const QueryHandlers = [GetProductByIdQueryHandler, GetProductsByVendorIdQueryHandler]
 
 @Module({
   imports: [
