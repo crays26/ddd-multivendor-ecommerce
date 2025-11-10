@@ -17,6 +17,8 @@ import { AddCustomerRoleEventHandler } from 'src/modules/account/application/eve
 import { AddRoleToAccountCommandHandler } from 'src/modules/account/application/commands/add-role-to-account/handler';
 import { AccountReadRepository } from 'src/modules/account/infrastructure/repositories/account.read.repo';
 import { GetAccountByIdQuery } from 'src/modules/account/application/queries/get-account-by-id/query';
+import { GetAccountByIdQueryHandler } from 'src/modules/account/application/queries/get-account-by-id/handler';
+import { AddVendorRoleEventHandler } from 'src/modules/account/application/event-handlers/add-vendor-role.event-handler';
 
 const CommandHandlers = [
   SignUpAccountCommandHandler,
@@ -24,9 +26,9 @@ const CommandHandlers = [
   AddRoleToAccountCommandHandler,
 ];
 
-const QueryHandlers = [GetAccountByIdQuery];
+const QueryHandlers = [GetAccountByIdQueryHandler];
 
-const EventHandlers = [AddCustomerRoleEventHandler];
+const EventHandlers = [AddCustomerRoleEventHandler, AddVendorRoleEventHandler];
 @Module({
   imports: [
     MikroOrmModule.forFeature([Account, Role]),
