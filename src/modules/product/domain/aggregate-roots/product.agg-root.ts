@@ -38,7 +38,7 @@ export class ProductAggRoot extends AggregateRootBase<string, ProductProps> {
     const product = new ProductAggRoot({
       ...props,
       id: props.id ?? uuidV7(),
-      slug: slugifyWithNanoid(this.name, 8),
+      slug: slugifyWithNanoid(props.name, 8),
       vendorId: VendorIdVO.create({ id: props.vendorId }),
       categoryId: CategoryIdVO.create({ id: props.categoryId }),
       variants: props.variants ?? [],
@@ -121,6 +121,7 @@ export class ProductAggRoot extends AggregateRootBase<string, ProductProps> {
       );
     }
     this.props.variants.push(variant);
+    this.validate(this.props);
   }
 
   public setVariants(variants: ProductVariant[]): void {
@@ -129,6 +130,8 @@ export class ProductAggRoot extends AggregateRootBase<string, ProductProps> {
       throw new ConflictException('Duplicate variant ID found in variants');
     }
     this.props.variants = variants;
+
+    this.validate(this.props);
   }
 
   public addAttribute(attribute: ProductAttribute): void {
@@ -138,6 +141,7 @@ export class ProductAggRoot extends AggregateRootBase<string, ProductProps> {
       );
     }
     this.props.attributes.push(attribute);
+    this.validate(this.props);
   }
 
   public setAttributes(attributes: ProductAttribute[]): void {
@@ -146,6 +150,7 @@ export class ProductAggRoot extends AggregateRootBase<string, ProductProps> {
       throw new ConflictException('Duplicate attribute keys found');
     }
     this.props.attributes = attributes;
+    this.validate(this.props);
   }
 
   public getId(): string {
