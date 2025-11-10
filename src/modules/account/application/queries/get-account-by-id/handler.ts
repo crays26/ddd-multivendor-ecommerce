@@ -7,7 +7,7 @@ import { Account } from 'src/modules/account/infrastructure/entities/account.ent
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { wrap } from '@mikro-orm/postgresql';
 @QueryHandler(GetAccountByIdQuery)
-export class GetAccountOfCurrentUserQueryHandler
+export class GetAccountByIdQueryHandler
   implements IQueryHandler<GetAccountByIdQuery>
 {
   constructor(
