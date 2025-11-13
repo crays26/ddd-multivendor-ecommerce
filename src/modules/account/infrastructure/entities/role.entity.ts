@@ -1,10 +1,10 @@
 import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-import { Account } from './account.entity';
+import { AccountEntity } from './account.entity';
 import { ManyToMany } from '@mikro-orm/core';
 import { Collection } from '@mikro-orm/core';
 
 @Entity({ tableName: 'role' })
-export class Role {
+export class RoleEntity {
 
    @PrimaryKey({ type: 'uuid' })
    id!: string;
@@ -12,6 +12,6 @@ export class Role {
    @Property()
    name!: string;
 
-  @ManyToMany(() => Account, account => account.roles)
-  accounts = new Collection<Account>(this);
+  @ManyToMany(() => AccountEntity, account => account.roles)
+  accounts = new Collection<AccountEntity>(this);
 }
