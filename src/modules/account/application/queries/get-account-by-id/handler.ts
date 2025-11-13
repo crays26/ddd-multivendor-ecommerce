@@ -3,7 +3,7 @@ import { GetAccountByIdQuery } from './query';
 import { AccountDto } from 'src/modules/account/presentation/dtos/response/account.response.dto';
 import { plainToInstance } from 'class-transformer';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { Account } from 'src/modules/account/infrastructure/entities/account.entity';
+import { AccountEntity } from 'src/modules/account/infrastructure/entities/account.entity';
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { wrap } from '@mikro-orm/postgresql';
 @QueryHandler(GetAccountByIdQuery)
@@ -11,11 +11,11 @@ export class GetAccountByIdQueryHandler
   implements IQueryHandler<GetAccountByIdQuery>
 {
   constructor(
-    @InjectRepository(Account)
-    private readonly accountRepo: EntityRepository<Account>,
+    @InjectRepository(AccountEntity)
+    private readonly accountRepo: EntityRepository<AccountEntity>,
   ) {}
   async execute(query: GetAccountByIdQuery): Promise<AccountDto | null> {
-    const account: Account | null = await this.accountRepo.findOne(
+    const account: AccountEntity | null = await this.accountRepo.findOne(
       { id: query.id },
       { populate: ['roles'] },
     );

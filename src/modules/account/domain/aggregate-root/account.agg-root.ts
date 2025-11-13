@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException } from '@nestjs/common';
-import { BaseAggregateRoot } from 'src/shared/ddd/domain/base/BaseAggregateRoot';
+import { AggregateRootBase } from 'src/shared/ddd/domain/base/aggregate-root.base';
 import { PasswordVO } from '../value-objects/password.vo';
 import { EmailVO } from '../value-objects/email.vo';
 import { v7 as uuidV7 } from 'uuid';
@@ -22,7 +22,7 @@ interface CreateAccountProps {
   roles?: RoleIdVO[];
 }
 
-export class AccountAggRoot extends BaseAggregateRoot<string, AccountProps> {
+export class AccountAggRoot extends AggregateRootBase<string, AccountProps> {
   private constructor(props: AccountProps) {
     super(props);
   }

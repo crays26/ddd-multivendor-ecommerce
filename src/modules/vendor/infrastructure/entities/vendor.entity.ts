@@ -7,7 +7,7 @@ import {
   Property,
   Unique,
 } from '@mikro-orm/core';
-import { Account } from 'src/modules/account/infrastructure/entities/account.entity';
+import { AccountEntity } from 'src/modules/account/infrastructure/entities/account.entity';
 import { ProductEntity } from 'src/modules/product/infrastructure/entities/product.entity';
 
 @Entity({ tableName: 'vendor' })
@@ -29,8 +29,8 @@ export class VendorEntity {
   @Property({ type: 'double precision' })
   rating!: number;
 
-  @OneToOne(() => Account, (account) => account.vendor, { owner: true })
-  account!: Account;
+  @OneToOne(() => AccountEntity, (account) => account.vendor, { owner: true })
+  account!: AccountEntity;
 
   @OneToMany(() => ProductEntity, (product) => product.vendor)
   products = new Collection<ProductEntity>(this);

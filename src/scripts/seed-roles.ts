@@ -1,6 +1,6 @@
 // scripts/seed-roles.ts
 import { bootstrapApp } from './bootstrap';
-import { Role } from '../../src/modules/account/infrastructure/entities/role.entity';
+import { RoleEntity } from '../../src/modules/account/infrastructure/entities/role.entity';
 
 
 async function seed() {
@@ -10,9 +10,9 @@ async function seed() {
   const roles = ['Admin', 'customer', 'Vendor'];
 
   for (const roleName of roles) {
-    const exists = await em.findOne(Role, { name: roleName });
+    const exists = await em.findOne(RoleEntity, { name: roleName });
     if (!exists) {
-      const role = new Role();
+      const role = new RoleEntity();
       role.name = roleName;
       em.persist(role);
     }

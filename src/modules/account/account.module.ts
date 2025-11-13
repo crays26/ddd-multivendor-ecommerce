@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { Account } from './infrastructure/entities/account.entity';
+import { AccountEntity } from './infrastructure/entities/account.entity';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { AuthController } from './presentation/controllers/account.controller';
 import { AccountRepository } from './infrastructure/repositories/account.repo';
-import { Role } from './infrastructure/entities/role.entity';
+import { RoleEntity } from './infrastructure/entities/role.entity';
 import { SignUpAccountCommandHandler } from './application/commands/sign-up-account/handler';
 import { LogInAccountCommandHandler } from './application/commands/log-in-account/handler';
 import { AuthService } from 'src/shared/auth/auth.service';
@@ -31,7 +31,7 @@ const QueryHandlers = [GetAccountByIdQueryHandler];
 const EventHandlers = [AddCustomerRoleEventHandler, AddVendorRoleEventHandler];
 @Module({
   imports: [
-    MikroOrmModule.forFeature([Account, Role]),
+    MikroOrmModule.forFeature([AccountEntity, RoleEntity]),
     ShareAuthModule,
     CqrsModule,
     UnitOfWorkModule,

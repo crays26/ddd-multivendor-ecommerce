@@ -1,6 +1,6 @@
 import { Seeder } from '@mikro-orm/seeder';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { Role } from 'src/modules/account/infrastructure/entities/role.entity';
+import { RoleEntity } from 'src/modules/account/infrastructure/entities/role.entity';
 export class RoleSeeder extends Seeder {
   async run(em: EntityManager): Promise<void> {
     const roles = [
@@ -19,9 +19,9 @@ export class RoleSeeder extends Seeder {
     ];
     // will get persisted automatically
     for (const role of roles) {
-        const existRole: Role | null = await em.findOne(Role, { id: role.id })
+        const existRole: RoleEntity | null = await em.findOne(RoleEntity, { id: role.id })
         if (!existRole) {
-            em.create(Role, {
+            em.create(RoleEntity, {
                 id: role.id,
                 name: role.name
             });

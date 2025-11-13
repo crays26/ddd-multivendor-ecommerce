@@ -1,11 +1,11 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import { Account } from '../entities/account.entity';
+import { AccountEntity } from '../entities/account.entity';
 import { AccountAggRoot } from '../../domain/aggregate-root/account.agg-root';
 import { IAccountRepository } from '../../domain/repositories/account.repo.interface';
 import { AccountDomainMapper } from '../mappers/account.mapper';
-import { Role } from '../entities/role.entity';
+import { RoleEntity } from '../entities/role.entity';
 
 @Injectable()
 export class AccountRepository implements IAccountRepository {
@@ -18,22 +18,22 @@ export class AccountRepository implements IAccountRepository {
   ) {}
 
   async insert(domain: AccountAggRoot) {
-    const account = new Account();
+    const account = new AccountEntity();
     account.id = domain.getId();
 
     account.username = domain.getUsername();
     account.email = domain.getEmail();
     account.password = domain.getPassword();
     account.roles.set(
-      domain.getRoles().map((r) => this.em.getReference(Role, r.getId())),
+      domain.getRoles().map((r) => this.em.getReference(RoleEntity, r.getId())),
     );
 
     this.em.persist(account);
   }
 
   async update(domain: AccountAggRoot): Promise<void> {
-    const account: Account = await this.em.findOneOrFail(
-      Account,
+    const account: AccountEntity = await this.em.findOneOrFail(
+      AccountEntity,
       {
         id: domain.getId(),
       },
@@ -44,7 +44,7 @@ export class AccountRepository implements IAccountRepository {
     account.email = domain.getEmail();
     account.password = domain.getPassword();
     account.roles.set(
-      domain.getRoles().map((r) => this.em.getReference(Role, r.getId())),
+      domain.getRoles().map((r) => this.em.getReference(RoleEntity, r.getId())),
     );
 
     this.em.persist(account);
@@ -64,7 +64,7 @@ export class AccountRepository implements IAccountRepository {
 
   async findById(id: string): Promise<AccountAggRoot | null> {
     const account = await this.em.findOne(
-      Account,
+      AccountEntity,
       { id },
       { populate: ['roles'] },
     );
@@ -74,7 +74,7 @@ export class AccountRepository implements IAccountRepository {
 
   async findByEmail(email: string): Promise<AccountAggRoot | null> {
     const account = await this.em.findOne(
-      Account,
+      AccountEntity,
       { email },
       { populate: ['roles'] },
     );

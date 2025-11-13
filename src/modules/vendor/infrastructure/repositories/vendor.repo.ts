@@ -4,7 +4,7 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { VendorEntity } from '../entities/vendor.entity';
 import { VendorAggRoot } from '../../domain/aggregate-roots/vendor.agg-root';
-import { Account } from '../../../account/infrastructure/entities/account.entity';
+import { AccountEntity } from '../../../account/infrastructure/entities/account.entity';
 
 @Injectable()
 export class VendorRepository {
@@ -17,7 +17,7 @@ export class VendorRepository {
     vendor.slug = domain.getSlug();
     vendor.description = domain.getDescription();
     vendor.rating = domain.getRating();
-    vendor.account = this.em.getReference(Account, domain.getAccountId());
+    vendor.account = this.em.getReference(AccountEntity, domain.getAccountId());
 
     this.em.persist(vendor);
   }
