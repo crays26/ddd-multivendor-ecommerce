@@ -2,6 +2,8 @@ import { AggregateRootBase } from 'src/shared/ddd/domain/base/aggregate-root.bas
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { v7 as uuidV7 } from 'uuid';
 import { OrderLineItem } from '../entities/order-line-item.entity';
+import { CustomerIdVO } from 'src/modules/order/domain/value-objects/customer-id.vo';
+import { VendorIdVO } from 'src/modules/order/domain/value-objects/vendor-id.vo';
 
 export enum OrderStatus {
   PENDING = 'PENDING',
@@ -15,12 +17,15 @@ interface OrderProps {
   orderItems: OrderLineItem[];
   status: OrderStatus;
   totalAmount: number;
-  createdAt: Date;
+  customerId: CustomerIdVO;
+  vendorId: VendorIdVO;
 }
 
 interface CreateOrderProps {
   id?: string;
   orderItems: OrderLineItem[];
+  customerId: CustomerIdVO;
+  vendorId: VendorIdVO;
 }
 
 export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
@@ -40,7 +45,8 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
       orderItems: props.orderItems,
       status: OrderStatus.PENDING,
       totalAmount: totalAmount,
-      createdAt: new Date(),
+      customerId: props.customerId,
+      vendorId: props.vendorId,
     });
 
     // order.addEvent(new OrderCreatedEvent(props.id));
@@ -186,8 +192,15 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
   public getId(): string {
     return this.props.id;
   }
+  public getCustomerId(): string {
+      return this.props.customerId.getId();
+  }
 
-  public getStatus(): OrderStatus {
+    public getVendorId(): string {
+        return this.props.vendorId.getId();
+    }
+
+    public getStatus(): OrderStatus {
     return this.props.status;
   }
 
@@ -200,7 +213,4 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
     return [...this.props.orderItems];
   }
 
-  public getCreatedAt(): Date {
-    return this.props.createdAt;
-  }
 }

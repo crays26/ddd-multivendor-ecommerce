@@ -12,7 +12,7 @@ interface OrderLineItemProps {
 
 interface CreateOrderLineItemProps {
     id?: string;
-    productVariantId: string;
+    productVariantId: ProductVariantIdVO;
     quantity: number;
     priceAtPurchase: number;
 }
@@ -29,7 +29,6 @@ export class OrderLineItem extends DomainEntityBase<string, OrderLineItemProps> 
         return new OrderLineItem({
             ...props,
             id: props.id ?? uuidV7(),
-            productVariantId: ProductVariantIdVO.create(props.productVariantId),
         });
 
     }
