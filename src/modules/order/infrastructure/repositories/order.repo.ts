@@ -8,6 +8,7 @@ import { VendorEntity } from 'src/modules/vendor/infrastructure/entities/vendor.
 import { OrderLineItemEntity } from 'src/modules/order/infrastructure/entities/order-line-item.entity';
 import { ProductVariantEntity } from 'src/modules/product/infrastructure/entities/product-variant.entity';
 import { OrderDomainMapper } from 'src/modules/order/infrastructure/mappers/order.mapper';
+import {OrderLineItem} from "src/modules/order/domain/entities/order-line-item.entity";
 
 @Injectable()
 export class OrderRepository implements IOrderRepository {
@@ -60,7 +61,7 @@ export class OrderRepository implements IOrderRepository {
   }
 
   private mapLineItemToEntity(
-    domainItem: any,
+    domainItem: OrderLineItem,
     entityItem: OrderLineItemEntity,
   ): void {
     entityItem.id = domainItem.getId();
