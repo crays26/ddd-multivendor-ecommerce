@@ -10,11 +10,11 @@ export class ProductVariantIdVO extends ValueObjectBase<ProductVariantIdProps> {
         super(props);
     }
 
-    static create(id: string): ProductVariantIdVO {
-        if (!id) {
+    static create(props: ProductVariantIdProps): ProductVariantIdVO {
+        if (!props.id) {
             throw new BadRequestException('ProductSkuId cannot be empty');
         }
-        return new ProductVariantIdVO({ id });
+        return new ProductVariantIdVO(props);
     }
 
     public getId(): string {
