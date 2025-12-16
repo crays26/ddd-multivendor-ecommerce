@@ -12,6 +12,7 @@ import { VendorModule } from './modules/vendor/vendor.module';
 import { ShareCacheModule } from './shared/ddd/infrastructure/cache/cache.module';
 import { ShareDistributedLockModule } from './shared/ddd/infrastructure/distributed-lock/distributed-lock.module';
 import { CqrsModule } from '@nestjs/cqrs';
+import { ShareCloudStorageModule } from 'src/shared/ddd/infrastructure/cloud-storage/cloud-storage.module';
 
 @Module({
   imports: [
@@ -26,8 +27,8 @@ import { CqrsModule } from '@nestjs/cqrs';
     VendorModule,
     ShareAuthModule,
     ShareCacheModule,
-    ShareDistributedLockModule
-    
+    ShareDistributedLockModule,
+    ShareCloudStorageModule,
   ],
   controllers: [AppController],
   providers: [AppService],
