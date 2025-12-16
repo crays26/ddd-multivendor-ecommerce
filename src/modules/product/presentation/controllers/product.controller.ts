@@ -14,7 +14,7 @@ import { Body } from '@nestjs/common';
 import { CreateProductCommand } from '../../application/commands/create-product/command';
 import { ProductUpdateDto } from '../dtos/requests/product.update.dto';
 import { UpdateProductCommand } from '../../application/commands/update-product/command';
-import { GetProductByIdQuery } from '../../application/queries/queries/get-product-by-id/query';
+import { GetProductByIdQuery } from 'src/modules/product/application/queries/get-product-by-id/query';
 import { ProductDto } from '../dtos/responses/product.dto';
 import { JwtRequiredGuard } from 'src/shared/auth/guards/jwt/jwt.required.guard';
 import { RequiredRolesGuard } from 'src/shared/auth/guards/role/roles.guard';
@@ -23,7 +23,8 @@ import { RoleList } from 'src/shared/auth/types/role.type';
 import { AuthPayload } from 'src/shared/auth/types/auth-payload.type';
 import { CurrentUser } from 'src/shared/auth/decorators/param-decorators/current-user.decorator';
 import { GetVendorByAccountIdQuery } from 'src/modules/vendor/application/queries/get-vendor-by-account-id/query';
-import { GetProductsByVendorId } from 'src/modules/product/application/queries/queries/get-products-by-vendor-id/query';
+import { GetProductsByVendorId } from 'src/modules/product/application/queries/get-products-by-vendor-id/query';
+import { PaginationQueryDto } from 'src/shared/ddd/application/dtos/pagination-query.dto';
 
 @Controller('products')
 export class ProductController {
@@ -62,22 +63,10 @@ export class ProductController {
   @Get('vendors/:vendorId')
   async findProductsByVendorId(
     @Param('vendorId') vendorId: string,
-    @Query()
-    queries: {
-      page?: number;
-      limit?: number;
-      orderBy?: 'name' | 'createdAt' | 'updatedAt';
-      sort?: 'asc' | 'desc';
-    },
+    @Query() pagination: PaginationQueryDto,
   ) {
-    const {
-      page = 1,
-      limit = 10,
-      orderBy = 'createdAt',
-      sort = 'desc',
-    } = queries;
     return await this.queryBus.execute(
-      new GetProductsByVendorId(vendorId, { page, limit, orderBy, sort }),
+      new GetProductsByVendorId(vendorId, pagination),
     );
   }
 

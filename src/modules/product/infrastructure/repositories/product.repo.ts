@@ -9,6 +9,7 @@ import { ProductDomainMapper } from 'src/modules/product/infrastructure/mappers/
 import { VendorEntity } from 'src/modules/vendor/infrastructure/entities/vendor.entity';
 import { CategoryEntity } from 'src/modules/product/infrastructure/entities/category.entity';
 import { ProductVariant } from 'src/modules/product/domain/entities/product-variant';
+import {ProductAttribute} from "src/modules/product/domain/entities/product-attribute";
 
 @Injectable()
 export class ProductRepository implements IProductRepository {
@@ -155,7 +156,7 @@ export class ProductRepository implements IProductRepository {
   }
 
   private mapAttributeToEntity(
-    domainAttr: any,
+    domainAttr: ProductAttribute,
     entityAttr: ProductAttributeEntity,
   ): void {
     entityAttr.key = domainAttr.getKey();

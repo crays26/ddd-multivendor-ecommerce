@@ -1,5 +1,5 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { GetProductsByVendorId } from 'src/modules/product/application/queries/queries/get-products-by-vendor-id/query';
+import { GetProductsByVendorId } from 'src/modules/product/application/queries/get-products-by-vendor-id/query';
 import { Inject } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { ProductEntity } from 'src/modules/product/infrastructure/entities/product.entity';

@@ -8,18 +8,26 @@ import { ProductRepository } from './infrastructure/repositories/product.repo';
 import { ProductController } from './presentation/controllers/product.controller';
 import { CreateProductCommandHandler } from './application/commands/create-product/handler';
 import { UpdateProductCommandHandler } from './application/commands/update-product/handler';
-import { GetProductByIdQueryHandler } from './application/queries/queries/get-product-by-id/handler';
+import { GetProductByIdQueryHandler } from './application/queries/get-product-by-id/handler';
 import { ProductReadRepository } from './infrastructure/repositories/product.read.repo';
-import {
-    GetProductsByVendorIdQueryHandler
-} from "src/modules/product/application/queries/queries/get-products-by-vendor-id/handler";
+import { GetProductsByVendorIdQueryHandler } from './application/queries/get-products-by-vendor-id/handler';
 
-const CommandHandlers = [CreateProductCommandHandler, UpdateProductCommandHandler]
-const QueryHandlers = [GetProductByIdQueryHandler, GetProductsByVendorIdQueryHandler]
+const CommandHandlers = [
+  CreateProductCommandHandler,
+  UpdateProductCommandHandler,
+];
+const QueryHandlers = [
+  GetProductByIdQueryHandler,
+  GetProductsByVendorIdQueryHandler,
+];
 
 @Module({
   imports: [
-    MikroOrmModule.forFeature([ProductEntity, ProductVariantEntity, ProductAttributeEntity]),
+    MikroOrmModule.forFeature([
+      ProductEntity,
+      ProductVariantEntity,
+      ProductAttributeEntity,
+    ]),
     CqrsModule,
   ],
 
