@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { RED_LOCK } from './providers/redlock.provider';
+import { RED_LOCK } from '../providers/redlock.provider';
 import Redlock from 'redlock';
 import { Lock } from 'redlock';
 import { IDistributedLock } from './distributed-lock.interface';

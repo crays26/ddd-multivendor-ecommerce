@@ -1,9 +1,9 @@
 import { Global, Module } from '@nestjs/common';
-import { RedisProvider } from './providers/redis.provider';
-import { RedlockProvider } from './providers/redlock.provider';
+import { RedisProvider } from '../providers/redis.provider';
+import { RedlockProvider } from '../providers/redlock.provider';
 import { RedLockService } from './redlock.service';
+import { DISTRIBUTED_LOCK } from 'src/shared/ddd/infrastructure/distributed-lock/distributed-lock.interface';
 
-export const DISTRIBUTED_LOCK = Symbol('DISTRIBUTED_LOCK');
 @Global()
 @Module({
   imports: [],

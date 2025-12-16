@@ -3,3 +3,5 @@ export interface IDistributedLock<TLock> {
     release(lock: TLock): Promise<void>;
     extend(lock: TLock, ttl: number): Promise<TLock>;
 }
+
+export const DISTRIBUTED_LOCK = Symbol('DISTRIBUTED_LOCK');
