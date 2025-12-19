@@ -14,7 +14,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
   constructor(private readonly authService: AuthService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        (req) => req?.cookies?.['access_token'],
+        (req) => req?.cookies?.['refresh_token'],
       ]),
       ignoreExpiration: false,
       secretOrKey: process.env.ACCESS_TOKEN_SECRET_KEY!,
@@ -23,12 +23,12 @@ export class JwtRefreshStrategy extends PassportStrategy(
   }
 
   async validate(req: Request, payload: AuthPayload) {
-    const token: string | undefined = req.cookies?.['access_token'];
-    if (!token) throw new UnauthorizedException('Missing access token');
+    const token: string | undefined = req.cookies?.['refresh_token'];
+    if (!token) throw new UnauthorizedException('Missing refresh token');
 
     const isBlacklisted = await this.authService.isTokenBlacklisted(token);
     if (isBlacklisted) {
-      throw new UnauthorizedException('Access token has been blacklisted');
+      throw new UnauthorizedException('Refresh token has been blacklisted');
     }
 
     return payload;
