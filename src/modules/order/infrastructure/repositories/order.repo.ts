@@ -8,7 +8,7 @@ import { VendorEntity } from 'src/modules/vendor/infrastructure/entities/vendor.
 import { OrderLineItemEntity } from 'src/modules/order/infrastructure/entities/order-line-item.entity';
 import { ProductVariantEntity } from 'src/modules/product/infrastructure/entities/product-variant.entity';
 import { OrderDomainMapper } from 'src/modules/order/infrastructure/mappers/order.mapper';
-import {OrderLineItem} from "src/modules/order/domain/entities/order-line-item.entity";
+import { OrderLineItem } from 'src/modules/order/domain/entities/order-line-item.entity';
 
 @Injectable()
 export class OrderRepository implements IOrderRepository {
@@ -28,7 +28,7 @@ export class OrderRepository implements IOrderRepository {
     entity.id = aggregate.getId();
 
     this.mapAggregateToEntity(aggregate, entity);
-    this.createLineItems(aggregate, entity);
+    this.upsertLineItems(aggregate, entity);
     this.em.persist(entity);
   }
 
@@ -40,7 +40,7 @@ export class OrderRepository implements IOrderRepository {
     );
     this.mapAggregateToEntity(aggregate, entity);
     this.removeUnusedLineItems(aggregate, entity);
-    this.addOrUpdateLineItems(aggregate, entity);
+    this.upsertLineItems(aggregate, entity);
 
     this.em.persist(entity);
   }
@@ -64,7 +64,6 @@ export class OrderRepository implements IOrderRepository {
     domainItem: OrderLineItem,
     entityItem: OrderLineItemEntity,
   ): void {
-    entityItem.id = domainItem.getId();
     entityItem.price = domainItem.getPriceAtPurchase();
     entityItem.quantity = domainItem.getQuantity();
 
@@ -73,14 +72,6 @@ export class OrderRepository implements IOrderRepository {
         ProductVariantEntity,
         domainItem.getProductVariantId(),
       );
-    }
-  }
-
-  private createLineItems(aggregate: OrderAggRoot, entity: OrderEntity): void {
-    for (const item of aggregate.getOrderItems()) {
-      const lineItemEntity = new OrderLineItemEntity();
-      this.mapLineItemToEntity(item, lineItemEntity);
-      entity.lineItems.add(lineItemEntity);
     }
   }
 
@@ -100,10 +91,7 @@ export class OrderRepository implements IOrderRepository {
     }
   }
 
-  private addOrUpdateLineItems(
-    aggregate: OrderAggRoot,
-    entity: OrderEntity,
-  ): void {
+  private upsertLineItems(aggregate: OrderAggRoot, entity: OrderEntity): void {
     const existingItems = entity.lineItems.getItems();
 
     for (const domainItem of aggregate.getOrderItems()) {
