@@ -11,6 +11,8 @@ import { UpdateProductCommandHandler } from './application/commands/update-produ
 import { GetProductByIdQueryHandler } from './application/queries/get-product-by-id/handler';
 import { ProductReadRepository } from './infrastructure/repositories/product.read.repo';
 import { GetProductsByVendorIdQueryHandler } from './application/queries/get-products-by-vendor-id/handler';
+import { PRODUCT_PUBLIC_SERVICE } from 'src/modules/product/application/public-services/product.public-service.interface';
+import { ProductPublicService } from 'src/modules/product/application/public-services/product.public-service';
 
 const CommandHandlers = [
   CreateProductCommandHandler,
@@ -33,11 +35,15 @@ const QueryHandlers = [
 
   controllers: [ProductController],
   providers: [
+    {
+      provide: PRODUCT_PUBLIC_SERVICE,
+      useClass: ProductPublicService,
+    },
     ProductRepository,
     ProductReadRepository,
     ...CommandHandlers,
     ...QueryHandlers,
   ],
-  exports: [],
+  exports: [PRODUCT_PUBLIC_SERVICE],
 })
 export class ProductModule {}
