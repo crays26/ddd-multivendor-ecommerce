@@ -1,4 +1,3 @@
-// src/products/commands/create-product.command.ts
 import { Command } from '@nestjs/cqrs';
 import { ProductCreateDto } from 'src/modules/product/presentation/dtos/requests/product.create.dto';
 

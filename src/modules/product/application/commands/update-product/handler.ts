@@ -1,4 +1,3 @@
-// src/products/commands/handlers/create-product.handler.ts
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateProductCommand } from './command';
 import { ProductRepository } from 'src/modules/product/infrastructure/repositories/product.repo';
