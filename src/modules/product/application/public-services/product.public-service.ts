@@ -1,7 +1,10 @@
+import { Injectable } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ChangeVariantStockCommand } from 'src/modules/product/application/commands/change-variant-stock/command';
+import {IProductPublicService} from "src/modules/product/application/public-services/product.public-service.interface";
 
-export class ProductFacadeService {
+@Injectable()
+export class ProductPublicService implements IProductPublicService {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
