@@ -1,8 +1,8 @@
-export const RoleList = {
-    CUSTOMER: process.env.ROLE_CUSTOMER_ID!,
-    VENDOR: process.env.ROLE_VENDOR_ID!,
-    ADMIN: process.env.ROLE_ADMIN_ID!,
-} as const;
+export enum RoleEnum {
+  CUSTOMER = 'Customer',
+  VENDOR = 'Vendor',
+  ADMIN = 'Admin',
+}
 
-export type RoleKey = keyof typeof RoleList; // "CUSTOMER" | "VENDOR" | "ADMIN"
-export type RoleId = typeof RoleList[RoleKey]; // string (UUID)
+export type RoleName = RoleEnum;
+export type RoleId = string;
