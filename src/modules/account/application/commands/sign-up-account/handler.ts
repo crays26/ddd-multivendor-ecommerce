@@ -2,49 +2,57 @@ import { CommandHandler, EventPublisher, ICommandHandler } from '@nestjs/cqrs';
 import { SignUpAccountCommand } from './command';
 import { AccountAggRoot } from 'src/modules/account/domain/aggregate-root/account.agg-root';
 import { AuthService } from 'src/shared/auth/auth.service';
-import { ConflictException, Inject } from '@nestjs/common';
+import { ConflictException, Inject, NotFoundException } from '@nestjs/common';
 import {
   UNIT_OF_WORK,
   IUnitOfWork,
 } from 'src/shared/ddd/infrastructure/unit-of-work/unit-of-work.interface';
 import { AccountRepository } from 'src/modules/account/infrastructure/repositories/account.repo';
-import { AccountSignedUpEvent } from 'src/modules/account/domain/events/account-signed-up.event';
+import { Transactional } from '@mikro-orm/core';
+import {
+  ACCOUNT_REPO,
+  IAccountRepository,
+} from 'src/modules/account/domain/repositories/account.repo.interface';
+import {
+  ROLE_REPO,
+  IRoleRepository,
+} from 'src/modules/account/domain/repositories/role.repo.interface';
+import { RoleName } from 'src/shared/auth/types/role.type';
+import { RoleAggRoot } from 'src/modules/account/domain/aggregate-root/role.agg-root';
+import { RoleIdVO } from 'src/modules/account/domain/value-objects/role-id.vo';
 
 @CommandHandler(SignUpAccountCommand)
 export class SignUpAccountCommandHandler
   implements ICommandHandler<SignUpAccountCommand>
 {
   constructor(
-    @Inject(UNIT_OF_WORK)
-    private readonly unitOfWork: IUnitOfWork,
-    // @Inject(ACCOUNT_REPO)
-    // private readonly accountRepo: IAccountRepository,
+    @Inject(ACCOUNT_REPO)
+    private readonly accountRepo: IAccountRepository,
+    @Inject(ROLE_REPO)
+    private readonly roleRepo: IRoleRepository,
     private readonly authService: AuthService,
-    private readonly eventPublisher: EventPublisher,
   ) {}
 
+  @Transactional()
   async execute(command: SignUpAccountCommand) {
-    await this.unitOfWork.begin();
-    const accountRepo = this.unitOfWork.getRepository(AccountRepository);
-
-    const accountExists = await accountRepo.findByEmail(command.data.email);
+    const accountExists = await this.accountRepo.findByEmail(
+      command.data.email,
+    );
     if (accountExists)
       throw new ConflictException('This email has already been used');
-    try {
-      const accountDomainEntity = AccountAggRoot.create(command.data);
 
-      const hashedPassword = await this.authService.hash(
-        accountDomainEntity.getPassword(),
-      );
-      accountDomainEntity.setPassword(hashedPassword);
-      await accountRepo.insert(accountDomainEntity);
+    const accountDomainEntity = AccountAggRoot.create(command.data);
 
-      await this.unitOfWork.commit();
-      this.eventPublisher.mergeObjectContext(accountDomainEntity).commit();
-      return `Account with id ${accountDomainEntity.getId()} registered successfully`;
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    const hashedPassword = await this.authService.hash(
+      accountDomainEntity.getPassword(),
+    );
+    accountDomainEntity.setPassword(hashedPassword);
+    const role = await this.roleRepo.findByName(RoleName.CUSTOMER);
+    if (!role) throw new NotFoundException('Role not found');
+    accountDomainEntity.addRole(RoleIdVO.create({ id: role.getId() }));
+
+    await this.accountRepo.insert(accountDomainEntity);
+
+    return accountDomainEntity.getId();
   }
 }
