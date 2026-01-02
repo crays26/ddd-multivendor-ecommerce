@@ -21,6 +21,8 @@ import { AccountReadRepository } from 'src/modules/account/infrastructure/reposi
 import { GetAccountByIdQuery } from 'src/modules/account/application/queries/get-account-by-id/query';
 import { GetAccountByIdQueryHandler } from 'src/modules/account/application/queries/get-account-by-id/handler';
 import { AddVendorRoleEventHandler } from 'src/modules/account/application/event-handlers/add-vendor-role.event-handler';
+import { AccountPublicService } from 'src/modules/account/application/public-services/account.public-service';
+import { AddressEntity } from './infrastructure/entities/address.entity';
 
 const CommandHandlers = [
   SignUpAccountCommandHandler,
@@ -33,7 +35,7 @@ const QueryHandlers = [GetAccountByIdQueryHandler];
 const EventHandlers = [AddCustomerRoleEventHandler, AddVendorRoleEventHandler];
 @Module({
   imports: [
-    MikroOrmModule.forFeature([AccountEntity, RoleEntity]),
+    MikroOrmModule.forFeature([AccountEntity, RoleEntity, AddressEntity]),
     ShareAuthModule,
     CqrsModule,
     UnitOfWorkModule,
@@ -50,6 +52,7 @@ const EventHandlers = [AddCustomerRoleEventHandler, AddVendorRoleEventHandler];
       useClass: RoleRepository,
     },
     AccountReadRepository,
+    AccountPublicService,
     AuthService,
     ...CommandHandlers,
     ...QueryHandlers,
@@ -59,6 +62,6 @@ const EventHandlers = [AddCustomerRoleEventHandler, AddVendorRoleEventHandler];
       useClass: UnitOfWork,
     },
   ],
-  exports: [],
+  exports: [AccountPublicService],
 })
 export class AccountModule {}
