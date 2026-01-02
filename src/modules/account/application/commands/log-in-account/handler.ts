@@ -7,6 +7,8 @@ import { AuthService } from 'src/shared/auth/auth.service';
 import { AuthPayload } from 'src/shared/auth/types/auth-payload.type';
 import { ACCOUNT_REPO } from 'src/modules/account/domain/repositories/account.repo.interface';
 import { JwtTokenPair } from 'src/shared/auth/types/jwt-token-pair.type';
+import {IRoleRepository, ROLE_REPO} from "src/modules/account/domain/repositories/role.repo.interface";
+import { RoleName } from 'src/shared/auth/types/role.type';
 
 @CommandHandler(LogInAccountCommand)
 export class LogInAccountCommandHandler
@@ -15,6 +17,8 @@ export class LogInAccountCommandHandler
   constructor(
     @Inject(ACCOUNT_REPO)
     private readonly accountRepo: IAccountRepository,
+    @Inject(ROLE_REPO)
+    private readonly roleRepo: IRoleRepository,
     private readonly authService: AuthService,
     private readonly eventPublisher: EventPublisher,
   ) {}
@@ -36,11 +40,15 @@ export class LogInAccountCommandHandler
     accountWithContext.logIn();
     accountWithContext.commit();
 
+    const roleIds = accountDomain.getRoles().map((role) => role.getId());
+    const roles = await this.roleRepo.findByIds(roleIds);
+    const roleNames: RoleName[] = roles.map((r) => r.getName());
+
     const tokenPayload: AuthPayload = {
       id: accountDomain.getId(),
       username: accountDomain.getUsername(),
       email: accountDomain.getEmail(),
-      roles: accountDomain.getRoles().map((role) => role.getId()),
+      roles: roleNames,
     };
     return this.authService.generateTokens(tokenPayload);
   }
