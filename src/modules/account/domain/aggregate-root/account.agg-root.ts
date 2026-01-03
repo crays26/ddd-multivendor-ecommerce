@@ -1,4 +1,8 @@
-import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { AggregateRootBase } from 'src/shared/ddd/domain/base/aggregate-root.base';
 import { PasswordVO } from '../value-objects/password.vo';
 import { EmailVO } from '../value-objects/email.vo';
@@ -28,6 +32,24 @@ interface CreateAccountProps {
 export class AccountAggRoot extends AggregateRootBase<string, AccountProps> {
   private constructor(props: AccountProps) {
     super(props);
+    this.validate(props);
+  }
+
+  private validate(props: AccountProps) {
+    const defaultAddress: Address[] = [];
+    props.addresses.forEach((address) => {
+      if (address.isDefault()) defaultAddress.push(address);
+    });
+    if (defaultAddress.length > 1)
+      throw new BadRequestException('Only one default address is allowed');
+
+    const roleSet = new Set(props.roles.map((r) => r.getId()));
+    if (roleSet.size !== props.roles.length)
+      throw new BadRequestException('Duplicate role');
+
+    const addressSet = new Set(props.addresses.map((a) => a.getId()));
+    if (addressSet.size !== props.addresses.length)
+      throw new BadRequestException('Duplicate address');
   }
 
   static create(props: CreateAccountProps): AccountAggRoot {
@@ -84,9 +106,13 @@ export class AccountAggRoot extends AggregateRootBase<string, AccountProps> {
 
   public setAddresses(addresses: Address[]): void {
     this.props.addresses = addresses;
+    this.validate(this.props);
   }
 
   public addAddress(address: Address): void {
+    if (this.props.addresses.some((a) => a.getId() === address.getId()))
+      throw new ConflictException('Address already exists');
+
     this.props.addresses.push(address);
   }
 
@@ -98,6 +124,16 @@ export class AccountAggRoot extends AggregateRootBase<string, AccountProps> {
       throw new NotFoundException('Address not found');
     }
     this.props.addresses[index] = address;
+  }
+
+  public setAddressDefault(addressId: string): void {
+    if (!this.props.addresses.find((a) => a.getId() === addressId))
+      throw new NotFoundException('Address not found');
+
+    this.props.addresses.forEach((a) => {
+      if (a.getId() === addressId) a.setAsDefault();
+      else a.unsetDefault();
+    });
   }
 
   public removeAddress(addressId: string): void {
