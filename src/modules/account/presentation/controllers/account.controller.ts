@@ -5,7 +5,6 @@ import {
   Post,
   Req,
   Res,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { SignUpAccountDto } from '../dtos/SignUpAccount.dto';
@@ -22,6 +21,8 @@ import { JwtRefreshGuard } from 'src/shared/auth/guards/jwt/jwt.refresh.guard';
 import { AuthPayload } from 'src/shared/auth/types/auth-payload.type';
 import { CurrentUser } from 'src/shared/auth/decorators/param-decorators/current-user.decorator';
 import { GetAccountByIdQuery } from 'src/modules/account/application/queries/get-account-by-id/query';
+import { AddAddressDto } from 'src/modules/account/application/commands/add-address-to-account/dto';
+import { AddAddressToAccountCommand } from 'src/modules/account/application/commands/add-address-to-account/command';
 
 @Controller('account')
 export class AuthController {
@@ -94,5 +95,15 @@ export class AuthController {
     if (!currentUser) return null;
     const query = new GetAccountByIdQuery(currentUser!.id);
     return await this.queryBus.execute(query);
+  }
+
+  @Post('address')
+  @UseGuards(JwtRequiredGuard)
+  async addAddress(
+    @CurrentUser() currentUser: AuthPayload,
+    @Body() body: AddAddressDto,
+  ): Promise<string> {
+    const command = new AddAddressToAccountCommand(currentUser.id, body);
+    return await this.commandBus.execute(command);
   }
 }
