@@ -1,9 +1,9 @@
 import { Command } from '@nestjs/cqrs';
-import { ProductCreateDto } from 'src/modules/product/presentation/dtos/requests/product.create.dto';
+import { CreateProductDto } from './dto';
 
 export class CreateProductCommand extends Command<string> {
   constructor(
-    public readonly payload: ProductCreateDto & { vendorId: string },
+    public readonly payload: CreateProductDto & { vendorId: string },
   ) {
     super();
   }

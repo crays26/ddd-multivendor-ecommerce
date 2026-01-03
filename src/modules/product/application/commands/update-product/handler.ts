@@ -10,6 +10,7 @@ import {
   UNIT_OF_WORK,
 } from 'src/shared/ddd/infrastructure/unit-of-work/unit-of-work.interface';
 import { Inject } from '@nestjs/common';
+
 @CommandHandler(UpdateProductCommand)
 export class UpdateProductCommandHandler
   implements ICommandHandler<UpdateProductCommand>
@@ -38,6 +39,7 @@ export class UpdateProductCommandHandler
         skuCode: v.skuCode,
         stock: v.stock,
         price: v.price,
+        isBase: v.isBase,
         associatedAttributes: v.associatedAttributes.map((a) =>
           VariantAssociatedAttributeVO.create(a),
         ),

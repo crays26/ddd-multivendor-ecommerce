@@ -1,9 +1,9 @@
 import { Command } from '@nestjs/cqrs';
-import { ProductUpdateDto } from 'src/modules/product/presentation/dtos/requests/product.update.dto';
+import { UpdateProductDto } from './dto';
 
 export class UpdateProductCommand extends Command<string> {
   constructor(
-    public readonly payload: ProductUpdateDto & {
+    public readonly payload: UpdateProductDto & {
       id: string;
       vendorId: string;
     },
