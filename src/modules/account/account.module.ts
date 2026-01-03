@@ -23,11 +23,13 @@ import { GetAccountByIdQueryHandler } from 'src/modules/account/application/quer
 import { AddVendorRoleEventHandler } from 'src/modules/account/application/event-handlers/add-vendor-role.event-handler';
 import { AccountPublicService } from 'src/modules/account/application/public-services/account.public-service';
 import { AddressEntity } from './infrastructure/entities/address.entity';
+import { AddAddressToAccountCommandHandler } from 'src/modules/account/application/commands/add-address-to-account/handler';
 
 const CommandHandlers = [
   SignUpAccountCommandHandler,
   LogInAccountCommandHandler,
   AddRoleToAccountCommandHandler,
+  AddAddressToAccountCommandHandler,
 ];
 
 const QueryHandlers = [GetAccountByIdQueryHandler];
