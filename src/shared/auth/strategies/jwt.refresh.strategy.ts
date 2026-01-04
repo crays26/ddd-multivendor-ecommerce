@@ -17,7 +17,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
         (req) => req?.cookies?.['refresh_token'],
       ]),
       ignoreExpiration: false,
-      secretOrKey: process.env.ACCESS_TOKEN_SECRET_KEY!,
+      secretOrKey: process.env.REFRESH_TOKEN_SECRET_KEY!,
       passReqToCallback: true,
     });
   }

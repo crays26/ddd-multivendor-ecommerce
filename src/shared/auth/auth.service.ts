@@ -16,7 +16,7 @@ export class AuthService {
 
   generateTokens(payload: AuthPayload): JwtTokenPair {
     const accessToken = this.jwtService.sign(payload, {
-      expiresIn: '15m',
+      expiresIn: '10m',
       secret: process.env.ACCESS_TOKEN_SECRET_KEY!,
     });
     const refreshToken = this.jwtService.sign(payload, {
@@ -31,7 +31,7 @@ export class AuthService {
       httpOnly: true,
       sameSite: 'strict',
       secure: true,
-      maxAge: 15 * 60 * 1000,
+      maxAge: 10 * 60 * 1000,
     });
     response.cookie('refresh_token', tokens.refreshToken, {
       httpOnly: true,
@@ -68,6 +68,6 @@ export class AuthService {
   }
 
   async isTokenBlacklisted(token: string): Promise<boolean> {
-      return (await this.cache.get<string>(`blacklist:${token}`)) !== undefined;
+    return (await this.cache.get<string>(`blacklist:${token}`)) !== undefined;
   }
 }
