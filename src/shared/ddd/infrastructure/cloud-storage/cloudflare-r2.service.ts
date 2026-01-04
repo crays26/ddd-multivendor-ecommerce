@@ -2,6 +2,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   S3Client,
@@ -15,6 +16,7 @@ import {
   ICloudStorage,
   PresignedUrlResult,
   UploadResult,
+  ALLOWED_MIME_TYPES,
 } from './cloud-storage.interface';
 
 @Injectable()
@@ -27,11 +29,19 @@ export class CloudflareR2CloudStorageService implements ICloudStorage {
     this.publicDomain = process.env.R2_PUBLIC_DOMAIN!;
   }
 
-  async generatePresignedUrl(
+  async generatePresignedUploadUrl(
     contentType: string,
     originalName: string,
     prefix = 'uploads',
   ): Promise<PresignedUrlResult> {
+    const allowedImages = ALLOWED_MIME_TYPES as readonly string[];
+
+    if (!allowedImages.includes(contentType)) {
+      throw new BadRequestException(
+        `Invalid media type for Product. Allowed: ${allowedImages.join(', ')}`,
+      );
+    }
+
     const fileExtension = originalName.split('.').pop();
     const key = `${prefix}/${uuidV7()}.${fileExtension}`;
 
