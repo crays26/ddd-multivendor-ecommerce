@@ -1,9 +1,4 @@
-import {
-  Entity,
-  ManyToOne,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { ProductEntity } from './product.entity';
 
 @Entity({ tableName: 'product_attribute' })
@@ -14,7 +9,7 @@ export class ProductAttributeEntity {
   @Property()
   key!: string;
 
-  @Property({ type: 'json', nullable: false })
+  @Property({ type: 'jsonb', nullable: false })
   values!: string[];
 
   @Property()

@@ -9,7 +9,7 @@ import { ProductDomainMapper } from 'src/modules/product/infrastructure/mappers/
 import { VendorEntity } from 'src/modules/vendor/infrastructure/entities/vendor.entity';
 import { CategoryEntity } from 'src/modules/product/infrastructure/entities/category.entity';
 import { ProductVariant } from 'src/modules/product/domain/entities/product-variant';
-import {ProductAttribute} from "src/modules/product/domain/entities/product-attribute";
+import { ProductAttribute } from 'src/modules/product/domain/entities/product-attribute';
 
 @Injectable()
 export class ProductRepository implements IProductRepository {
@@ -39,8 +39,8 @@ export class ProductRepository implements IProductRepository {
     const entity = new ProductEntity();
     entity.id = aggregate.getId();
     this.mapAggregateToEntity(aggregate, entity);
-    this.createVariants(aggregate, entity);
-    this.createAttributes(aggregate, entity);
+    this.upsertVariants(aggregate, entity);
+    this.upsertAttributes(aggregate, entity);
 
     await this.em.persistAndFlush(entity);
   }
@@ -54,10 +54,10 @@ export class ProductRepository implements IProductRepository {
 
     this.mapAggregateToEntity(aggregate, entity);
     this.softDeleteUnusedVariants(aggregate, entity);
-    this.addOrUpdateVariants(aggregate, entity);
+    this.upsertVariants(aggregate, entity);
 
     this.softDeleteUnusedAttributes(aggregate, entity);
-    this.addOrUpdateAttributes(aggregate, entity);
+    this.upsertAttributes(aggregate, entity);
 
     await this.em.persistAndFlush(entity);
   }
@@ -89,6 +89,8 @@ export class ProductRepository implements IProductRepository {
   ): void {
     entity.name = aggregate.getName();
     entity.slug = aggregate.getSlug();
+    entity.description = aggregate.getDescription();
+    entity.displayPrice = aggregate.getDisplayPrice();
     entity.vendor = this.em.getReference(VendorEntity, aggregate.getVendorId());
     entity.category = this.em.getReference(
       CategoryEntity,
@@ -110,18 +112,6 @@ export class ProductRepository implements IProductRepository {
     entityVariant.isBase = false;
   }
 
-  private createVariants(
-    aggregate: ProductAggRoot,
-    entity: ProductEntity,
-  ): void {
-    for (const v of aggregate.getVariants()) {
-      const variant = new ProductVariantEntity();
-      variant.id = v.getId();
-      this.mapVariantToEntity(v, variant);
-      entity.variants.add(variant);
-    }
-  }
-
   private softDeleteUnusedVariants(
     aggregate: ProductAggRoot,
     entity: ProductEntity,
@@ -136,7 +126,7 @@ export class ProductRepository implements IProductRepository {
     }
   }
 
-  private addOrUpdateVariants(
+  private upsertVariants(
     aggregate: ProductAggRoot,
     entity: ProductEntity,
   ): void {
@@ -164,18 +154,6 @@ export class ProductRepository implements IProductRepository {
     entityAttr.isSoftDeleted = false;
   }
 
-  private createAttributes(
-    aggregate: ProductAggRoot,
-    entity: ProductEntity,
-  ): void {
-    for (const a of aggregate.getAttributes()) {
-      const attribute = new ProductAttributeEntity();
-      attribute.id = a.getId();
-      this.mapAttributeToEntity(a, attribute);
-      entity.attributes.add(attribute);
-    }
-  }
-
   private softDeleteUnusedAttributes(
     aggregate: ProductAggRoot,
     entity: ProductEntity,
@@ -190,7 +168,7 @@ export class ProductRepository implements IProductRepository {
     }
   }
 
-  private addOrUpdateAttributes(
+  private upsertAttributes(
     aggregate: ProductAggRoot,
     entity: ProductEntity,
   ): void {

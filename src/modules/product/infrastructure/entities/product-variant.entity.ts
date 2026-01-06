@@ -1,11 +1,4 @@
-import {
-  Cascade,
-  Entity,
-  ManyToOne,
-  OneToMany,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { ProductEntity } from './product.entity';
 
 @Entity({ tableName: 'product_variant' })
@@ -28,7 +21,7 @@ export class ProductVariantEntity {
   @Property()
   isBase!: boolean;
 
-  @Property({ type: 'json', nullable: false })
+  @Property({ type: 'jsonb', nullable: false })
   associatedAttributes!: { key: string; value: string }[];
 
   @Property()
