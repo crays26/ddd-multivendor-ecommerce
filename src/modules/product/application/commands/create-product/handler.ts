@@ -12,12 +12,13 @@ import {
 import { Inject } from '@nestjs/common';
 @CommandHandler(CreateProductCommand)
 export class CreateProductCommandHandler
-  implements ICommandHandler<CreateProductCommand> {
+  implements ICommandHandler<CreateProductCommand>
+{
   constructor(
     private readonly productRepository: ProductRepository,
     @Inject(UNIT_OF_WORK)
     private readonly uow: IUnitOfWork,
-  ) { }
+  ) {}
 
   async execute(command: CreateProductCommand): Promise<string> {
     const { payload } = command;
@@ -50,6 +51,7 @@ export class CreateProductCommandHandler
 
     productAggRoot.setVariants(variants);
     productAggRoot.setAttributes(attributes);
+    productAggRoot.calculateDisplayPrice();
 
     await this.uow.begin();
     try {

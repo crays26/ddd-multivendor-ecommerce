@@ -8,6 +8,7 @@ interface ProductVariantProps {
   stock: number;
   skuCode: string;
   price: number;
+  isBase: boolean;
   associatedAttributes: VariantAssociatedAttributeVO[];
 }
 
@@ -17,6 +18,7 @@ interface CreateProductVariantProps {
   stock: number;
   skuCode: string;
   price: number;
+  isBase?: boolean;
   associatedAttributes: VariantAssociatedAttributeVO[];
 }
 
@@ -29,6 +31,7 @@ export class ProductVariant extends DomainEntityBase<string, ProductVariantProps
     return new ProductVariant({
       ...props,
       id: props.id ?? uuidV7(),
+      isBase: props.isBase ?? false,
       associatedAttributes: props.associatedAttributes ?? [],
     });
   }
@@ -58,5 +61,9 @@ export class ProductVariant extends DomainEntityBase<string, ProductVariantProps
       key: a.getKey(),
       value: a.getValue(),
     }));
+  }
+
+  public isBase(): boolean {
+    return this.props.isBase;
   }
 }

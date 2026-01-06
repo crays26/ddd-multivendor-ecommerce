@@ -52,6 +52,7 @@ export class UpdateProductCommandHandler
 
     productAggRoot.setVariants(variants);
     productAggRoot.setAttributes(attributes);
+    productAggRoot.calculateDisplayPrice();
 
     await this.uow.begin();
     try {

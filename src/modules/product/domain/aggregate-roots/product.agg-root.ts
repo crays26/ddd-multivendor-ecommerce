@@ -12,6 +12,7 @@ interface ProductProps {
   name: string;
   slug: string;
   description: string;
+  displayPrice: number;
   vendorId: VendorIdVO;
   categoryId: CategoryIdVO;
   variants: ProductVariant[];
@@ -41,6 +42,9 @@ export class ProductAggRoot extends AggregateRootBase<string, ProductProps> {
       slug: slugifyWithNanoid(props.name, 8),
       vendorId: VendorIdVO.create({ id: props.vendorId }),
       categoryId: CategoryIdVO.create({ id: props.categoryId }),
+      displayPrice: props.variants?.length
+        ? Math.min(...props.variants?.map((v) => v.getPrice()))
+        : 0,
       variants: props.variants ?? [],
       attributes: props.attributes ?? [],
     });
@@ -53,6 +57,12 @@ export class ProductAggRoot extends AggregateRootBase<string, ProductProps> {
   }
 
   private validate(props: ProductProps): void {
+    if (props.variants.some((v) => v.isBase()) && props.variants.length > 1) {
+      throw new BadRequestException(
+        'Product with base variant cannot have other variants',
+      );
+    }
+
     for (const variant of props.variants) {
       if (
         variant.getAssociatedAttributes().length !== props.attributes.length
@@ -114,6 +124,12 @@ export class ProductAggRoot extends AggregateRootBase<string, ProductProps> {
     this.props.description = description;
   }
 
+  public calculateDisplayPrice(): void {
+    this.props.displayPrice = Math.min(
+      ...(this.props.variants?.map((v) => v.getPrice()) ?? []),
+    );
+  }
+
   public addVariant(variant: ProductVariant): void {
     if (this.props.variants.some((v) => v.getId() === variant.getId())) {
       throw new ConflictException(
@@ -121,6 +137,7 @@ export class ProductAggRoot extends AggregateRootBase<string, ProductProps> {
       );
     }
     this.props.variants.push(variant);
+    this.calculateDisplayPrice();
     this.validate(this.props);
   }
 
@@ -130,7 +147,7 @@ export class ProductAggRoot extends AggregateRootBase<string, ProductProps> {
       throw new ConflictException('Duplicate variant ID found in variants');
     }
     this.props.variants = variants;
-
+    this.calculateDisplayPrice();
     this.validate(this.props);
   }
 
@@ -175,6 +192,10 @@ export class ProductAggRoot extends AggregateRootBase<string, ProductProps> {
 
   public getDescription(): string {
     return this.props.description;
+  }
+
+  public getDisplayPrice(): number {
+    return this.props.displayPrice;
   }
 
   public getVariants(): ProductVariant[] {
