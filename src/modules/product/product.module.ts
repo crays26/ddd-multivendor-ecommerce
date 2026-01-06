@@ -13,6 +13,7 @@ import { ProductReadRepository } from './infrastructure/repositories/product.rea
 import { GetProductsByVendorIdQueryHandler } from './application/queries/get-products-by-vendor-id/handler';
 import { PRODUCT_PUBLIC_SERVICE } from 'src/modules/product/application/public-services/product.public-service.interface';
 import { ProductPublicService } from 'src/modules/product/application/public-services/product.public-service';
+import { GetProductsBySearchTermQueryHandler } from './application/queries/get-products-by-search-term/handler';
 
 const CommandHandlers = [
   CreateProductCommandHandler,
@@ -21,6 +22,7 @@ const CommandHandlers = [
 const QueryHandlers = [
   GetProductByIdQueryHandler,
   GetProductsByVendorIdQueryHandler,
+  GetProductsBySearchTermQueryHandler,
 ];
 
 @Module({
