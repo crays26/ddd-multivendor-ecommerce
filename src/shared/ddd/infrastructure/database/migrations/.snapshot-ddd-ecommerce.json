@@ -411,6 +411,85 @@
           "nullable": false,
           "length": 255,
           "mappedType": "string"
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "json"
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "mappedType": "datetime"
+        },
+        "processed_at": {
+          "name": "processed_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "outbox",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "outbox_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
         }
       },
       "name": "role",
@@ -669,6 +748,15 @@
           "default": "''",
           "mappedType": "text"
         },
+        "display_price": {
+          "name": "display_price",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
         "vendor_id": {
           "name": "vendor_id",
           "type": "uuid",
@@ -686,11 +774,41 @@
           "primary": false,
           "nullable": false,
           "mappedType": "uuid"
+        },
+        "searchable_name": {
+          "name": "searchable_name",
+          "type": "tsvector",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false
         }
       },
       "name": "product",
       "schema": "public",
       "indexes": [
+        {
+          "keyName": "idx_product_name_trgm",
+          "columnNames": [
+            "name"
+          ],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "CREATE INDEX idx_product_name_trgm ON product USING GIN (name gin_trgm_ops)"
+        },
+        {
+          "keyName": "product_searchable_name_index",
+          "columnNames": [
+            "searchable_name"
+          ],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "type": "fulltext"
+        },
         {
           "keyName": "product_pkey",
           "columnNames": [
