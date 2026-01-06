@@ -109,7 +109,7 @@ export class ProductRepository implements IProductRepository {
     entityVariant.associatedAttributes =
       domainVariant.getAssociatedAttributes();
     entityVariant.isSoftDeleted = false;
-    entityVariant.isBase = false;
+    entityVariant.isBase = domainVariant.isBase();
   }
 
   private softDeleteUnusedVariants(
