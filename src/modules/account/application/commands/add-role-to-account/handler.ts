@@ -1,15 +1,15 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { AddRoleToAccountCommand } from 'src/modules/account/application/commands/add-role-to-account/command';
-import {
-  IUnitOfWork,
-  UNIT_OF_WORK,
-} from 'src/shared/ddd/infrastructure/unit-of-work/unit-of-work.interface';
 import { Inject, NotFoundException } from '@nestjs/common';
-import { RoleIdVO } from 'src/modules/account/domain/value-objects/role-id.vo';
 import {
   ACCOUNT_REPO,
   IAccountRepository,
 } from 'src/modules/account/domain/repositories/account.repo.interface';
+import {
+  ROLE_REPO,
+  IRoleRepository,
+} from 'src/modules/account/domain/repositories/role.repo.interface';
+import { RoleIdVO } from 'src/modules/account/domain/value-objects/role-id.vo';
 
 @CommandHandler(AddRoleToAccountCommand)
 export class AddRoleToAccountCommandHandler
@@ -18,31 +18,24 @@ export class AddRoleToAccountCommandHandler
   constructor(
     @Inject(ACCOUNT_REPO)
     private readonly accountRepository: IAccountRepository,
-    @Inject(UNIT_OF_WORK)
-    private readonly uow: IUnitOfWork,
+    @Inject(ROLE_REPO)
+    private readonly roleRepository: IRoleRepository,
   ) {}
 
   async execute(command: AddRoleToAccountCommand): Promise<string> {
-    await this.uow.begin();
+    const { accountId, roleName } = command;
 
-    const accountAggRoot = await this.accountRepository.findById(
-      command.accountId,
-    );
-    if (!accountAggRoot) {
-      await this.uow.rollback();
-      throw new NotFoundException(
-        `Account with id ${command.accountId} not found`,
-      );
-    }
-    try {
-      accountAggRoot.addRole(RoleIdVO.create({ id: command.roleId }));
-      await this.accountRepository.update(accountAggRoot);
-      await this.uow.commit();
+    const accountAggRoot = await this.accountRepository.findById(accountId);
+    if (!accountAggRoot)
+      throw new NotFoundException(`Account with id ${accountId} not found`);
 
-      return `${command.roleId} added successfully`;
-    } catch (error) {
-      await this.uow.rollback();
-      throw error;
-    }
+    const role = await this.roleRepository.findByName(roleName);
+    if (!role)
+      throw new NotFoundException(`Role with name ${roleName} not found`);
+
+    accountAggRoot.addRole(RoleIdVO.create({ id: role.getId() }));
+    await this.accountRepository.update(accountAggRoot);
+
+    return accountAggRoot.getId();
   }
 }

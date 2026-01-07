@@ -1,13 +1,9 @@
-import { CommandHandler, EventPublisher, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { SignUpAccountCommand } from './command';
 import { AccountAggRoot } from 'src/modules/account/domain/aggregate-root/account.agg-root';
 import { AuthService } from 'src/shared/auth/auth.service';
 import { ConflictException, Inject, NotFoundException } from '@nestjs/common';
-import {
-  UNIT_OF_WORK,
-  IUnitOfWork,
-} from 'src/shared/ddd/infrastructure/unit-of-work/unit-of-work.interface';
-import { AccountRepository } from 'src/modules/account/infrastructure/repositories/account.repo';
+
 import { Transactional } from '@mikro-orm/core';
 import {
   ACCOUNT_REPO,
@@ -18,7 +14,6 @@ import {
   IRoleRepository,
 } from 'src/modules/account/domain/repositories/role.repo.interface';
 import { RoleName } from 'src/shared/auth/types/role.type';
-import { RoleAggRoot } from 'src/modules/account/domain/aggregate-root/role.agg-root';
 import { RoleIdVO } from 'src/modules/account/domain/value-objects/role-id.vo';
 
 @CommandHandler(SignUpAccountCommand)
@@ -47,8 +42,10 @@ export class SignUpAccountCommandHandler
       accountDomainEntity.getPassword(),
     );
     accountDomainEntity.setPassword(hashedPassword);
+
     const role = await this.roleRepo.findByName(RoleName.CUSTOMER);
     if (!role) throw new NotFoundException('Role not found');
+
     accountDomainEntity.addRole(RoleIdVO.create({ id: role.getId() }));
 
     await this.accountRepo.insert(accountDomainEntity);
