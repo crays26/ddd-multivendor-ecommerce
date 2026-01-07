@@ -5,6 +5,7 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { SignUpAccountDto } from '../dtos/SignUpAccount.dto';
@@ -23,6 +24,7 @@ import { CurrentUser } from 'src/shared/auth/decorators/param-decorators/current
 import { GetAccountByIdQuery } from 'src/modules/account/application/queries/get-account-by-id/query';
 import { AddAddressDto } from 'src/modules/account/application/commands/add-address-to-account/dto';
 import { AddAddressToAccountCommand } from 'src/modules/account/application/commands/add-address-to-account/command';
+import { RoleName } from 'src/shared/auth/types/role.type';
 
 @Controller('account')
 export class AuthController {
@@ -66,12 +68,19 @@ export class AuthController {
     @CurrentUser() currentUser: AuthPayload,
     @Res() response: Response,
   ) {
-    const payload = {
-      id: currentUser.id,
-      username: currentUser.username,
-      email: currentUser.email,
-      roles: currentUser.roles,
+    const account = await this.queryBus.execute(
+      new GetAccountByIdQuery(currentUser.id),
+    );
+
+    if (!account) throw new UnauthorizedException('Account not found');
+
+    const payload: AuthPayload = {
+      id: account.id,
+      username: account.username,
+      email: account.email,
+      roles: account.roles.map((role) => role.name as RoleName),
     };
+
     const tokenPair = this.authService.generateTokens(payload);
     this.authService.setAuthCookies(response, tokenPair);
     response.send(tokenPair);
