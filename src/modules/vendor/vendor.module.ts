@@ -7,12 +7,17 @@ import { VendorReadRepository } from 'src/modules/vendor/infrastructure/reposito
 import { CreateVendorCommandHandler } from 'src/modules/vendor/application/commands/create-vendor/handler';
 import { GetVendorByAccountIdQueryHandler } from 'src/modules/vendor/application/queries/get-vendor-by-account-id/handler';
 import { VendorController } from 'src/modules/vendor/presentation/controllers/vendor.controller';
+import { AccountModule } from 'src/modules/account/account.module';
 
 const CommandHandlers = [CreateVendorCommandHandler];
 const QueryHandlers = [GetVendorByAccountIdQueryHandler];
 
 @Module({
-  imports: [MikroOrmModule.forFeature([VendorEntity]), CqrsModule],
+  imports: [
+    MikroOrmModule.forFeature([VendorEntity]),
+    CqrsModule,
+    AccountModule,
+  ],
 
   controllers: [VendorController],
   providers: [

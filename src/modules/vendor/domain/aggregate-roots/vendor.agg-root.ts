@@ -1,7 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
-import { BaseAggregateRoot } from 'src/shared/ddd/domain/base/BaseAggregateRoot';
+import { AggregateRootBase } from 'src/shared/ddd/domain/base/aggregate-root.base';
 import { v7 as uuidV7 } from 'uuid';
 import { AccountIdVO } from '../value-objects/account-id.vo';
+import { VendorCreatedEvent } from 'src/modules/vendor/domain/events/vendor-created.event';
 
 interface VendorProps {
   id: string;
@@ -20,13 +21,13 @@ interface CreateVendorProps {
   accountId: string;
 }
 
-export class VendorAggRoot extends BaseAggregateRoot<string, VendorProps> {
+export class VendorAggRoot extends AggregateRootBase<string, VendorProps> {
   private constructor(props: VendorProps) {
     super(props);
   }
 
   static create(props: CreateVendorProps): VendorAggRoot {
-    return new VendorAggRoot({
+    const vendor = new VendorAggRoot({
       id: uuidV7(),
       name: props.name,
       slug: props.slug,
@@ -34,6 +35,8 @@ export class VendorAggRoot extends BaseAggregateRoot<string, VendorProps> {
       accountId: AccountIdVO.create({ id: props.accountId }),
       rating: 0,
     });
+    vendor.apply(new VendorCreatedEvent(vendor.getAccountId()));
+    return vendor;
   }
 
   static rehydrate(props: VendorProps): VendorAggRoot {

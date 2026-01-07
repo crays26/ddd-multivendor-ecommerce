@@ -1,59 +1,26 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Put,
-  UseGuards,
-} from '@nestjs/common';
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
 import { Roles } from 'src/shared/auth/decorators/class-decorators/roles.decorator';
-import { Role } from 'src/shared/auth/enums/role.enum';
 import { JwtRequiredGuard } from 'src/shared/auth/guards/jwt/jwt.required.guard';
 import { RequiredRolesGuard } from 'src/shared/auth/guards/role/roles.guard';
-import { AuthPayload } from 'src/shared/auth/AuthPayload.interface';
+import { AuthPayload } from 'src/shared/auth/types/auth-payload.type';
 import { CurrentUser } from 'src/shared/auth/current.user.decorator';
 import { VendorCreateDto } from 'src/modules/vendor/presentation/dtos/requests/vendor.create.dto';
 import { CreateVendorCommand } from 'src/modules/vendor/application/commands/create-vendor/command';
+import { RoleName } from 'src/shared/auth/types/role.type';
 
 @Controller('vendors')
 export class VendorController {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
-  ) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
-  @UseGuards(JwtRequiredGuard)
+  @Roles(RoleName.CUSTOMER)
+  @UseGuards(JwtRequiredGuard, RequiredRolesGuard)
   @Post()
   async createVendor(
     @CurrentUser() user: AuthPayload,
     @Body() body: VendorCreateDto,
-  ): Promise<string> {
-    const payload = {
-      ...body,
-      accountId: user.id,
-    };
-    const command = new CreateVendorCommand(payload);
+  ) {
+    const command = new CreateVendorCommand({ ...body, accountId: user.id });
     return await this.commandBus.execute(command);
   }
-
-  // @Get(':productId')
-  // async findProductById(
-  //     @Param('productId') productId: string,
-  // ): Promise<ProductDto> {
-  //     const query = new GetProductByIdQuery(productId);
-  //     return await this.queryBus.execute(query);
-  // }
-  //
-  // @Roles(Role.VENDOR)
-  // @UseGuards(JwtRequiredGuard, RequiredRolesGuard)
-  // @Put(':productId')
-  // async updateProduct(
-  //     @Param('productId') productId: string,
-  //     @Body() body: ProductUpdateDto,
-  // ): Promise<string | null> {
-  //     const command = new UpdateProductCommand({ ...body, id: productId });
-  //     return await this.commandBus.execute(command);
-  // }
 }
