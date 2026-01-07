@@ -5,6 +5,7 @@ import { VendorAggRoot } from 'src/modules/vendor/domain/aggregate-roots/vendor.
 import { slugifyWithNanoid } from 'src/shared/utilities/slugify-with-nanoid';
 import { Transactional } from '@mikro-orm/core';
 import { AccountPublicService } from 'src/modules/account/application/public-services/account.public-service';
+import { RoleName } from 'src/shared/auth/types/role.type';
 
 @CommandHandler(CreateVendorCommand)
 export class CreateVendorCommandHandler
@@ -26,9 +27,12 @@ export class CreateVendorCommandHandler
     });
 
     await this.vendorRepo.insert(vendorAggRoot);
-    await this.accountPublicService.addVendorRole(payload.accountId);
+    await this.accountPublicService.assignRole(
+      payload.accountId,
+      RoleName.VENDOR,
+    );
     this.eventPublisher.mergeObjectContext(vendorAggRoot).commit();
 
-    return `Vendor with id ${vendorAggRoot.getId()} created successfully!`;
+    return vendorAggRoot.getId();
   }
 }
