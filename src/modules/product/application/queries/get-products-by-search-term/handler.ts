@@ -5,10 +5,10 @@ import { EntityRepository, wrap } from '@mikro-orm/postgresql';
 import { PaginatedDto } from 'src/shared/ddd/application/dtos/paginated-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { sql } from '@mikro-orm/postgresql';
-import { FilterQuery } from '@mikro-orm/core';
 import { GetProductsBySearchTermQuery } from './query';
 import { GetProductsBySearchTermDto } from './dto';
 import { QueryOrder } from '@mikro-orm/core';
+
 @QueryHandler(GetProductsBySearchTermQuery)
 export class GetProductsBySearchTermQueryHandler
   implements IQueryHandler<GetProductsBySearchTermQuery>
@@ -41,12 +41,16 @@ export class GetProductsBySearchTermQueryHandler
     const qb = this.productRepository
       .createQueryBuilder('p')
       .select('*')
+      .addSelect('sq.relevance_score')
       .leftJoinAndSelect('p.attributes', 'a')
       .leftJoinAndSelect('p.variants', 'v')
       .leftJoinAndSelect('p.vendor', 'vnd')
       .leftJoinAndSelect('p.category', 'c')
       .innerJoin(subQuery, 'sq', { 'p.id': sql.ref('sq.id') })
-      .orderBy({ [sql`relevance_score`]: QueryOrder.DESC });
+      .orderBy({ [sql`relevance_score`]: QueryOrder.DESC })
+      .limit(limit)
+      .offset(offset);
+
     const [products, count] = await qb.getResultAndCount();
 
     const totalPages = Math.ceil(count / limit);
