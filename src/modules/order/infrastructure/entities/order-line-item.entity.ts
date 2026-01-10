@@ -7,7 +7,7 @@ export class OrderLineItemEntity {
   @PrimaryKey({ type: 'uuid' })
   id!: string;
 
-  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  @Property({ type: 'int' })
   price!: number;
 
   @Property()

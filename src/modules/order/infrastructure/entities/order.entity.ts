@@ -1,5 +1,4 @@
 import {
-  Cascade,
   Collection,
   Entity,
   ManyToOne,
@@ -18,7 +17,7 @@ export class OrderEntity {
   @PrimaryKey({ type: 'uuid' })
   id!: string;
 
-  @Property({ type: 'decimal', precision: 10, scale: 2 })
+  @Property({ type: 'int' })
   totalAmount: number;
 
   @Enum(() => OrderStatus)
