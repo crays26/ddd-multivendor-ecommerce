@@ -39,8 +39,8 @@ export class ProductRepository implements IProductRepository {
     const entity = new ProductEntity();
     entity.id = aggregate.getId();
     this.mapAggregateToEntity(aggregate, entity);
-    this.upsertVariants(aggregate, entity);
-    this.upsertAttributes(aggregate, entity);
+    this.upsertVariants(aggregate.getVariants(), entity);
+    this.upsertAttributes(aggregate.getAttributes(), entity);
 
     await this.em.persistAndFlush(entity);
   }
@@ -53,11 +53,11 @@ export class ProductRepository implements IProductRepository {
     );
 
     this.mapAggregateToEntity(aggregate, entity);
-    this.softDeleteUnusedVariants(aggregate, entity);
-    this.upsertVariants(aggregate, entity);
+    this.softDeleteUnusedVariants(aggregate.getVariants(), entity);
+    this.upsertVariants(aggregate.getVariants(), entity);
 
-    this.softDeleteUnusedAttributes(aggregate, entity);
-    this.upsertAttributes(aggregate, entity);
+    this.softDeleteUnusedAttributes(aggregate.getAttributes(), entity);
+    this.upsertAttributes(aggregate.getAttributes(), entity);
 
     await this.em.persistAndFlush(entity);
   }
@@ -113,10 +113,10 @@ export class ProductRepository implements IProductRepository {
   }
 
   private softDeleteUnusedVariants(
-    aggregate: ProductAggRoot,
+    domainVariants: ProductVariant[],
     entity: ProductEntity,
   ): void {
-    const domainIds = aggregate.getVariants().map((v) => v.getId());
+    const domainIds = domainVariants.map((v) => v.getId());
     const existingVariants = entity.variants.getItems();
 
     for (const variant of existingVariants) {
@@ -127,17 +127,18 @@ export class ProductRepository implements IProductRepository {
   }
 
   private upsertVariants(
-    aggregate: ProductAggRoot,
+    domainVariants: ProductVariant[],
     entity: ProductEntity,
   ): void {
     const existingVariants = entity.variants.getItems();
 
-    for (const v of aggregate.getVariants()) {
+    for (const v of domainVariants) {
       let variant = existingVariants.find((ev) => ev.id === v.getId());
 
       if (!variant) {
         variant = new ProductVariantEntity();
         variant.id = v.getId();
+        variant.product = entity;
         entity.variants.add(variant);
       }
 
@@ -155,10 +156,10 @@ export class ProductRepository implements IProductRepository {
   }
 
   private softDeleteUnusedAttributes(
-    aggregate: ProductAggRoot,
+    domainAttributes: ProductAttribute[],
     entity: ProductEntity,
   ): void {
-    const domainIds = aggregate.getAttributes().map((a) => a.getId());
+    const domainIds = domainAttributes.map((a) => a.getId());
     const existingAttributes = entity.attributes.getItems();
 
     for (const attr of existingAttributes) {
@@ -169,17 +170,18 @@ export class ProductRepository implements IProductRepository {
   }
 
   private upsertAttributes(
-    aggregate: ProductAggRoot,
+    domainAttributes: ProductAttribute[],
     entity: ProductEntity,
   ): void {
     const existingAttributes = entity.attributes.getItems();
 
-    for (const a of aggregate.getAttributes()) {
+    for (const a of domainAttributes) {
       let attribute = existingAttributes.find((ea) => ea.id === a.getId());
 
       if (!attribute) {
         attribute = new ProductAttributeEntity();
         attribute.id = a.getId();
+        attribute.product = entity;
         entity.attributes.add(attribute);
       }
 

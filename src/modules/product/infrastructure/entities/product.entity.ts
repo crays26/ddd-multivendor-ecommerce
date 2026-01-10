@@ -52,6 +52,7 @@ export class ProductEntity {
   @Property({
     name: 'searchable_name',
     type: new FullTextType('english'),
+    onCreate: (product: ProductEntity) => product.name,
     onUpdate: (product: ProductEntity) => product.name,
   })
   searchableName!: string;
