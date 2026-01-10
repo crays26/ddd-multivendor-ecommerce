@@ -4,9 +4,11 @@ import { v7 as uuidV7 } from 'uuid';
 import { OrderLineItem } from '../entities/order-line-item.entity';
 import { CustomerIdVO } from 'src/modules/order/domain/value-objects/customer-id.vo';
 import { VendorIdVO } from 'src/modules/order/domain/value-objects/vendor-id.vo';
+import { OrderCreatedEvent } from '../events/order-created.event';
 
 export enum OrderStatus {
   PENDING = 'PENDING',
+  STOCK_RESERVED = 'STOCK_RESERVED',
   PAID = 'PAID',
   SHIPPED = 'SHIPPED',
   CANCELLED = 'CANCELLED',
@@ -49,7 +51,19 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
       vendorId: props.vendorId,
     });
 
-    // order.addEvent(new OrderCreatedEvent(props.id));
+    order.apply(
+      new OrderCreatedEvent(
+        order.getId(),
+        order.getCustomerId(),
+        order.getVendorId(),
+        order.getOrderItems().map((item) => ({
+          variantId: item.getProductVariantId(),
+          quantity: item.getQuantity(),
+          priceAtPurchase: item.getPriceAtPurchase(),
+        })),
+        order.getTotalAmount(),
+      ),
+    );
     return order;
   }
 
@@ -139,10 +153,8 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
       (item) => item.getProductVariantId() !== productVariantId,
     );
 
-    // Only recalculate if an item was
-    // actually removed
     if (this.props.orderItems.length < initialLength) {
-      this.recalculateTotal(); // Enforce invariant
+      this.recalculateTotal();
       // this.addEvent(new OrderItemRemovedEvent(...));
     }
   }
@@ -193,14 +205,14 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
     return this.props.id;
   }
   public getCustomerId(): string {
-      return this.props.customerId.getId();
+    return this.props.customerId.getId();
   }
 
-    public getVendorId(): string {
-        return this.props.vendorId.getId();
-    }
+  public getVendorId(): string {
+    return this.props.vendorId.getId();
+  }
 
-    public getStatus(): OrderStatus {
+  public getStatus(): OrderStatus {
     return this.props.status;
   }
 
@@ -209,8 +221,6 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
   }
 
   public getOrderItems(): OrderLineItem[] {
-    // Return a copy to protect aggregate encapsulation
     return [...this.props.orderItems];
   }
-
 }
