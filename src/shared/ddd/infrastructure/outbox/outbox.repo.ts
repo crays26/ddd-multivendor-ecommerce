@@ -2,13 +2,14 @@ import { EntityManager, QueryOrder } from '@mikro-orm/postgresql';
 import { OutboxEntity } from './outbox.entity';
 import { Status } from './outbox.entity';
 import { Injectable } from '@nestjs/common';
+
 @Injectable()
 export class OutboxRepository {
   constructor(private readonly em: EntityManager) {}
 
-  async findAllUnprocessedByName(name: string): Promise<OutboxEntity[]> {
+  async findAllUnprocessedByNames(names: string[]): Promise<OutboxEntity[]> {
     return await this.em.findAll(OutboxEntity, {
-      where: { name, status: Status.PENDING },
+      where: { name: { $in: names }, status: Status.PENDING },
       orderBy: { createdAt: QueryOrder.ASC },
     });
   }
