@@ -4,7 +4,7 @@ import { v7 as uuidV7 } from 'uuid';
 import { OrderLineItem } from '../entities/order-line-item.entity';
 import { CustomerIdVO } from 'src/modules/order/domain/value-objects/customer-id.vo';
 import { VendorIdVO } from 'src/modules/order/domain/value-objects/vendor-id.vo';
-import { OrderCreatedEvent } from '../events/order-created.event';
+import { OrderGroupIdVO } from '../value-objects/order-group-id.vo';
 
 export enum OrderStatus {
   PENDING = 'PENDING',
@@ -16,6 +16,7 @@ export enum OrderStatus {
 
 interface OrderProps {
   id: string;
+  orderGroupId: OrderGroupIdVO;
   orderItems: OrderLineItem[];
   status: OrderStatus;
   totalAmount: number;
@@ -25,6 +26,7 @@ interface OrderProps {
 
 interface CreateOrderProps {
   id?: string;
+  orderGroupId: string;
   orderItems: OrderLineItem[];
   customerId: CustomerIdVO;
   vendorId: VendorIdVO;
@@ -44,6 +46,7 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
 
     const order = new OrderAggRoot({
       id: props.id ?? uuidV7(),
+      orderGroupId: OrderGroupIdVO.create({ id: props.orderGroupId }),
       orderItems: props.orderItems,
       status: OrderStatus.PENDING,
       totalAmount: totalAmount,
@@ -51,19 +54,6 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
       vendorId: props.vendorId,
     });
 
-    order.apply(
-      new OrderCreatedEvent(
-        order.getId(),
-        order.getCustomerId(),
-        order.getVendorId(),
-        order.getOrderItems().map((item) => ({
-          variantId: item.getProductVariantId(),
-          quantity: item.getQuantity(),
-          priceAtPurchase: item.getPriceAtPurchase(),
-        })),
-        order.getTotalAmount(),
-      ),
-    );
     return order;
   }
 
@@ -222,5 +212,9 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
 
   public getOrderItems(): OrderLineItem[] {
     return [...this.props.orderItems];
+  }
+
+  public getOrderGroupId(): string {
+    return this.props.orderGroupId.getId();
   }
 }
