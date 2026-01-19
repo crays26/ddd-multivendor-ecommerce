@@ -9,6 +9,7 @@ import { OrderLineItemEntity } from 'src/modules/order/infrastructure/entities/o
 import { ProductVariantEntity } from 'src/modules/product/infrastructure/entities/product-variant.entity';
 import { OrderDomainMapper } from 'src/modules/order/infrastructure/mappers/order.mapper';
 import { OrderLineItem } from 'src/modules/order/domain/entities/order-line-item.entity';
+import { OrderGroupEntity } from '../entities/order-group.entity';
 
 @Injectable()
 export class OrderRepository implements IOrderRepository {
@@ -18,18 +19,29 @@ export class OrderRepository implements IOrderRepository {
     const entity: OrderEntity | null = await this.em.findOne(
       OrderEntity,
       { id },
-      { populate: ['lineItems'] },
+      { populate: ['lineItems', 'orderGroup'] },
     );
     return entity ? OrderDomainMapper.fromPersistence(entity) : null;
   }
 
-  async insert(aggregate: OrderAggRoot): Promise<void> {
-    const entity = new OrderEntity();
-    entity.id = aggregate.getId();
+  async findByOrderGroupId(orderGroupId: string): Promise<OrderAggRoot[]> {
+    const entities = await this.em.find(
+      OrderEntity,
+      { orderGroup: { id: orderGroupId } },
+      { populate: ['lineItems', 'orderGroup'] },
+    );
+    return entities.map((entity) => OrderDomainMapper.fromPersistence(entity));
+  }
 
-    this.mapAggregateToEntity(aggregate, entity);
-    this.upsertLineItems(aggregate, entity);
-    this.em.persist(entity);
+  async insert(aggregate: OrderAggRoot): Promise<void> {
+    this.insertOrder(aggregate);
+  }
+
+  async bulkInsert(aggregates: OrderAggRoot[]): Promise<void> {
+    if (aggregates.length === 0) return;
+    for (const aggregate of aggregates) {
+      this.insertOrder(aggregate);
+    }
   }
 
   async update(aggregate: OrderAggRoot): Promise<void> {
@@ -47,6 +59,14 @@ export class OrderRepository implements IOrderRepository {
 
   // Private Helpers
 
+  private insertOrder(aggregate: OrderAggRoot): void {
+    const entity = new OrderEntity();
+    entity.id = aggregate.getId();
+    this.mapAggregateToEntity(aggregate, entity);
+    this.upsertLineItems(aggregate, entity);
+    this.em.persist(entity);
+  }
+
   private mapAggregateToEntity(
     aggregate: OrderAggRoot,
     entity: OrderEntity,
@@ -58,6 +78,10 @@ export class OrderRepository implements IOrderRepository {
       aggregate.getCustomerId(),
     );
     entity.vendor = this.em.getReference(VendorEntity, aggregate.getVendorId());
+    entity.orderGroup = this.em.getReference(
+      OrderGroupEntity,
+      aggregate.getOrderGroupId(),
+    );
   }
 
   private mapLineItemToEntity(
