@@ -1,6 +1,6 @@
 import { Command } from '@nestjs/cqrs';
 
-export class ReserveStockCommand extends Command<void> {
+export class RestockCommand extends Command<void> {
   constructor(
     public readonly payload: {
       variantId: string;
