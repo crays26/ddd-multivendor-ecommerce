@@ -9,6 +9,9 @@ import {
   IProductRepository,
   PRODUCT_REPO,
 } from 'src/modules/product/domain/repositories/product.repo.interface';
+import { OutboxRepository } from 'src/shared/ddd/infrastructure/outbox/outbox.repo';
+import { Status } from 'src/shared/ddd/infrastructure/outbox/outbox.entity';
+import { v7 as uuidV7 } from 'uuid';
 
 @CommandHandler(CreateProductCommand)
 export class CreateProductCommandHandler
@@ -17,6 +20,7 @@ export class CreateProductCommandHandler
   constructor(
     @Inject(PRODUCT_REPO)
     private readonly productRepository: IProductRepository,
+    private readonly outboxRepository: OutboxRepository,
   ) {}
 
   async execute(command: CreateProductCommand): Promise<string> {
@@ -49,7 +53,16 @@ export class CreateProductCommandHandler
     productAggRoot.calculateDisplayPrice();
 
     await this.productRepository.insert(productAggRoot);
-
+    const events = productAggRoot.getUncommittedEvents();
+    for (const event of events) {
+      await this.outboxRepository.save({
+        id: uuidV7(),
+        name: event.constructor.name,
+        payload: event,
+        status: Status.PENDING,
+        createdAt: new Date(),
+      });
+    }
     return `Product with id ${productAggRoot.getId()} created successfully!`;
   }
 }

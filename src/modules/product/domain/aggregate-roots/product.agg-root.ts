@@ -6,6 +6,7 @@ import { BadRequestException, ConflictException } from '@nestjs/common';
 import { v7 as uuidV7 } from 'uuid';
 import { VendorIdVO } from 'src/modules/product/domain/value-objects/vendor-id.vo';
 import { CategoryIdVO } from 'src/modules/product/domain/value-objects/category-id.vo';
+import { ProductCreatedEvent } from '../events/product-created.event';
 
 interface ProductProps {
   id: string;
@@ -48,7 +49,33 @@ export class ProductAggRoot extends AggregateRootBase<string, ProductProps> {
       variants: props.variants ?? [],
       attributes: props.attributes ?? [],
     });
-    // product.addEvent(new ProductCreatedEvent(props.id));
+
+    product.apply(
+      new ProductCreatedEvent({
+        id: product.getId(),
+        vendorId: product.getVendorId(),
+        name: product.getName(),
+        description: product.getDescription(),
+        categoryId: product.getCategoryId(),
+        variants: product.getVariants().map((v) => ({
+          id: v.getId(),
+          name: v.getName(),
+          skuCode: v.getSkuCode(),
+          stock: v.getStock(),
+          price: v.getPrice(),
+          isBase: v.isBase(),
+          associatedAttributes: v.getAssociatedAttributes().map((a) => ({
+            key: a.key,
+            value: a.value,
+          })),
+        })),
+        attributes: product.getAttributes().map((a) => ({
+          id: a.getId(),
+          key: a.getKey(),
+          values: a.getValues(),
+        })),
+      }),
+    );
     return product;
   }
 
