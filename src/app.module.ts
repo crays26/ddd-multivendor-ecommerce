@@ -13,6 +13,10 @@ import { ShareDistributedLockModule } from './shared/ddd/infrastructure/distribu
 import { CqrsModule } from '@nestjs/cqrs';
 import { ShareCloudStorageModule } from 'src/shared/ddd/infrastructure/cloud-storage/cloud-storage.module';
 import { ShareOutboxModule } from './shared/ddd/infrastructure/outbox/outbox.module';
+import { ShareQueueModule } from './shared/ddd/infrastructure/queue/queue.module';
+import { OrderModule } from './modules/order/order.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
+import { BillingModule } from './modules/billing/billing.module';
 
 @Module({
   imports: [
@@ -24,11 +28,15 @@ import { ShareOutboxModule } from './shared/ddd/infrastructure/outbox/outbox.mod
     AccountModule,
     ProductModule,
     VendorModule,
+    OrderModule,
+    InventoryModule,
+    BillingModule,
     ShareAuthModule,
     ShareCacheModule,
     ShareDistributedLockModule,
     ShareCloudStorageModule,
     ShareOutboxModule,
+    ShareQueueModule,
   ],
   controllers: [AppController],
   providers: [AppService],
