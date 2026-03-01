@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { CreateOrderCommand } from 'src/modules/order/application/commands/create-order/command';
+import { CheckoutCommand } from 'src/modules/order/application/commands/checkout/command';
 import { ProductPublicService } from 'src/modules/product/application/public-services/product.public-service';
 import {
   IInventoryPublicService,
@@ -11,23 +11,26 @@ import {
   ORDER_REPO,
 } from 'src/modules/order/domain/repositories/order.repo.interface';
 import { OrderAggRoot } from 'src/modules/order/domain/aggregate-roots/order.agg-root';
-import { VendorIdVO } from 'src/modules/order/domain/value-objects/vendor-id.vo';
-import { CustomerIdVO } from 'src/modules/order/domain/value-objects/customer-id.vo';
 import { OrderLineItem } from 'src/modules/order/domain/entities/order-line-item.entity';
 import { ProductVariantIdVO } from 'src/modules/order/domain/value-objects/product-variant-id.vo';
 import {
-  OrderGroupAggRoot,
-  OrderGroupStatus,
-} from 'src/modules/order/domain/aggregate-roots/order-group.agg-root';
-import { OrderGroupRepository } from 'src/modules/order/infrastructure/repositories/order-group.repo';
+  CheckoutAggRoot,
+  CheckoutStatus,
+} from 'src/modules/order/domain/aggregate-roots/checkout.agg-root';
+import { CheckoutRepository } from 'src/modules/order/infrastructure/repositories/checkout.repo';
 import { OutboxRepository } from 'src/shared/ddd/infrastructure/outbox/outbox.repo';
 import { v7 as uuidV7 } from 'uuid';
 import { Status } from 'src/shared/ddd/infrastructure/outbox/outbox.entity';
 import { Transactional } from '@mikro-orm/core';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { ConflictException } from '@nestjs/common';
 
-@CommandHandler(CreateOrderCommand)
-export class CreateOrderCommandHandler
-  implements ICommandHandler<CreateOrderCommand>
+const CHECKOUT_CACHE_TTL_15_MINUTES = 15 * 60;
+
+@CommandHandler(CheckoutCommand)
+export class CheckoutCommandHandler
+  implements ICommandHandler<CheckoutCommand>
 {
   constructor(
     private readonly productPublicService: ProductPublicService,
@@ -35,23 +38,30 @@ export class CreateOrderCommandHandler
     private readonly inventoryPublicService: IInventoryPublicService,
     @Inject(ORDER_REPO)
     private readonly orderRepository: IOrderRepository,
-    private readonly orderGroupRepository: OrderGroupRepository,
+    private readonly checkoutRepository: CheckoutRepository,
     private readonly outboxRepository: OutboxRepository,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
   ) {}
 
   @Transactional()
-  async execute(command: CreateOrderCommand): Promise<string> {
-    const { customerId, orders } = command.payload;
+  async execute(command: CheckoutCommand): Promise<string> {
+    const idempotencyKey = command.payload.checkoutData.idempotencyKey;
+    const { customerId, checkoutData } = command.payload;
 
-    const customerIdVO = CustomerIdVO.create({ id: customerId });
+    const existingCheckoutId =
+      await this.cacheManager.get<string>(idempotencyKey);
+    if (existingCheckoutId) return existingCheckoutId;
 
     const ordersData = await Promise.all(
-      orders.map(async (order) => {
+      checkoutData.orders.map(async (order) => {
         const lineItems = await Promise.all(
           order.lineItems.map(async (i) => {
             const variant = await this.productPublicService.getVariantById(
               i.productVariantId,
             );
+            if (variant.price !== i.expectedPrice)
+              throw new ConflictException('Price mismatch');
 
             return OrderLineItem.create({
               ...i,
@@ -88,23 +98,23 @@ export class CreateOrderCommandHandler
     const paymentDueAt = new Date();
     paymentDueAt.setMinutes(paymentDueAt.getMinutes() + 15);
 
-    const orderGroupAggRoot = OrderGroupAggRoot.create({
-      customerId: customerIdVO,
-      status: OrderGroupStatus.PENDING,
+    const checkoutAggRoot = CheckoutAggRoot.create({
+      customerId,
+      status: CheckoutStatus.PENDING,
       totalAmount,
       paymentDueAt,
     });
 
     const createdOrders: OrderAggRoot[] = ordersData.map((orderData) =>
       OrderAggRoot.create({
-        orderGroupId: orderGroupAggRoot.getId(),
+        checkoutId: checkoutAggRoot.getId(),
         orderItems: orderData.lineItems,
-        vendorId: VendorIdVO.create({ id: orderData.vendorId }),
-        customerId: customerIdVO,
+        vendorId: orderData.vendorId,
+        customerId,
       }),
     );
 
-    orderGroupAggRoot.addCreatedEvent(
+    checkoutAggRoot.addCreatedEvent(
       createdOrders.map((order) => ({
         orderId: order.getId(),
         vendorId: order.getVendorId(),
@@ -117,10 +127,10 @@ export class CreateOrderCommandHandler
       })),
     );
 
-    await this.orderGroupRepository.insert(orderGroupAggRoot);
+    await this.checkoutRepository.insert(checkoutAggRoot);
     await this.orderRepository.bulkInsert(createdOrders);
 
-    const events = orderGroupAggRoot.getUncommittedEvents();
+    const events = checkoutAggRoot.getUncommittedEvents();
     for (const event of events) {
       await this.outboxRepository.save({
         id: uuidV7(),
@@ -131,6 +141,12 @@ export class CreateOrderCommandHandler
       });
     }
 
-    return orderGroupAggRoot.getId();
+    await this.cacheManager.set(
+      idempotencyKey,
+      checkoutAggRoot.getId(),
+      CHECKOUT_CACHE_TTL_15_MINUTES,
+    );
+
+    return checkoutAggRoot.getId();
   }
 }

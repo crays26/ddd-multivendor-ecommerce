@@ -1,11 +1,11 @@
 import { Command } from '@nestjs/cqrs';
-import { CreateOrderDto } from './dto';
+import { CheckoutDto } from './dto';
 
-export class CreateOrderCommand extends Command<string> {
+export class CheckoutCommand extends Command<string> {
   constructor(
     public readonly payload: {
       customerId: string;
-      orders: CreateOrderDto[];
+      checkoutData: CheckoutDto;
     },
   ) {
     super();
