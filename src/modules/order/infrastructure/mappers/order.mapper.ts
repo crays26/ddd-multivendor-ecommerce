@@ -4,13 +4,13 @@ import { ProductVariantIdVO } from 'src/modules/order/domain/value-objects/produ
 import { OrderLineItem } from 'src/modules/order/domain/entities/order-line-item.entity';
 import { CustomerIdVO } from 'src/modules/order/domain/value-objects/customer-id.vo';
 import { VendorIdVO } from 'src/modules/order/domain/value-objects/vendor-id.vo';
-import { OrderGroupIdVO } from 'src/modules/order/domain/value-objects/order-group-id.vo';
+import { CheckoutIdVO } from 'src/modules/order/domain/value-objects/checkout-id.vo';
 
 export class OrderDomainMapper {
   static fromPersistence(orderEntity: OrderEntity) {
     return OrderAggRoot.rehydrate({
       id: orderEntity.id,
-      orderGroupId: OrderGroupIdVO.create({ id: orderEntity.orderGroup.id }),
+      checkoutId: CheckoutIdVO.create({ id: orderEntity.checkout.id }),
       totalAmount: orderEntity.totalAmount,
       status: orderEntity.status,
       vendorId: VendorIdVO.create({ id: orderEntity.vendor.id }),

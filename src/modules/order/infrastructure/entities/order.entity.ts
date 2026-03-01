@@ -11,7 +11,7 @@ import { OrderLineItemEntity } from 'src/modules/order/infrastructure/entities/o
 import { VendorEntity } from 'src/modules/vendor/infrastructure/entities/vendor.entity';
 import { AccountEntity } from 'src/modules/account/infrastructure/entities/account.entity';
 import { OrderStatus } from 'src/modules/order/domain/aggregate-roots/order.agg-root';
-import { OrderGroupEntity } from './order-group.entity';
+import { CheckoutEntity } from './checkout.entity';
 
 @Entity({ tableName: 'order' })
 export class OrderEntity {
@@ -30,8 +30,8 @@ export class OrderEntity {
   @ManyToOne(() => AccountEntity)
   customer!: AccountEntity;
 
-  @ManyToOne(() => OrderGroupEntity)
-  orderGroup!: OrderGroupEntity;
+  @ManyToOne(() => CheckoutEntity)
+  checkout!: CheckoutEntity;
 
   @OneToMany(() => OrderLineItemEntity, (lineItem) => lineItem.order, {
     orphanRemoval: true,

@@ -9,7 +9,7 @@ import { OrderLineItemEntity } from 'src/modules/order/infrastructure/entities/o
 import { ProductVariantEntity } from 'src/modules/product/infrastructure/entities/product-variant.entity';
 import { OrderDomainMapper } from 'src/modules/order/infrastructure/mappers/order.mapper';
 import { OrderLineItem } from 'src/modules/order/domain/entities/order-line-item.entity';
-import { OrderGroupEntity } from '../entities/order-group.entity';
+import { CheckoutEntity } from '../entities/checkout.entity';
 
 @Injectable()
 export class OrderRepository implements IOrderRepository {
@@ -19,16 +19,16 @@ export class OrderRepository implements IOrderRepository {
     const entity: OrderEntity | null = await this.em.findOne(
       OrderEntity,
       { id },
-      { populate: ['lineItems', 'orderGroup'] },
+      { populate: ['lineItems', 'checkout', 'customer', 'vendor'] },
     );
     return entity ? OrderDomainMapper.fromPersistence(entity) : null;
   }
 
-  async findByOrderGroupId(orderGroupId: string): Promise<OrderAggRoot[]> {
+  async findByCheckoutId(checkoutId: string): Promise<OrderAggRoot[]> {
     const entities = await this.em.find(
       OrderEntity,
-      { orderGroup: { id: orderGroupId } },
-      { populate: ['lineItems', 'orderGroup'] },
+      { checkout: { id: checkoutId } },
+      { populate: ['lineItems', 'checkout', 'customer', 'vendor'] },
     );
     return entities.map((entity) => OrderDomainMapper.fromPersistence(entity));
   }
@@ -48,7 +48,7 @@ export class OrderRepository implements IOrderRepository {
     const entity = await this.em.findOneOrFail(
       OrderEntity,
       { id: aggregate.getId() },
-      { populate: ['lineItems'] },
+      { populate: ['lineItems', 'checkout', 'customer', 'vendor'] },
     );
     this.mapAggregateToEntity(aggregate, entity);
     this.removeUnusedLineItems(aggregate, entity);
@@ -78,9 +78,9 @@ export class OrderRepository implements IOrderRepository {
       aggregate.getCustomerId(),
     );
     entity.vendor = this.em.getReference(VendorEntity, aggregate.getVendorId());
-    entity.orderGroup = this.em.getReference(
-      OrderGroupEntity,
-      aggregate.getOrderGroupId(),
+    entity.checkout = this.em.getReference(
+      CheckoutEntity,
+      aggregate.getCheckoutId(),
     );
   }
 

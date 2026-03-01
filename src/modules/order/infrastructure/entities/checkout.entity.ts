@@ -9,18 +9,18 @@ import {
 } from '@mikro-orm/core';
 import { OrderEntity } from './order.entity';
 import { AccountEntity } from 'src/modules/account/infrastructure/entities/account.entity';
-import { OrderGroupStatus } from '../../domain/entities/order-group.entity';
+import { CheckoutStatus } from '../../domain/aggregate-roots/checkout.agg-root';
 
-@Entity({ tableName: 'order_group' })
-export class OrderGroupEntity {
+@Entity({ tableName: 'checkout' })
+export class CheckoutEntity {
   @PrimaryKey({ type: 'uuid' })
   id!: string;
 
   @ManyToOne(() => AccountEntity)
   customer!: AccountEntity;
 
-  @Enum(() => OrderGroupStatus)
-  status!: OrderGroupStatus;
+  @Enum(() => CheckoutStatus)
+  status!: CheckoutStatus;
 
   @Property({ type: 'int' })
   totalAmount!: number;
@@ -31,6 +31,6 @@ export class OrderGroupEntity {
   @Property({ type: 'timestamptz', defaultRaw: 'CURRENT_TIMESTAMP' })
   createdAt!: Date;
 
-  @OneToMany(() => OrderEntity, (order) => order.orderGroup)
+  @OneToMany(() => OrderEntity, (order) => order.checkout)
   orders = new Collection<OrderEntity>(this);
 }
