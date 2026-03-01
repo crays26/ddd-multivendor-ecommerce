@@ -4,7 +4,7 @@ import { v7 as uuidV7 } from 'uuid';
 import { OrderLineItem } from '../entities/order-line-item.entity';
 import { CustomerIdVO } from 'src/modules/order/domain/value-objects/customer-id.vo';
 import { VendorIdVO } from 'src/modules/order/domain/value-objects/vendor-id.vo';
-import { OrderGroupIdVO } from '../value-objects/order-group-id.vo';
+import { CheckoutIdVO } from '../value-objects/checkout-id.vo';
 
 export enum OrderStatus {
   PENDING = 'PENDING',
@@ -16,26 +16,26 @@ export enum OrderStatus {
 
 interface OrderProps {
   id: string;
-  orderGroupId: OrderGroupIdVO;
   orderItems: OrderLineItem[];
   status: OrderStatus;
   totalAmount: number;
   customerId: CustomerIdVO;
   vendorId: VendorIdVO;
+  checkoutId: CheckoutIdVO;
 }
 
 interface CreateOrderProps {
   id?: string;
-  orderGroupId: string;
   orderItems: OrderLineItem[];
-  customerId: CustomerIdVO;
-  vendorId: VendorIdVO;
+  customerId: string;
+  vendorId: string;
+  checkoutId: string;
 }
 
 export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
   private constructor(props: OrderProps) {
     super(props);
-    this.validate(props);
+    this.validate();
   }
 
   static create(props: CreateOrderProps): OrderAggRoot {
@@ -46,12 +46,12 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
 
     const order = new OrderAggRoot({
       id: props.id ?? uuidV7(),
-      orderGroupId: OrderGroupIdVO.create({ id: props.orderGroupId }),
       orderItems: props.orderItems,
       status: OrderStatus.PENDING,
       totalAmount: totalAmount,
-      customerId: props.customerId,
-      vendorId: props.vendorId,
+      customerId: CustomerIdVO.create({ id: props.customerId }),
+      vendorId: VendorIdVO.create({ id: props.vendorId }),
+      checkoutId: CheckoutIdVO.create({ id: props.checkoutId }),
     });
 
     return order;
@@ -61,30 +61,32 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
     return new OrderAggRoot(props);
   }
 
-  private validate(props: OrderProps): void {
-    if (!props.orderItems || props.orderItems.length === 0) {
+  private validate(): void {
+    if (!this.props.orderItems || this.props.orderItems.length === 0) {
       throw new BadRequestException('Order must have at least one line item.');
     }
 
-    const calculatedTotal = props.orderItems.reduce(
+    const calculatedTotal = this.props.orderItems.reduce(
       (sum, item) => sum + item.getLineTotal(),
       0,
     );
 
-    if (props.totalAmount !== calculatedTotal) {
+    if (this.props.totalAmount !== calculatedTotal) {
       throw new Error(
-        `Order total mismatch. Stored: ${props.totalAmount}, Calculated: ${calculatedTotal}`,
+        `Order total mismatch. Stored: ${this.props.totalAmount}, Calculated: ${calculatedTotal}`,
       );
     }
 
-    if (!Object.values(OrderStatus).includes(props.status)) {
-      throw new BadRequestException(`Invalid order status: ${props.status}`);
+    if (!Object.values(OrderStatus).includes(this.props.status)) {
+      throw new BadRequestException(
+        `Invalid order status: ${this.props.status}`,
+      );
     }
   }
 
   public payOrder(): void {
-    if (this.props.status !== OrderStatus.PENDING) {
-      throw new ConflictException('Only pending orders can be paid.');
+    if (this.props.status !== OrderStatus.STOCK_RESERVED) {
+      throw new ConflictException('Only stock-reserved orders can be paid.');
     }
     this.props.status = OrderStatus.PAID;
     // this.addEvent(new OrderPaidEvent(this.getId()));
@@ -101,6 +103,11 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
   public cancelOrder(): void {
     if (this.props.status === OrderStatus.SHIPPED) {
       throw new ConflictException('Cannot cancel a shipped order.');
+    }
+    if (this.props.status === OrderStatus.PAID) {
+      throw new ConflictException(
+        'Cannot cancel a paid order directly. Initiate a refund instead.',
+      );
     }
     if (this.props.status === OrderStatus.CANCELLED) {
       return; // Already cancelled, do nothing
@@ -180,11 +187,12 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
 
   private assertOrderIsModifiable(): void {
     if (
+      this.props.status === OrderStatus.PAID ||
       this.props.status === OrderStatus.SHIPPED ||
       this.props.status === OrderStatus.CANCELLED
     ) {
       throw new ConflictException(
-        'Cannot modify an order that is shipped or cancelled.',
+        'Cannot modify an order that is paid, shipped, or cancelled.',
       );
     }
   }
@@ -214,7 +222,7 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
     return [...this.props.orderItems];
   }
 
-  public getOrderGroupId(): string {
-    return this.props.orderGroupId.getId();
+  public getCheckoutId(): string {
+    return this.props.checkoutId.getId();
   }
 }

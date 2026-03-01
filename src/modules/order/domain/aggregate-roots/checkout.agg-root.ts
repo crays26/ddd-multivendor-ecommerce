@@ -6,42 +6,39 @@ import {
   OrderGroupEventOrder,
 } from '../events/order-group-created.event';
 
-export enum OrderGroupStatus {
+export enum CheckoutStatus {
   PENDING = 'PENDING',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
 }
 
-interface OrderGroupProps {
+interface CheckoutProps {
   id: string;
   customerId: CustomerIdVO;
-  status: OrderGroupStatus;
+  status: CheckoutStatus;
   totalAmount: number;
   paymentDueAt: Date;
 }
 
-interface CreateOrderGroupProps {
+interface CreateCheckoutProps {
   id?: string;
-  customerId: CustomerIdVO;
-  status?: OrderGroupStatus;
+  customerId: string;
+  status?: CheckoutStatus;
   totalAmount: number;
   paymentDueAt: Date;
 }
 
-export class OrderGroupAggRoot extends AggregateRootBase<
-  string,
-  OrderGroupProps
-> {
-  constructor(props: OrderGroupProps) {
+export class CheckoutAggRoot extends AggregateRootBase<string, CheckoutProps> {
+  constructor(props: CheckoutProps) {
     super(props);
     this.validate();
   }
 
-  static create(props: CreateOrderGroupProps): OrderGroupAggRoot {
-    return new OrderGroupAggRoot({
+  static create(props: CreateCheckoutProps): CheckoutAggRoot {
+    return new CheckoutAggRoot({
       id: props.id ?? uuidV7(),
-      customerId: props.customerId,
-      status: props.status ?? OrderGroupStatus.PENDING,
+      customerId: CustomerIdVO.create({ id: props.customerId }),
+      status: props.status ?? CheckoutStatus.PENDING,
       totalAmount: props.totalAmount,
       paymentDueAt: props.paymentDueAt,
     });
@@ -58,8 +55,8 @@ export class OrderGroupAggRoot extends AggregateRootBase<
     );
   }
 
-  static rehydrate(props: OrderGroupProps): OrderGroupAggRoot {
-    return new OrderGroupAggRoot(props);
+  static rehydrate(props: CheckoutProps): CheckoutAggRoot {
+    return new CheckoutAggRoot(props);
   }
 
   private validate() {
@@ -79,7 +76,7 @@ export class OrderGroupAggRoot extends AggregateRootBase<
     return this.props.customerId.getId();
   }
 
-  public getStatus(): OrderGroupStatus {
+  public getStatus(): CheckoutStatus {
     return this.props.status;
   }
 
@@ -91,7 +88,7 @@ export class OrderGroupAggRoot extends AggregateRootBase<
     return this.props.paymentDueAt;
   }
 
-  public setStatus(status: OrderGroupStatus): void {
+  public setStatus(status: CheckoutStatus): void {
     this.props.status = status;
   }
 
