@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { AccountEntity } from './infrastructure/entities/account.entity';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { AuthController } from './presentation/controllers/account.controller';
@@ -15,15 +15,14 @@ import { UNIT_OF_WORK } from 'src/shared/ddd/infrastructure/unit-of-work/unit-of
 import { UnitOfWorkModule } from 'src/shared/ddd/infrastructure/unit-of-work/unit-of-work.module';
 import { ACCOUNT_REPO } from './domain/repositories/account.repo.interface';
 import { ROLE_REPO } from './domain/repositories/role.repo.interface';
-import { AddCustomerRoleEventHandler } from 'src/modules/account/application/event-handlers/add-customer-role.event-handler';
 import { AddRoleToAccountCommandHandler } from 'src/modules/account/application/commands/add-role-to-account/handler';
-import { AccountReadRepository } from 'src/modules/account/infrastructure/repositories/account.read.repo';
-import { GetAccountByIdQuery } from 'src/modules/account/application/queries/get-account-by-id/query';
 import { GetAccountByIdQueryHandler } from 'src/modules/account/application/queries/get-account-by-id/handler';
-import { AddVendorRoleEventHandler } from 'src/modules/account/application/event-handlers/add-vendor-role.event-handler';
 import { AccountPublicService } from 'src/modules/account/application/public-services/account.public-service';
 import { AddressEntity } from './infrastructure/entities/address.entity';
 import { AddAddressToAccountCommandHandler } from 'src/modules/account/application/commands/add-address-to-account/handler';
+import { EventQueueRegistry } from 'src/shared/ddd/infrastructure/queue/event-queue.registry';
+import { EVENT_NAMES } from 'src/shared/ddd/infrastructure/queue/constants/event-names';
+import { QUEUE_NAMES } from 'src/shared/ddd/infrastructure/queue/constants/queue-names';
 
 const CommandHandlers = [
   SignUpAccountCommandHandler,
@@ -34,7 +33,6 @@ const CommandHandlers = [
 
 const QueryHandlers = [GetAccountByIdQueryHandler];
 
-const EventHandlers = [AddCustomerRoleEventHandler, AddVendorRoleEventHandler];
 @Module({
   imports: [
     MikroOrmModule.forFeature([AccountEntity, RoleEntity, AddressEntity]),
@@ -53,12 +51,10 @@ const EventHandlers = [AddCustomerRoleEventHandler, AddVendorRoleEventHandler];
       provide: ROLE_REPO,
       useClass: RoleRepository,
     },
-    AccountReadRepository,
     AccountPublicService,
     AuthService,
     ...CommandHandlers,
     ...QueryHandlers,
-    ...EventHandlers,
     {
       provide: UNIT_OF_WORK,
       useClass: UnitOfWork,
@@ -66,4 +62,21 @@ const EventHandlers = [AddCustomerRoleEventHandler, AddVendorRoleEventHandler];
   ],
   exports: [AccountPublicService],
 })
-export class AccountModule {}
+export class AccountModule implements OnModuleInit {
+  constructor(private readonly eventRegistry: EventQueueRegistry) {}
+
+  onModuleInit() {
+    this.eventRegistry.subscribe(
+      EVENT_NAMES.ACCOUNT_SIGNED_UP,
+      QUEUE_NAMES.ACCOUNT_QUEUE,
+    );
+    this.eventRegistry.subscribe(
+      EVENT_NAMES.ACCOUNT_SIGNED_UP,
+      QUEUE_NAMES.PAYMENT_QUEUE,
+    );
+    this.eventRegistry.subscribe(
+      EVENT_NAMES.ACCOUNT_LOGGED_IN,
+      QUEUE_NAMES.ACCOUNT_QUEUE,
+    );
+  }
+}
