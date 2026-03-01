@@ -3,7 +3,6 @@ import { SignUpAccountCommand } from './command';
 import { AccountAggRoot } from 'src/modules/account/domain/aggregate-root/account.agg-root';
 import { AuthService } from 'src/shared/auth/auth.service';
 import { ConflictException, Inject, NotFoundException } from '@nestjs/common';
-
 import { Transactional } from '@mikro-orm/core';
 import {
   ACCOUNT_REPO,
@@ -49,6 +48,20 @@ export class SignUpAccountCommandHandler
     accountDomainEntity.addRole(RoleIdVO.create({ id: role.getId() }));
 
     await this.accountRepo.insert(accountDomainEntity);
+
+    // Save AccountSignedUpEvent to outbox
+    // const signedUpEvent = new AccountSignedUpEvent(
+    //   accountDomainEntity.getId(),
+    //   command.data.email,
+    // );
+
+    // await this.outboxRepository.save({
+    //   id: uuidV7(),
+    //   name: signedUpEvent.constructor.name,
+    //   payload: signedUpEvent,
+    //   status: Status.PENDING,
+    //   createdAt: new Date(),
+    // });
 
     return accountDomainEntity.getId();
   }

@@ -6,7 +6,6 @@ import { AccountAggRoot } from '../../domain/aggregate-root/account.agg-root';
 import { plainToInstance } from 'class-transformer';
 
 export class AccountDtoMapper {
-
   static fromDomain(account: AccountAggRoot): AccountDto {
     return plainToInstance(AccountDto, {
       id: account.getId(),
@@ -15,6 +14,7 @@ export class AccountDtoMapper {
       roles: account.getRoles().map((role) =>
         plainToInstance(RoleDto, {
           id: role.getId(),
+          name: role.getName(),
         }),
       ),
     });
