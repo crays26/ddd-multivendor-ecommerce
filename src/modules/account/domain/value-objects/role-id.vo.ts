@@ -1,17 +1,23 @@
-import {BaseValueObject} from "src/shared/ddd/domain/base/BaseValueObject";
+import { ValueObjectBase } from 'src/shared/ddd/domain/base/value-object.base';
+
 interface RoleIdProps {
-    id: string
+  id: string;
+  name?: string;
 }
-export class RoleIdVO extends BaseValueObject<RoleIdProps> {
-    private constructor(props: RoleIdProps) {
-        super(props);
-    }
+export class RoleIdVO extends ValueObjectBase<RoleIdProps> {
+  private constructor(props: RoleIdProps) {
+    super(props);
+  }
 
-    static create(props: RoleIdProps): RoleIdVO {
-        return new RoleIdVO(props);
-    }
+  static create(props: RoleIdProps): RoleIdVO {
+    return new RoleIdVO(props);
+  }
 
-    public getId(): string {
-        return this.props.id;
-    }
+  public getId(): string {
+    return this.props.id;
+  }
+
+  public getName(): string | undefined {
+    return this.props.name;
+  }
 }

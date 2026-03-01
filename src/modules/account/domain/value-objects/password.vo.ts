@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { BaseValueObject } from 'src/shared/ddd/domain/base/BaseValueObject';
+import { ValueObjectBase } from 'src/shared/ddd/domain/base/value-object.base';
 
 const SALT_ROUND = 10;
 
@@ -8,16 +8,14 @@ interface PasswordProps {
   value: string;
 }
 
-export class PasswordVO extends BaseValueObject<PasswordProps> {
-  
+export class PasswordVO extends ValueObjectBase<PasswordProps> {
   private constructor(props: PasswordProps) {
     super(props);
     if (!this.validate(props.value)) {
       throw new BadRequestException(
-        'Password must be at least 8 characters and contain at least 1 uppercase letter'
+        'Password must be at least 8 characters and contain at least 1 uppercase letter',
       );
     }
-    
   }
 
   static create(props: PasswordProps): PasswordVO {

@@ -1,17 +1,16 @@
-import { BadRequestException } from "@nestjs/common";
-import { BaseValueObject } from "src/shared/ddd/domain/base/BaseValueObject";
+import { BadRequestException } from '@nestjs/common';
+import { ValueObjectBase } from 'src/shared/ddd/domain/base/value-object.base';
 
 interface EmailProps {
   value: string;
 }
 
-export class EmailVO extends BaseValueObject<EmailProps> {
-    
+export class EmailVO extends ValueObjectBase<EmailProps> {
   private constructor(props: EmailProps) {
     // if (!this.validate(value)) {
     //   throw new BadRequestException('Invalid email format');
     // }
-    super(props)
+    super(props);
   }
 
   static create(props: EmailProps): EmailVO {
@@ -23,7 +22,6 @@ export class EmailVO extends BaseValueObject<EmailProps> {
   }
 
   private validate(value: string): boolean {
-    
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   }
 }

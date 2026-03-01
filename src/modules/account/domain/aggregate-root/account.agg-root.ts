@@ -61,7 +61,7 @@ export class AccountAggRoot extends AggregateRootBase<string, AccountProps> {
       roles: props.roles ?? [],
       addresses: props.addresses ?? [],
     });
-    account.apply(new AccountSignedUpEvent(account.id));
+    account.apply(new AccountSignedUpEvent(account.id, props.email));
     return account;
   }
 
