@@ -51,23 +51,28 @@ export class AuthService {
   }
 
   async blacklistTokenPair(tokenPair: JwtTokenPair): Promise<void> {
-    const access = await this.jwtService.decode(tokenPair.accessToken);
+    const access = this.jwtService.decode(tokenPair.accessToken);
     const accessRemainingTime = access.exp - Math.floor(Date.now() / 1000);
-    const refresh = await this.jwtService.decode(tokenPair.refreshToken);
+    const refresh = this.jwtService.decode(tokenPair.refreshToken);
     const refreshRemainingTime = refresh.exp - Math.floor(Date.now() / 1000);
-    await this.cache.set(
-      `blacklist:${tokenPair.accessToken}`,
-      '1',
-      accessRemainingTime,
-    );
-    await this.cache.set(
-      `blacklist:${tokenPair.refreshToken}`,
-      '1',
-      refreshRemainingTime,
-    );
+
+    if (accessRemainingTime > 0) {
+      await this.cache.set(
+        `blacklist:${tokenPair.accessToken}`,
+        '1',
+        accessRemainingTime,
+      );
+    }
+    if (refreshRemainingTime > 0) {
+      await this.cache.set(
+        `blacklist:${tokenPair.refreshToken}`,
+        '1',
+        refreshRemainingTime,
+      );
+    }
   }
 
   async isTokenBlacklisted(token: string): Promise<boolean> {
-    return (await this.cache.get<string>(`blacklist:${token}`)) !== undefined;
+    return (await this.cache.get(`blacklist:${token}`)) != null;
   }
 }
