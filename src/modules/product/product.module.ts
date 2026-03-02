@@ -18,6 +18,8 @@ import { GetVariantByIdQueryHandler } from './application/queries/get-variant-by
 import { EventQueueRegistry } from 'src/shared/ddd/infrastructure/queue/event-queue.registry';
 import { EVENT_NAMES } from 'src/shared/ddd/infrastructure/queue/constants/event-names';
 import { QUEUE_NAMES } from 'src/shared/ddd/infrastructure/queue/constants/queue-names';
+import { PRODUCT_REPO } from './domain/repositories/product.repo.interface';
+import { CategoryEntity } from './infrastructure/entities/category.entity';
 
 const CommandHandlers = [
   CreateProductCommandHandler,
@@ -36,6 +38,7 @@ const QueryHandlers = [
       ProductEntity,
       ProductVariantEntity,
       ProductAttributeEntity,
+      CategoryEntity,
     ]),
     CqrsModule,
   ],
@@ -46,7 +49,10 @@ const QueryHandlers = [
       provide: PRODUCT_PUBLIC_SERVICE,
       useClass: ProductPublicService,
     },
-    ProductRepository,
+    {
+      provide: PRODUCT_REPO,
+      useClass: ProductRepository,
+    },
     ProductReadRepository,
     ...CommandHandlers,
     ...QueryHandlers,
@@ -57,7 +63,6 @@ export class ProductModule implements OnModuleInit {
   constructor(private readonly eventRegistry: EventQueueRegistry) {}
 
   onModuleInit() {
-    // Subscribe product events to the product queue
     this.eventRegistry.subscribe(
       EVENT_NAMES.PRODUCT_CREATED,
       QUEUE_NAMES.PRODUCT_QUEUE,
