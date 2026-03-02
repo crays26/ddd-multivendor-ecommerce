@@ -7,14 +7,12 @@ interface CartItemProps {
   id: string;
   productVariantId: ProductVariantIdVO;
   quantity: number;
-  unitPrice: number;
 }
 
 interface CreateCartItemProps {
   id?: string;
-  productVariantId: ProductVariantIdVO;
+  productVariantId: string;
   quantity: number;
-  unitPrice: number;
 }
 
 export class CartItem extends DomainEntityBase<string, CartItemProps> {
@@ -25,7 +23,10 @@ export class CartItem extends DomainEntityBase<string, CartItemProps> {
 
   public static create(props: CreateCartItemProps): CartItem {
     return new CartItem({
-      ...props,
+      quantity: props.quantity,
+      productVariantId: ProductVariantIdVO.create({
+        id: props.productVariantId,
+      }),
       id: props.id ?? uuidV7(),
     });
   }
@@ -33,9 +34,6 @@ export class CartItem extends DomainEntityBase<string, CartItemProps> {
   private validate(props: CartItemProps): void {
     if (props.quantity <= 0) {
       throw new BadRequestException('Quantity must be greater than zero.');
-    }
-    if (props.unitPrice < 0) {
-      throw new BadRequestException('Unit price cannot be negative.');
     }
   }
 
@@ -49,14 +47,6 @@ export class CartItem extends DomainEntityBase<string, CartItemProps> {
 
   public getQuantity(): number {
     return this.props.quantity;
-  }
-
-  public getUnitPrice(): number {
-    return this.props.unitPrice;
-  }
-
-  public getLineTotal(): number {
-    return this.props.quantity * this.props.unitPrice;
   }
 
   public changeQuantity(newQuantity: number): void {
@@ -84,12 +74,5 @@ export class CartItem extends DomainEntityBase<string, CartItemProps> {
       );
     }
     this.props.quantity = newQuantity;
-  }
-
-  public updateUnitPrice(newPrice: number): void {
-    if (newPrice < 0) {
-      throw new BadRequestException('Unit price cannot be negative.');
-    }
-    this.props.unitPrice = newPrice;
   }
 }

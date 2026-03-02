@@ -1,5 +1,5 @@
 import { AggregateRootBase } from 'src/shared/ddd/domain/base/aggregate-root.base';
-import { BadRequestException, ConflictException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { v7 as uuidV7 } from 'uuid';
 import { CartItem } from '../entities/cart-item.entity';
 import { CustomerIdVO } from 'src/modules/cart/domain/value-objects/customer-id.vo';
