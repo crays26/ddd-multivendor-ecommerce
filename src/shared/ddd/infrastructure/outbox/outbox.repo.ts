@@ -8,24 +8,34 @@ export class OutboxRepository {
   constructor(private readonly em: EntityManager) {}
 
   async findAllUnprocessedByNames(names: string[]): Promise<OutboxEntity[]> {
-    return await this.em.findAll(OutboxEntity, {
+    return this.em.fork().findAll(OutboxEntity, {
       where: { name: { $in: names }, status: Status.PENDING },
       orderBy: { createdAt: QueryOrder.ASC },
     });
   }
 
   async save(outbox: OutboxEntity): Promise<void> {
-    await this.em.persistAndFlush(outbox);
+    await this.em.fork().persistAndFlush(outbox);
   }
 
   async markAsProcessed(outbox: OutboxEntity): Promise<void> {
-    outbox.status = Status.COMPLETED;
-    outbox.processedAt = new Date();
-    await this.em.persistAndFlush(outbox);
+    await this.em.fork().nativeUpdate(
+      OutboxEntity,
+      { id: outbox.id },
+      {
+        status: Status.COMPLETED,
+        processedAt: new Date(),
+      },
+    );
   }
 
   async markAsFailed(outbox: OutboxEntity): Promise<void> {
-    outbox.status = Status.FAILED;
-    await this.em.persistAndFlush(outbox);
+    await this.em.fork().nativeUpdate(
+      OutboxEntity,
+      { id: outbox.id },
+      {
+        status: Status.FAILED,
+      },
+    );
   }
 }
