@@ -14,7 +14,7 @@ const allQueueNames = Object.values(QUEUE_NAMES);
     NestBullModule.forRoot({
       connection: {
         host: process.env.REDIS_NAME!,
-        port: Number(process.env.REDIS_PORT) || 6379,
+        port: 6379,
       },
     }),
 

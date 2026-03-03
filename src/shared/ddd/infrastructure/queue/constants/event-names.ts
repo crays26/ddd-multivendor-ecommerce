@@ -9,6 +9,9 @@ export const EVENT_NAMES = {
   PAYMENT_SUCCEEDED: 'PaymentSucceededEvent',
   PAYMENT_FAILED: 'PaymentFailedEvent',
 
+  // Inventory events
+  STOCK_CONFIRMATION_FAILED: 'StockConfirmationFailedEvent',
+
   // Product events
   PRODUCT_CREATED: 'ProductCreatedEvent',
   PRODUCT_UPDATED: 'ProductUpdatedEvent',
