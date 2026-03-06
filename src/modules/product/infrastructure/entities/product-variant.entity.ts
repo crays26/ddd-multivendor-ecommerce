@@ -12,10 +12,10 @@ export class ProductVariantEntity {
   @Property()
   skuCode!: string;
 
-  @Property()
+  @Property({ type: 'int' })
   price!: number;
 
-  @Property()
+  @Property({ type: 'int' })
   stock!: number;
 
   @Property()
