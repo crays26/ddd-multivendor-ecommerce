@@ -4,7 +4,7 @@ import { CartItemSummaryDto, CartSummaryDto } from './dto';
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { CartEntity } from '../../../infrastructure/persistences/entities/cart.entity';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 
 @QueryHandler(GetCartSummaryQuery)
@@ -25,8 +25,21 @@ export class GetCartSummaryQueryHandler
     if (!cart) {
       throw new NotFoundException('Cart not found');
     }
+    const cartItems = cart.items.getItems();
 
-    const items = cart.items.getItems().map((item) =>
+    const outOfStockItems = cartItems.filter(
+      (item) => item.productVariant.stock < item.quantity,
+    );
+    if (outOfStockItems.length > 0) {
+      throw new ConflictException(
+        outOfStockItems.map(
+          (item) =>
+            `Not enough stock for ${item.productVariant.name} (available: ${item.productVariant.stock}, requested: ${item.quantity})`,
+        ),
+      );
+    }
+
+    const items = cartItems.map((item) =>
       plainToClass(CartItemSummaryDto, {
         variantId: item.productVariant.id,
         variantName: item.productVariant.name,
