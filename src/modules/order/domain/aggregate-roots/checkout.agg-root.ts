@@ -2,9 +2,9 @@ import { v7 as uuidV7 } from 'uuid';
 import { CustomerIdVO } from '../value-objects/customer-id.vo';
 import { AggregateRootBase } from 'src/shared/ddd/domain/base/aggregate-root.base';
 import {
-  OrderGroupCreatedEvent,
-  OrderGroupEventOrder,
-} from '../events/order-group-created.event';
+  CheckoutCreatedEvent,
+  CheckoutEventOrder,
+} from '../events/checkout-created.event';
 
 export enum CheckoutStatus {
   PENDING = 'PENDING',
@@ -44,9 +44,9 @@ export class CheckoutAggRoot extends AggregateRootBase<string, CheckoutProps> {
     });
   }
 
-  addCreatedEvent(orders: OrderGroupEventOrder[]): void {
+  addCreatedEvent(orders: CheckoutEventOrder[]): void {
     this.apply(
-      new OrderGroupCreatedEvent(
+      new CheckoutCreatedEvent(
         this.getId(),
         this.getCustomerId(),
         orders,

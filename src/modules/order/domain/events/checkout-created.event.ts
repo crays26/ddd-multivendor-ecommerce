@@ -1,23 +1,23 @@
 import { IEvent } from '@nestjs/cqrs';
 
-export interface OrderGroupEventItem {
+export interface CheckoutEventItem {
   variantId: string;
   quantity: number;
   priceAtPurchase: number;
 }
 
-export interface OrderGroupEventOrder {
+export interface CheckoutEventOrder {
   orderId: string;
   vendorId: string;
-  items: OrderGroupEventItem[];
+  items: CheckoutEventItem[];
   subtotal: number;
 }
 
-export class OrderGroupCreatedEvent implements IEvent {
+export class CheckoutCreatedEvent implements IEvent {
   constructor(
-    public readonly orderGroupId: string,
+    public readonly checkoutId: string,
     public readonly customerId: string,
-    public readonly orders: OrderGroupEventOrder[],
+    public readonly orders: CheckoutEventOrder[],
     public readonly totalAmount: number,
   ) {}
 }
