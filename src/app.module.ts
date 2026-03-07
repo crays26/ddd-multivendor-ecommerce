@@ -17,6 +17,7 @@ import { ShareQueueModule } from './shared/ddd/infrastructure/queue/queue.module
 import { OrderModule } from './modules/order/order.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { BillingModule } from './modules/billing/billing.module';
+import { ShareSessionModule } from './shared/ddd/infrastructure/session/session.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { BillingModule } from './modules/billing/billing.module';
     ShareCloudStorageModule,
     ShareOutboxModule,
     ShareQueueModule,
+    ShareSessionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
