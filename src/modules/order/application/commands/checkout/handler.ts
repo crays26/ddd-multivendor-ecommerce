@@ -3,10 +3,6 @@ import { Inject } from '@nestjs/common';
 import { CheckoutCommand } from 'src/modules/order/application/commands/checkout/command';
 import { ProductPublicService } from 'src/modules/product/application/public-services/product.public-service';
 import {
-  IInventoryPublicService,
-  INVENTORY_PUBLIC_SERVICE,
-} from 'src/modules/inventory/application/public-services/inventory.public-service.interface';
-import {
   IOrderRepository,
   ORDER_REPO,
 } from 'src/modules/order/domain/repositories/order.repo.interface';
@@ -34,8 +30,6 @@ export class CheckoutCommandHandler
 {
   constructor(
     private readonly productPublicService: ProductPublicService,
-    @Inject(INVENTORY_PUBLIC_SERVICE)
-    private readonly inventoryPublicService: IInventoryPublicService,
     @Inject(ORDER_REPO)
     private readonly orderRepository: IOrderRepository,
     private readonly checkoutRepository: CheckoutRepository,
@@ -72,16 +66,6 @@ export class CheckoutCommandHandler
             });
           }),
         );
-
-        await Promise.all(
-          lineItems.map(async (item) => {
-            await this.inventoryPublicService.reserveStock(
-              item.getProductVariantId(),
-              item.getQuantity(),
-            );
-          }),
-        );
-
         return {
           vendorId: order.vendorId,
           lineItems,
