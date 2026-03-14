@@ -6,7 +6,7 @@ interface FailedStockItem {
   priceAtPurchase: number;
 }
 
-export class StockConfirmationFailedEvent implements IEvent {
+export class StockReservationFailedEvent implements IEvent {
   constructor(
     public readonly orderId: string,
     public readonly vendorId: string,
