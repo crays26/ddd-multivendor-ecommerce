@@ -23,7 +23,7 @@ export class ConfirmReservationCommandHandler
 
   @Transactional()
   async execute(command: ConfirmReservationCommand): Promise<void> {
-    const { orderId, vendorId, transactionId, items, amount } = command.payload;
+    const { orderId, vendorId, checkoutId, items, amount } = command.payload;
 
     try {
       await Promise.all(
@@ -35,7 +35,7 @@ export class ConfirmReservationCommandHandler
       const failedEvent = new StockConfirmationFailedEvent(
         orderId,
         vendorId,
-        transactionId,
+        checkoutId,
         items,
         amount,
         error instanceof Error ? error.message : 'Stock confirmation failed',

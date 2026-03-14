@@ -9,6 +9,8 @@ import { ConfirmReservationCommand } from '../commands/confirm-reservation/comma
 import { ReleaseStockCommand } from '../commands/release-stock/command';
 import { ProductCreatedEvent } from 'src/modules/product/domain/events/product-created.event';
 import { CreateInventoryCommand } from '../commands/create-inventory/command';
+import { CheckoutCreatedEvent } from 'src/modules/order/domain/events/checkout-created.event';
+import { ReserveStockCommand } from '../commands/reserve-stock/command';
 
 @Processor(QUEUE_NAMES.INVENTORY_QUEUE)
 export class InventoryEventProcessor extends WorkerHost {
@@ -23,6 +25,9 @@ export class InventoryEventProcessor extends WorkerHost {
         break;
       case EVENT_NAMES.PAYMENT_SUCCEEDED:
         await this.handlePaymentSucceeded(job.data as PaymentSucceededEvent);
+        break;
+      case EVENT_NAMES.CHECKOUT_CREATED:
+        await this.handleCheckoutCreated(job.data as CheckoutCreatedEvent);
         break;
       case EVENT_NAMES.PAYMENT_FAILED:
         await this.handlePaymentFailed(job.data as PaymentFailedEvent);
@@ -44,6 +49,24 @@ export class InventoryEventProcessor extends WorkerHost {
     );
   }
 
+  private async handleCheckoutCreated(
+    event: CheckoutCreatedEvent,
+  ): Promise<void> {
+    await Promise.all(
+      event.orders.map((order) =>
+        this.commandBus.execute(
+          new ReserveStockCommand({
+            orderId: order.orderId,
+            vendorId: order.vendorId,
+            checkoutId: event.checkoutId,
+            items: order.items,
+            amount: order.subtotal,
+          }),
+        ),
+      ),
+    );
+  }
+
   private async handlePaymentSucceeded(
     event: PaymentSucceededEvent,
   ): Promise<void> {
@@ -53,7 +76,7 @@ export class InventoryEventProcessor extends WorkerHost {
           new ConfirmReservationCommand({
             orderId: order.orderId,
             vendorId: order.vendorId,
-            transactionId: event.transactionId,
+            checkoutId: event.checkoutId,
             items: order.items,
             amount: order.subtotal,
           }),
@@ -63,16 +86,17 @@ export class InventoryEventProcessor extends WorkerHost {
   }
 
   private async handlePaymentFailed(event: PaymentFailedEvent): Promise<void> {
-    const releasePromises = event.orders.flatMap((order) =>
-      order.items.map((item) =>
-        this.commandBus.execute(
-          new ReleaseStockCommand({
-            variantId: item.variantId,
-            quantity: item.quantity,
-          }),
+    await Promise.allSettled(
+      event.orders.flatMap((order) =>
+        order.items.map((item) =>
+          this.commandBus.execute(
+            new ReleaseStockCommand({
+              variantId: item.variantId,
+              quantity: item.quantity,
+            }),
+          ),
         ),
       ),
     );
-    await Promise.allSettled(releasePromises);
   }
 }
