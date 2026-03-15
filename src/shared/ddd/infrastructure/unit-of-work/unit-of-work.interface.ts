@@ -1,11 +1,12 @@
-import { EntityManager } from "@mikro-orm/postgresql";
+import { EntityManager } from '@mikro-orm/postgresql';
 
 export interface IUnitOfWork {
-    getEntityManager(): EntityManager;
-    begin(): Promise<void>;
-    commit(): Promise<void>;
-    rollback(): Promise<void>;
-    getRepository<T>(repo: new (em: EntityManager) => T): T;
+  getEntityManager(): EntityManager;
+  begin(): Promise<void>;
+  commit(): Promise<void>;
+  rollback(): Promise<void>;
+  transactional(fn: () => Promise<void>): Promise<void>;
+  getRepository<T>(repo: new (em: EntityManager) => T): T;
 }
 
-export const UNIT_OF_WORK = Symbol('UNIT_OF_WORK')
+export const UNIT_OF_WORK = Symbol('UNIT_OF_WORK');

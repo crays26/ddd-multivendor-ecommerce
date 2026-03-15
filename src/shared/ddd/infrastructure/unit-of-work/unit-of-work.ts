@@ -4,7 +4,6 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class UnitOfWork implements IUnitOfWork {
-    
   constructor(private readonly em: EntityManager) {}
 
   getEntityManager(): EntityManager {
@@ -20,6 +19,10 @@ export class UnitOfWork implements IUnitOfWork {
 
   public async rollback(): Promise<void> {
     await this.em.rollback();
+  }
+
+  public async transactional(fn: () => Promise<void>): Promise<void> {
+    await this.em.transactional(fn);
   }
 
   getRepository<T>(repo: new (em: EntityManager) => T): T {
