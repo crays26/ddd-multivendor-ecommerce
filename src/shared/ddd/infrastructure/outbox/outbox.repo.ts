@@ -7,19 +7,28 @@ import { Injectable } from '@nestjs/common';
 export class OutboxRepository {
   constructor(private readonly em: EntityManager) {}
 
-  async findAllUnprocessedByNames(names: string[]): Promise<OutboxEntity[]> {
-    return this.em.fork().findAll(OutboxEntity, {
+  async findAllUnprocessedByNames(
+    names: string[],
+    fork: boolean = false,
+  ): Promise<OutboxEntity[]> {
+    const em = fork ? this.em.fork() : this.em;
+    return em.findAll(OutboxEntity, {
       where: { name: { $in: names }, status: Status.PENDING },
       orderBy: { createdAt: QueryOrder.ASC },
     });
   }
 
-  async save(outbox: OutboxEntity): Promise<void> {
-    await this.em.fork().persistAndFlush(outbox);
+  async save(outbox: OutboxEntity, fork: boolean = false): Promise<void> {
+    const em = fork ? this.em.fork() : this.em;
+    await em.persist(outbox).flush();
   }
 
-  async markAsProcessed(outbox: OutboxEntity): Promise<void> {
-    await this.em.fork().nativeUpdate(
+  async markAsProcessed(
+    outbox: OutboxEntity,
+    fork: boolean = false,
+  ): Promise<void> {
+    const em = fork ? this.em.fork() : this.em;
+    await em.nativeUpdate(
       OutboxEntity,
       { id: outbox.id },
       {
@@ -29,8 +38,12 @@ export class OutboxRepository {
     );
   }
 
-  async markAsFailed(outbox: OutboxEntity): Promise<void> {
-    await this.em.fork().nativeUpdate(
+  async markAsFailed(
+    outbox: OutboxEntity,
+    fork: boolean = false,
+  ): Promise<void> {
+    const em = fork ? this.em.fork() : this.em;
+    await em.nativeUpdate(
       OutboxEntity,
       { id: outbox.id },
       {

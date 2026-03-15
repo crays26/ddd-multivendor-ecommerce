@@ -5,6 +5,7 @@ import { EventQueueRegistry } from '../queue/event-queue.registry';
 import { QueueRegistry } from '../queue/queue.registry';
 import { OUTBOX_CRON } from './constants/cron';
 import { EventName } from '../queue/constants';
+import { CreateRequestContext } from '@mikro-orm/core';
 
 @Injectable()
 export class OutboxPublisher {
@@ -14,6 +15,7 @@ export class OutboxPublisher {
     private readonly queueRegistry: QueueRegistry,
   ) {}
 
+  @CreateRequestContext()
   @Cron(OUTBOX_CRON.POLLING_INTERVAL)
   async pollAndDispatch(): Promise<void> {
     const allEventNames = this.eventRegistry.getAllEventNames();
