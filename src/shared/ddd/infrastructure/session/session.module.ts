@@ -1,6 +1,6 @@
 import { Inject, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import * as session from 'express-session';
-import connectRedis from 'connect-redis';
+import session from 'express-session';
+import RedisStore from 'connect-redis';
 import { REDIS_CLIENT, RedisProvider } from '../providers/redis.provider';
 import Redis from 'ioredis';
 
@@ -13,12 +13,15 @@ export class ShareSessionModule implements NestModule {
   constructor(@Inject(REDIS_CLIENT) private readonly redisClient: Redis) {}
 
   configure(consumer: MiddlewareConsumer) {
-    const RedisStore = connectRedis(session);
+    const redisStore = new RedisStore({
+      client: this.redisClient,
+      prefix: 'session:',
+    });
 
     consumer
       .apply(
         session({
-          store: new RedisStore({ client: this.redisClient }),
+          store: redisStore,
           secret: process.env.SESSION_SECRET_KEY!,
           resave: false,
           saveUninitialized: false,
