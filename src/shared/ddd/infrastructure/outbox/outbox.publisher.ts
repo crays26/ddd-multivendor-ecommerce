@@ -6,6 +6,7 @@ import { QueueRegistry } from '../queue/queue.registry';
 import { OUTBOX_CRON } from './constants/cron';
 import { EventName } from '../queue/constants';
 import { CreateRequestContext } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/postgresql';
 
 @Injectable()
 export class OutboxPublisher {
@@ -13,10 +14,11 @@ export class OutboxPublisher {
     private readonly outboxRepo: OutboxRepository,
     private readonly eventRegistry: EventQueueRegistry,
     private readonly queueRegistry: QueueRegistry,
+    private readonly orm: MikroORM,
   ) {}
 
-  @CreateRequestContext()
   @Cron(OUTBOX_CRON.POLLING_INTERVAL)
+  @CreateRequestContext()
   async pollAndDispatch(): Promise<void> {
     const allEventNames = this.eventRegistry.getAllEventNames();
     if (allEventNames.length === 0) return;
@@ -35,6 +37,9 @@ export class OutboxPublisher {
             const queue = this.queueRegistry.get(queueName);
             if (queue) {
               await queue.add(message.name, message.payload);
+              console.log(
+                `Event "${message.name}" dispatched to queue "${queueName}"`,
+              );
             } else {
               console.warn(
                 `Queue "${queueName}" not registered for event "${message.name}"`,
