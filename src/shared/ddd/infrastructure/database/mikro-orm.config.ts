@@ -9,16 +9,16 @@ export default defineConfig({
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'password',
   dbName: process.env.DB_NAME || 'ddd_app',
-  entities: ['dist/**/*.entity.js'], // CLI & production
-  entitiesTs: ['src/**/*.entity.ts'], // Dev (NestJS runtime)
+  // entities: ['dist/**/*.entity.js'],
+  // entitiesTs: ['src/**/*.entity.ts'],
   migrations: {
     path: './dist/shared/ddd/infrastructure/database/migrations',
     pathTs: './src/shared/ddd/infrastructure/database/migrations',
   },
-   seeder: {
+  seeder: {
     path: './dist/shared/ddd/infrastructure/database/seeders',
     pathTs: './src/shared/ddd/infrastructure/database/seeders',
-    fileName: (className: string) => className, // seeder file naming convention
+    fileName: (className: string) => className,
   },
   highlighter: new SqlHighlighter(),
   debug: process.env.NODE_ENV === 'dev',

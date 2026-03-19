@@ -24,7 +24,7 @@ import { ShareSessionModule } from './shared/ddd/infrastructure/session/session.
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    MikroOrmModule.forRoot(mikroConfig),
+    MikroOrmModule.forRoot({ ...mikroConfig, autoLoadEntities: true }),
     CqrsModule.forRoot(),
     AccountModule,
     ProductModule,
