@@ -9,8 +9,8 @@ export default defineConfig({
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'password',
   dbName: process.env.DB_NAME || 'ddd_app',
-  // entities: ['dist/**/*.entity.js'],
-  // entitiesTs: ['src/**/*.entity.ts'],
+  entities: ['dist/**/*.entity.js'],
+  entitiesTs: ['src/**/*.entity.ts'],
   migrations: {
     path: './dist/shared/ddd/infrastructure/database/migrations',
     pathTs: './src/shared/ddd/infrastructure/database/migrations',
