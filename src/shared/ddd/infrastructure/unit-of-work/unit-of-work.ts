@@ -1,4 +1,8 @@
-import { AnyEntity, EntityManager } from '@mikro-orm/postgresql';
+import {
+  AnyEntity,
+  EntityManager,
+  TransactionOptions,
+} from '@mikro-orm/postgresql';
 import { IUnitOfWork } from './unit-of-work.interface';
 import { Injectable } from '@nestjs/common';
 
@@ -21,8 +25,11 @@ export class UnitOfWork implements IUnitOfWork {
     await this.em.rollback();
   }
 
-  public async transactional(fn: () => Promise<void>): Promise<void> {
-    await this.em.transactional(fn);
+  public async transactional(
+    fn: () => Promise<void>,
+    options?: TransactionOptions,
+  ): Promise<void> {
+    await this.em.transactional(fn, options);
   }
 
   getRepository<T>(repo: new (em: EntityManager) => T): T {
