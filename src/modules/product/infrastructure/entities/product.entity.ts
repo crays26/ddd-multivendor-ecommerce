@@ -6,6 +6,7 @@ import {
   Opt,
   PrimaryKey,
   Property,
+  Rel,
 } from '@mikro-orm/core';
 import { Collection } from '@mikro-orm/core';
 import { ProductVariantEntity } from './product-variant.entity';
@@ -37,15 +38,21 @@ export class ProductEntity {
   displayPrice!: number;
 
   @ManyToOne(() => VendorEntity)
-  vendor!: VendorEntity;
+  vendor!: Rel<VendorEntity>;
 
   @ManyToOne(() => CategoryEntity)
-  category!: CategoryEntity;
+  category!: Rel<CategoryEntity>;
 
-  @OneToMany(() => ProductAttributeEntity, (attribute) => attribute.product)
+  @OneToMany(
+    () => ProductAttributeEntity,
+    (attribute: ProductAttributeEntity) => attribute.product,
+  )
   attributes = new Collection<ProductAttributeEntity>(this);
 
-  @OneToMany(() => ProductVariantEntity, (variant) => variant.product)
+  @OneToMany(
+    () => ProductVariantEntity,
+    (variant: ProductVariantEntity) => variant.product,
+  )
   variants = new Collection<ProductVariantEntity>(this);
 
   @Index({ type: 'fulltext' })

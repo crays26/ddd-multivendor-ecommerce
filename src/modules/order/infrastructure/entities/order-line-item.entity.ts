@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, Rel } from '@mikro-orm/core';
 import { ProductVariantEntity } from 'src/modules/product/infrastructure/entities/product-variant.entity';
 import { OrderEntity } from 'src/modules/order/infrastructure/entities/order.entity';
 
@@ -10,12 +10,12 @@ export class OrderLineItemEntity {
   @Property({ type: 'int' })
   price!: number;
 
-  @Property()
+  @Property({ type: 'int' })
   quantity!: number;
 
   @ManyToOne(() => OrderEntity)
-  order: OrderEntity;
+  order!: Rel<OrderEntity>;
 
   @ManyToOne(() => ProductVariantEntity)
-  productVariant: ProductVariantEntity;
+  productVariant!: Rel<ProductVariantEntity>;
 }

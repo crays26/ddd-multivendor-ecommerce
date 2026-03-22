@@ -5,6 +5,7 @@ import {
   OneToOne,
   PrimaryKey,
   Property,
+  Rel,
   Unique,
 } from '@mikro-orm/core';
 import { RoleEntity } from './role.entity';
@@ -28,7 +29,7 @@ export class AccountEntity {
   password!: string;
 
   @OneToOne(() => VendorEntity, (vendor) => vendor.account, { nullable: true })
-  vendor?: VendorEntity;
+  vendor?: Rel<VendorEntity>;
 
   @ManyToMany(() => RoleEntity, (role) => role.accounts, {
     owner: true,

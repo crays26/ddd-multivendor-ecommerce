@@ -1,4 +1,11 @@
-import { Entity, ManyToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import {
+  Entity,
+  ManyToOne,
+  Opt,
+  PrimaryKey,
+  Property,
+  Rel,
+} from '@mikro-orm/core';
 import { AccountEntity } from 'src/modules/account/infrastructure/entities/account.entity';
 
 @Entity({ tableName: 'address' })
@@ -40,5 +47,5 @@ export class AddressEntity {
   label!: string;
 
   @ManyToOne(() => AccountEntity)
-  account!: AccountEntity;
+  account!: Rel<AccountEntity>;
 }

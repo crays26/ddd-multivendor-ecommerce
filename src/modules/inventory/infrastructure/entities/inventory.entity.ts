@@ -1,13 +1,13 @@
-import { Entity, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, Rel } from '@mikro-orm/core';
+import { ProductVariantEntity } from 'src/modules/product/infrastructure/entities/product-variant.entity';
 
 @Entity({ tableName: 'inventory' })
 export class InventoryEntity {
   @PrimaryKey({ type: 'uuid' })
   id!: string;
 
-  @Property({ type: 'uuid' })
-  @Unique()
-  variantId!: string;
+  @ManyToOne(() => ProductVariantEntity)
+  productVariant!: Rel<ProductVariantEntity>;
 
   @Property({ type: 'int', default: 0 })
   quantity!: number;

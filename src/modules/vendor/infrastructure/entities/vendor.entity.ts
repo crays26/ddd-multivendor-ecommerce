@@ -5,6 +5,7 @@ import {
   OneToOne,
   PrimaryKey,
   Property,
+  Rel,
   Unique,
 } from '@mikro-orm/core';
 import { AccountEntity } from 'src/modules/account/infrastructure/entities/account.entity';
@@ -30,7 +31,7 @@ export class VendorEntity {
   rating!: number;
 
   @OneToOne(() => AccountEntity, (account) => account.vendor, { owner: true })
-  account!: AccountEntity;
+  account!: Rel<AccountEntity>;
 
   @OneToMany(() => ProductEntity, (product) => product.vendor)
   products = new Collection<ProductEntity>(this);

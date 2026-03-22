@@ -1,5 +1,14 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import {
+  Collection,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  Rel,
+} from '@mikro-orm/core';
 import { ProductEntity } from './product.entity';
+import { InventoryEntity } from 'src/modules/inventory/infrastructure/entities/inventory.entity';
 
 @Entity({ tableName: 'product_variant' })
 export class ProductVariantEntity {
@@ -28,5 +37,8 @@ export class ProductVariantEntity {
   isSoftDeleted!: boolean;
 
   @ManyToOne(() => ProductEntity)
-  product!: ProductEntity;
+  product!: Rel<ProductEntity>;
+
+  @OneToMany(() => InventoryEntity, (inventory) => inventory.productVariant)
+  inventory = new Collection<InventoryEntity>(this);
 }

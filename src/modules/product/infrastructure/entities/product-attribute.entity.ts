@@ -1,5 +1,5 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { ProductEntity } from './product.entity';
+import { Entity, ManyToOne, PrimaryKey, Property, Rel } from '@mikro-orm/core';
+import type { ProductEntity } from './product.entity';
 
 @Entity({ tableName: 'product_attribute' })
 export class ProductAttributeEntity {
@@ -15,6 +15,6 @@ export class ProductAttributeEntity {
   @Property()
   isSoftDeleted!: boolean;
 
-  @ManyToOne(() => ProductEntity)
-  product!: ProductEntity;
+  @ManyToOne(() => 'ProductEntity')
+  product!: Rel<ProductEntity>;
 }

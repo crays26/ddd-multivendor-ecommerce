@@ -6,6 +6,7 @@ import {
   PrimaryKey,
   Property,
   Collection,
+  Rel,
 } from '@mikro-orm/core';
 import { OrderEntity } from './order.entity';
 import { AccountEntity } from 'src/modules/account/infrastructure/entities/account.entity';
@@ -17,7 +18,7 @@ export class CheckoutEntity {
   id!: string;
 
   @ManyToOne(() => AccountEntity)
-  customer!: AccountEntity;
+  customer!: Rel<AccountEntity>;
 
   @Enum(() => CheckoutStatus)
   status!: CheckoutStatus;

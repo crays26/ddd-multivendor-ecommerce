@@ -6,6 +6,7 @@ import {
   PrimaryKey,
   Property,
   Enum,
+  Rel,
 } from '@mikro-orm/core';
 import { OrderLineItemEntity } from 'src/modules/order/infrastructure/entities/order-line-item.entity';
 import { VendorEntity } from 'src/modules/vendor/infrastructure/entities/vendor.entity';
@@ -19,19 +20,19 @@ export class OrderEntity {
   id!: string;
 
   @Property({ type: 'int' })
-  totalAmount: number;
+  totalAmount!: number;
 
   @Enum(() => OrderStatus)
-  status: OrderStatus;
+  status!: OrderStatus;
 
   @ManyToOne(() => VendorEntity)
-  vendor!: VendorEntity;
+  vendor!: Rel<VendorEntity>;
 
   @ManyToOne(() => AccountEntity)
-  customer!: AccountEntity;
+  customer!: Rel<AccountEntity>;
 
   @ManyToOne(() => CheckoutEntity)
-  checkout!: CheckoutEntity;
+  checkout!: Rel<CheckoutEntity>;
 
   @OneToMany(() => OrderLineItemEntity, (lineItem) => lineItem.order, {
     orphanRemoval: true,
