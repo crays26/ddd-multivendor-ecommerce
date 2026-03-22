@@ -2,6 +2,7 @@ import { EntityManager, QueryOrder } from '@mikro-orm/postgresql';
 import { OutboxEntity } from './outbox.entity';
 import { Status } from './outbox.entity';
 import { Injectable } from '@nestjs/common';
+import { Outbox } from './outbox.interface';
 
 @Injectable()
 export class OutboxRepository {
@@ -18,9 +19,15 @@ export class OutboxRepository {
     });
   }
 
-  async save(outbox: OutboxEntity, fork: boolean = false): Promise<void> {
+  async save(outbox: Outbox, fork: boolean = false): Promise<void> {
+    const outboxEntity = new OutboxEntity();
+    outboxEntity.id = outbox.id;
+    outboxEntity.name = outbox.name;
+    outboxEntity.payload = outbox.payload;
+    outboxEntity.status = outbox.status;
+
     const em = fork ? this.em.fork() : this.em;
-    await em.persist(outbox).flush();
+    await em.persist(outboxEntity).flush();
   }
 
   async markAsProcessed(
