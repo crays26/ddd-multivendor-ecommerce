@@ -2,7 +2,7 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetCartSummaryQuery } from './query';
 import { CartItemSummaryDto, CartSummaryDto } from './dto';
 import { EntityRepository } from '@mikro-orm/postgresql';
-import { CartEntity } from '../../../infrastructure/persistences/entities/cart.entity';
+import { CartEntity } from '../../../infrastructure/entities/cart.entity';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
@@ -19,7 +19,7 @@ export class GetCartSummaryQueryHandler
   async execute(query: GetCartSummaryQuery): Promise<CartSummaryDto> {
     const cart = await this.cartRepo.findOne(
       { customer: { id: query.customerId } },
-      { populate: ['items.productVariant'] },
+      { populate: ['items.productVariant.inventory'] },
     );
 
     if (!cart) {
@@ -28,7 +28,7 @@ export class GetCartSummaryQueryHandler
     const cartItems = cart.items.getItems();
 
     const outOfStockItems = cartItems.filter(
-      (item) => item.productVariant.stock < item.quantity,
+      (item) => item.productVariant.inventory!.quantity < item.quantity,
     );
     if (outOfStockItems.length > 0) {
       throw new ConflictException(
