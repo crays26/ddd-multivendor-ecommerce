@@ -12,6 +12,7 @@ export class ConfirmReservationCommand extends Command<void> {
       orderId: string;
       vendorId: string;
       checkoutId: string;
+      transactionId: string;
       items: ConfirmReservationItem[];
       amount: number;
     },

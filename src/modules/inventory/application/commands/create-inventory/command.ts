@@ -1,9 +1,13 @@
 import { Command } from '@nestjs/cqrs';
 
-export class CreateInventoryCommand extends Command<string> {
+interface CreateInventoryVariant {
+  productVariantId: string;
+  quantity: number;
+}
+
+export class CreateInventoryCommand extends Command<void> {
   constructor(
-    public readonly variantId: string,
-    public readonly quantity: number,
+    public readonly variants: CreateInventoryVariant[],
   ) {
     super();
   }

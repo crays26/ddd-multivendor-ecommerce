@@ -14,14 +14,11 @@ export class CreateInventoryCommandHandler
     private readonly inventoryRepo: IInventoryRepository,
   ) {}
 
-  async execute(command: CreateInventoryCommand): Promise<string> {
-    const { variantId, quantity } = command;
-    const inventoryAggRoot = InventoryAggRoot.create({
-      variantId,
-      quantity,
-    });
-    await this.inventoryRepo.insert(inventoryAggRoot);
+  async execute(command: CreateInventoryCommand): Promise<void> {
+    const aggregates = command.variants.map((variant) =>
+      InventoryAggRoot.create(variant),
+    );
 
-    return inventoryAggRoot.getId();
+    await this.inventoryRepo.bulkInsert(aggregates);
   }
 }

@@ -3,6 +3,7 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
   ConfirmReservationPayload,
   IInventoryPublicService,
+  ReserveStockPayload,
 } from './inventory.public-service.interface';
 import { ReserveStockCommand } from '../commands/reserve-stock/command';
 import { ReleaseStockCommand } from '../commands/release-stock/command';
@@ -16,10 +17,8 @@ export class InventoryPublicService implements IInventoryPublicService {
     private readonly queryBus: QueryBus,
   ) {}
 
-  async reserveStock(variantId: string, quantity: number): Promise<void> {
-    await this.commandBus.execute(
-      new ReserveStockCommand({ variantId, quantity }),
-    );
+  async reserveStock(payload: ReserveStockPayload): Promise<void> {
+    // await this.commandBus.execute(new ReserveStockCommand(payload));
   }
 
   async releaseStock(variantId: string, quantity: number): Promise<void> {
@@ -29,7 +28,7 @@ export class InventoryPublicService implements IInventoryPublicService {
   }
 
   async confirmReservation(payload: ConfirmReservationPayload): Promise<void> {
-    await this.commandBus.execute(new ConfirmReservationCommand(payload));
+    // await this.commandBus.execute(new ConfirmReservationCommand(payload));
   }
 
   async getAvailableStock(variantId: string): Promise<number> {

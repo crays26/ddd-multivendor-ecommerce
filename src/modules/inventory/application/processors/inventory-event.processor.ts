@@ -11,14 +11,20 @@ import { ProductCreatedEvent } from 'src/modules/product/domain/events/product-c
 import { CreateInventoryCommand } from '../commands/create-inventory/command';
 import { CheckoutCreatedEvent } from 'src/modules/order/domain/events/checkout-created.event';
 import { ReserveStockCommand } from '../commands/reserve-stock/command';
+import { CreateRequestContext, MikroORM } from '@mikro-orm/postgresql';
 
 @Processor(QUEUE_NAMES.INVENTORY_QUEUE)
 export class InventoryEventProcessor extends WorkerHost {
-  constructor(private readonly commandBus: CommandBus) {
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly orm: MikroORM,
+  ) {
     super();
   }
 
+  @CreateRequestContext()
   async process(job: Job): Promise<void> {
+    console.log(job.name);
     switch (job.name) {
       case EVENT_NAMES.PRODUCT_CREATED:
         await this.handleProductCreated(job.data as ProductCreatedEvent);
@@ -40,11 +46,12 @@ export class InventoryEventProcessor extends WorkerHost {
   private async handleProductCreated(
     event: ProductCreatedEvent,
   ): Promise<void> {
-    await Promise.all(
-      event.props.variants.map((variant) =>
-        this.commandBus.execute(
-          new CreateInventoryCommand(variant.id, variant.stock),
-        ),
+    await this.commandBus.execute(
+      new CreateInventoryCommand(
+        event.variants.map((v) => ({
+          productVariantId: v.id,
+          quantity: v.stock,
+        })),
       ),
     );
   }
@@ -52,18 +59,18 @@ export class InventoryEventProcessor extends WorkerHost {
   private async handleCheckoutCreated(
     event: CheckoutCreatedEvent,
   ): Promise<void> {
-    await Promise.all(
-      event.orders.map((order) =>
-        this.commandBus.execute(
-          new ReserveStockCommand({
-            orderId: order.orderId,
-            vendorId: order.vendorId,
-            checkoutId: event.checkoutId,
-            items: order.items,
-            amount: order.subtotal,
-          }),
-        ),
-      ),
+    await this.commandBus.execute(
+      new ReserveStockCommand({
+        orders: event.payload.orders.map((order) => ({
+          orderId: order.orderId,
+          vendorId: order.vendorId,
+          items: order.items,
+          subtotal: order.subtotal,
+        })),
+        checkoutId: event.payload.checkoutId,
+        customerId: event.payload.customerId,
+        totalAmount: event.payload.totalAmount,
+      }),
     );
   }
 
@@ -77,6 +84,7 @@ export class InventoryEventProcessor extends WorkerHost {
             orderId: order.orderId,
             vendorId: order.vendorId,
             checkoutId: event.checkoutId,
+            transactionId: event.transactionId,
             items: order.items,
             amount: order.subtotal,
           }),

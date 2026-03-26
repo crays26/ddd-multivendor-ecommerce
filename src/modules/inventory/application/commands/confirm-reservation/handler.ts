@@ -23,7 +23,8 @@ export class ConfirmReservationCommandHandler
 
   @Transactional()
   async execute(command: ConfirmReservationCommand): Promise<void> {
-    const { orderId, vendorId, checkoutId, items, amount } = command.payload;
+    const { orderId, vendorId, checkoutId, transactionId, items, amount } =
+      command.payload;
 
     try {
       await Promise.all(
@@ -32,21 +33,22 @@ export class ConfirmReservationCommandHandler
         ),
       );
     } catch (error) {
-      const failedEvent = new StockConfirmationFailedEvent(
+      const failedEvent = new StockConfirmationFailedEvent({
         orderId,
         vendorId,
         checkoutId,
+        transactionId,
         items,
         amount,
-        error instanceof Error ? error.message : 'Stock confirmation failed',
-      );
+        reason:
+          error instanceof Error ? error.message : 'Stock confirmation failed',
+      });
 
       await this.outboxRepository.save({
         id: uuidV7(),
         name: failedEvent.constructor.name,
         payload: failedEvent,
         status: Status.PENDING,
-        createdAt: new Date(),
       });
       throw error;
     }
