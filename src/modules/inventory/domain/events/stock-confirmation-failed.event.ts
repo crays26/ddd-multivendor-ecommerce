@@ -8,11 +8,14 @@ interface FailedStockItem {
 
 export class StockConfirmationFailedEvent implements IEvent {
   constructor(
-    public readonly orderId: string,
-    public readonly vendorId: string,
-    public readonly checkoutId: string,
-    public readonly items: FailedStockItem[],
-    public readonly amount: number,
-    public readonly reason: string,
+    public readonly payload: {
+      orderId: string;
+      vendorId: string;
+      checkoutId: string;
+      transactionId: string;
+      items: FailedStockItem[];
+      amount: number;
+      reason: string;
+    },
   ) {}
 }

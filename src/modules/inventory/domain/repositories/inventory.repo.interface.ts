@@ -4,6 +4,7 @@ import { InventoryAggRoot } from '../aggregate-roots/inventory.agg-root';
 export interface IInventoryRepository extends BaseRepository<InventoryAggRoot> {
   findByVariantId(variantId: string): Promise<InventoryAggRoot | null>;
   findByVariantIds(variantIds: string[]): Promise<InventoryAggRoot[]>;
+  bulkInsert(aggregates: InventoryAggRoot[]): Promise<void>;
   confirmReservation(variantId: string, amount: number): Promise<void>;
   reserveStock(variantId: string, amount: number): Promise<void>;
   releaseStock(variantId: string, amount: number): Promise<void>;

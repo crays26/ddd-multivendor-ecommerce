@@ -1,18 +1,18 @@
 import { AggregateRootBase } from 'src/shared/ddd/domain/base/aggregate-root.base';
-import { VariantIdVO } from '../value-objects/variant-id.vo';
+import { ProductVariantIdVO } from '../value-objects/product-variant-id.vo';
 import { BadRequestException } from '@nestjs/common';
 import { v7 as uuidV7 } from 'uuid';
 
 interface InventoryProps {
   id: string;
-  variantId: VariantIdVO;
+  productVariantId: ProductVariantIdVO;
   quantity: number;
   reservedQuantity: number;
 }
 
 interface CreateInventoryProps {
   id?: string;
-  variantId: string;
+  productVariantId: string;
   quantity: number;
 }
 
@@ -28,7 +28,9 @@ export class InventoryAggRoot extends AggregateRootBase<
   static create(props: CreateInventoryProps): InventoryAggRoot {
     return new InventoryAggRoot({
       id: props.id ?? uuidV7(),
-      variantId: VariantIdVO.create({ id: props.variantId }),
+      productVariantId: ProductVariantIdVO.create({
+        id: props.productVariantId,
+      }),
       quantity: props.quantity,
       reservedQuantity: 0,
     });
@@ -121,8 +123,8 @@ export class InventoryAggRoot extends AggregateRootBase<
     return this.props.id;
   }
 
-  getVariantId(): string {
-    return this.props.variantId.getId();
+  getProductVariantId(): string {
+    return this.props.productVariantId.getId();
   }
 
   getQuantity(): number {

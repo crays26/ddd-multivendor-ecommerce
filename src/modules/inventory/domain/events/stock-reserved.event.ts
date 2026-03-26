@@ -1,25 +1,25 @@
 import { IEvent } from '@nestjs/cqrs';
 
-interface FailedStockItem {
+interface ReservedStockItem {
   variantId: string;
   quantity: number;
   priceAtPurchase: number;
 }
 
-interface FailedOrder {
+interface ReservedOrder {
   orderId: string;
   vendorId: string;
-  items: FailedStockItem[];
+  items: ReservedStockItem[];
   subtotal: number;
 }
 
-export class StockReservationFailedEvent implements IEvent {
+export class StockReservedEvent implements IEvent {
   constructor(
     public readonly payload: {
       checkoutId: string;
-      orders: FailedOrder[];
+      customerId: string;
+      orders: ReservedOrder[];
       totalAmount: number;
-      reason: string;
     },
   ) {}
 }
