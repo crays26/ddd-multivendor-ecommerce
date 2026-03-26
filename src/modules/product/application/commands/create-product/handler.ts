@@ -60,7 +60,6 @@ export class CreateProductCommandHandler
         name: event.constructor.name,
         payload: event,
         status: Status.PENDING,
-        createdAt: new Date(),
       });
     }
     return `Product with id ${productAggRoot.getId()} created successfully!`;

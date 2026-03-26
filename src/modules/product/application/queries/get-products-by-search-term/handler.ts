@@ -36,7 +36,8 @@ export class GetProductsBySearchTermQueryHandler
         OR (s.name % ${searchTerm})`,
       )
       .orderBy({ [sql`relevance_score`]: QueryOrder.DESC })
-      .limit(500);
+      .limit(limit >= 500 ? 500 : limit)
+      .offset(offset);
 
     const qb = this.productRepository
       .createQueryBuilder('p')
@@ -47,9 +48,7 @@ export class GetProductsBySearchTermQueryHandler
       .leftJoinAndSelect('p.vendor', 'vnd')
       .leftJoinAndSelect('p.category', 'c')
       .innerJoin(subQuery, 'sq', { 'p.id': sql.ref('sq.id') })
-      .orderBy({ [sql`relevance_score`]: QueryOrder.DESC })
-      .limit(limit)
-      .offset(offset);
+      .orderBy({ 'sq.relevance_score': QueryOrder.DESC });
 
     const [products, count] = await qb.getResultAndCount();
 
