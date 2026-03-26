@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, PrimaryKey, Property, Rel } from '@mikro-orm/core';
+import { Entity, OneToOne, PrimaryKey, Property, Rel } from '@mikro-orm/core';
 import { ProductVariantEntity } from 'src/modules/product/infrastructure/entities/product-variant.entity';
 
 @Entity({ tableName: 'inventory' })
@@ -6,7 +6,13 @@ export class InventoryEntity {
   @PrimaryKey({ type: 'uuid' })
   id!: string;
 
-  @ManyToOne(() => ProductVariantEntity)
+  @OneToOne(
+    () => ProductVariantEntity,
+    (productVariant) => productVariant.inventory,
+    {
+      orphanRemoval: true,
+    },
+  )
   productVariant!: Rel<ProductVariantEntity>;
 
   @Property({ type: 'int', default: 0 })
