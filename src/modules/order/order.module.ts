@@ -11,14 +11,23 @@ import { InventoryModule } from 'src/modules/inventory/inventory.module';
 import { OrderRepository } from './infrastructure/repositories/order.repo';
 import { CheckoutRepository } from './infrastructure/repositories/checkout.repo';
 import { ORDER_REPO } from './domain/repositories/order.repo.interface';
+import { OrderPublicService } from './application/public-services/order.public-service';
+import { CheckoutCommandHandler } from './application/commands/checkout/handler';
+import { OrderController } from './presentation/controllers/order.controller';
+import { ProductModule } from '../product/product.module';
+import { GetCheckoutStatusQueryHandler } from './application/queries/get-checkout-status/handler';
+import { UpdateCheckoutStatusCommandHandler } from './application/commands/update-checkout-status/handler';
+import { GetOrdersByCheckoutIdHandler } from './application/queries/get-orders-by-checkout-id/handler';
+import { ORDER_PUBLIC_SERVICE } from './application/public-services/order.public-service.interface';
 
-import {
-  OrderPublicService,
-  ORDER_PUBLIC_SERVICE,
-} from './application/public-services/order.public-service';
-
-const CommandHandlers = [];
-const QueryHandlers = [];
+const CommandHandlers = [
+  CheckoutCommandHandler,
+  UpdateCheckoutStatusCommandHandler,
+];
+const QueryHandlers = [
+  GetCheckoutStatusQueryHandler,
+  GetOrdersByCheckoutIdHandler,
+];
 
 @Module({
   imports: [
@@ -29,8 +38,9 @@ const QueryHandlers = [];
     ]),
     CqrsModule,
     InventoryModule,
+    ProductModule,
   ],
-  controllers: [],
+  controllers: [OrderController],
   providers: [
     {
       provide: ORDER_REPO,
@@ -51,15 +61,21 @@ export class OrderModule implements OnModuleInit {
 
   onModuleInit() {
     this.eventRegistry.subscribe(
-      EVENT_NAMES.ORDER_GROUP_CREATED,
+      EVENT_NAMES.CHECKOUT_CREATED,
       QUEUE_NAMES.ORDER_QUEUE,
     );
+
     this.eventRegistry.subscribe(
-      EVENT_NAMES.ORDER_GROUP_CREATED,
+      EVENT_NAMES.CHECKOUT_CREATED,
+      QUEUE_NAMES.PAYMENT_QUEUE,
+    );
+
+    this.eventRegistry.subscribe(
+      EVENT_NAMES.PAYMENT_SUCCEEDED,
       QUEUE_NAMES.PAYMENT_QUEUE,
     );
     this.eventRegistry.subscribe(
-      EVENT_NAMES.ORDER_GROUP_CREATED,
+      EVENT_NAMES.CHECKOUT_CREATED,
       QUEUE_NAMES.INVENTORY_QUEUE,
     );
     this.eventRegistry.subscribe(
