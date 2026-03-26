@@ -1,12 +1,12 @@
 import { IEvent } from '@nestjs/cqrs';
 
-export interface CheckoutEventItem {
+interface CheckoutEventItem {
   variantId: string;
   quantity: number;
   priceAtPurchase: number;
 }
 
-export interface CheckoutEventOrder {
+interface CheckoutEventOrder {
   orderId: string;
   vendorId: string;
   items: CheckoutEventItem[];
@@ -15,9 +15,11 @@ export interface CheckoutEventOrder {
 
 export class CheckoutCreatedEvent implements IEvent {
   constructor(
-    public readonly checkoutId: string,
-    public readonly customerId: string,
-    public readonly orders: CheckoutEventOrder[],
-    public readonly totalAmount: number,
+    public readonly payload: {
+      checkoutId: string;
+      customerId: string;
+      orders: CheckoutEventOrder[];
+      totalAmount: number;
+    },
   ) {}
 }

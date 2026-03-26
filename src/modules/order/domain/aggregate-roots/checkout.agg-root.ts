@@ -1,10 +1,7 @@
 import { v7 as uuidV7 } from 'uuid';
 import { CustomerIdVO } from '../value-objects/customer-id.vo';
 import { AggregateRootBase } from 'src/shared/ddd/domain/base/aggregate-root.base';
-import {
-  CheckoutCreatedEvent,
-  CheckoutEventOrder,
-} from '../events/checkout-created.event';
+import { CheckoutCreatedEvent } from '../events/checkout-created.event';
 
 export enum CheckoutStatus {
   PENDING = 'PENDING',
@@ -46,17 +43,6 @@ export class CheckoutAggRoot extends AggregateRootBase<string, CheckoutProps> {
       totalAmount: props.totalAmount,
       paymentDueAt: props.paymentDueAt,
     });
-  }
-
-  addCreatedEvent(orders: CheckoutEventOrder[]): void {
-    this.apply(
-      new CheckoutCreatedEvent(
-        this.getId(),
-        this.getCustomerId(),
-        orders,
-        this.getTotalAmount(),
-      ),
-    );
   }
 
   static rehydrate(props: CheckoutProps): CheckoutAggRoot {
