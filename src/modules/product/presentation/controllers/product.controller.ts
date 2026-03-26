@@ -47,18 +47,21 @@ export class ProductController {
     );
   }
 
-  @Roles(RoleName.VENDOR)
-  @UseGuards(JwtRequiredGuard, RequiredRolesGuard)
+  // @Roles(RoleName.VENDOR)
+  // @UseGuards(JwtRequiredGuard, RequiredRolesGuard)
   @Post()
   async createProduct(
-    @CurrentUser() currentUser: AuthPayload,
+    // @CurrentUser() currentUser: AuthPayload,
     @Body() body: CreateProductDto,
   ): Promise<string> {
-    const vendor = await this.queryBus.execute(
-      new GetVendorByAccountIdQuery(currentUser.id),
-    );
-    if (!vendor) throw new BadRequestException('Vendor not found.');
-    const command = new CreateProductCommand({ ...body, vendorId: vendor!.id });
+    // const vendor = await this.queryBus.execute(
+    //  new GetVendorByAccountIdQuery(currentUser.id),
+    // );
+    // if (!vendor) throw new BadRequestException('Vendor not found.');
+    
+    // Hardcoded dummy vendor ID for testing purposes as requested
+    const dummyVendorId = '00000000-0000-0000-0000-000000000000';
+    const command = new CreateProductCommand({ ...body, vendorId: dummyVendorId });
 
     return await this.commandBus.execute(command);
   }

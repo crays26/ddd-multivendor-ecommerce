@@ -51,13 +51,13 @@ export class ProductAggRoot extends AggregateRootBase<string, ProductProps> {
     });
 
     product.apply(
-      new ProductCreatedEvent({
-        id: product.getId(),
-        vendorId: product.getVendorId(),
-        name: product.getName(),
-        description: product.getDescription(),
-        categoryId: product.getCategoryId(),
-        variants: product.getVariants().map((v) => ({
+      new ProductCreatedEvent(
+        product.getId(),
+        product.getVendorId(),
+        product.getName(),
+        product.getDescription(),
+        product.getCategoryId(),
+        product.getVariants().map((v) => ({
           id: v.getId(),
           name: v.getName(),
           skuCode: v.getSkuCode(),
@@ -69,12 +69,12 @@ export class ProductAggRoot extends AggregateRootBase<string, ProductProps> {
             value: a.value,
           })),
         })),
-        attributes: product.getAttributes().map((a) => ({
+        product.getAttributes().map((a) => ({
           id: a.getId(),
           key: a.getKey(),
           values: a.getValues(),
         })),
-      }),
+      ),
     );
     return product;
   }

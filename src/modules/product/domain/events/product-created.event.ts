@@ -19,15 +19,14 @@ interface ProductVariantEvent {
   }[];
 }
 
-interface ProductEvent {
-  id: string;
-  vendorId: string;
-  name: string;
-  description: string;
-  categoryId: string;
-  variants: ProductVariantEvent[];
-  attributes: ProductAttributeEvent[];
-}
 export class ProductCreatedEvent implements IEvent {
-  constructor(public readonly props: ProductEvent) {}
+  constructor(
+    public readonly id: string,
+    public readonly vendorId: string,
+    public readonly name: string,
+    public readonly description: string,
+    public readonly categoryId: string,
+    public readonly variants: ProductVariantEvent[],
+    public readonly attributes: ProductAttributeEvent[],
+  ) {}
 }

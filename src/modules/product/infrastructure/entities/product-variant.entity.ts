@@ -1,8 +1,7 @@
 import {
-  Collection,
   Entity,
   ManyToOne,
-  OneToMany,
+  OneToOne,
   PrimaryKey,
   Property,
   Rel,
@@ -39,6 +38,9 @@ export class ProductVariantEntity {
   @ManyToOne(() => ProductEntity)
   product!: Rel<ProductEntity>;
 
-  @OneToMany(() => InventoryEntity, (inventory) => inventory.productVariant)
-  inventory = new Collection<InventoryEntity>(this);
+  @OneToOne(() => InventoryEntity, (inventory) => inventory.productVariant, {
+    owner: true,
+    nullable: true,
+  })
+  inventory?: Rel<InventoryEntity>;
 }

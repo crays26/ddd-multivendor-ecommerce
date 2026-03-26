@@ -67,6 +67,12 @@ export class ProductModule implements OnModuleInit {
       EVENT_NAMES.PRODUCT_CREATED,
       QUEUE_NAMES.PRODUCT_QUEUE,
     );
+
+    this.eventRegistry.subscribe(
+      EVENT_NAMES.PRODUCT_CREATED,
+      QUEUE_NAMES.INVENTORY_QUEUE,
+    );
+
     this.eventRegistry.subscribe(
       EVENT_NAMES.PRODUCT_UPDATED,
       QUEUE_NAMES.PRODUCT_QUEUE,
