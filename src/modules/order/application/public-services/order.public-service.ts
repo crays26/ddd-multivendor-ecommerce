@@ -1,37 +1,16 @@
-import { Injectable, Inject } from '@nestjs/common';
-import {
-  IOrderRepository,
-  ORDER_REPO,
-} from 'src/modules/order/domain/repositories/order.repo.interface';
-import { OrderGroupEventOrder } from '../../domain/events/order-group-created.event';
-
-export interface IOrderPublicService {
-  getOrdersByCheckoutId(checkoutId: string): Promise<OrderGroupEventOrder[]>;
-}
-
-export const ORDER_PUBLIC_SERVICE = Symbol('ORDER_PUBLIC_SERVICE');
+import { Injectable } from '@nestjs/common';
+import { QueryBus } from '@nestjs/cqrs';
+import { OrdersByCheckoutIdDto } from '../queries/get-orders-by-checkout-id/dto';
+import { GetOrdersByCheckoutIdQuery } from '../queries/get-orders-by-checkout-id/query';
+import { IOrderPublicService } from './order.public-service.interface';
 
 @Injectable()
 export class OrderPublicService implements IOrderPublicService {
-  constructor(
-    @Inject(ORDER_REPO)
-    private readonly orderRepository: IOrderRepository,
-  ) {}
+  constructor(private readonly queryBus: QueryBus) {}
 
   async getOrdersByCheckoutId(
     checkoutId: string,
-  ): Promise<OrderGroupEventOrder[]> {
-    const orders = await this.orderRepository.findByCheckoutId(checkoutId);
-
-    return orders.map((order) => ({
-      orderId: order.getId(),
-      vendorId: order.getVendorId(),
-      items: order.getOrderItems().map((item) => ({
-        variantId: item.getProductVariantId(),
-        quantity: item.getQuantity(),
-        priceAtPurchase: item.getPriceAtPurchase(),
-      })),
-      subtotal: order.getTotalAmount(),
-    }));
+  ): Promise<OrdersByCheckoutIdDto[]> {
+    return this.queryBus.execute(new GetOrdersByCheckoutIdQuery(checkoutId));
   }
 }

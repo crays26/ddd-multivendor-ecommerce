@@ -1,7 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { CheckoutCommand } from 'src/modules/order/application/commands/checkout/command';
-import { ProductPublicService } from 'src/modules/product/application/public-services/product.public-service';
 import {
   IOrderRepository,
   ORDER_REPO,
@@ -19,8 +18,14 @@ import { v7 as uuidV7 } from 'uuid';
 import { Status } from 'src/shared/ddd/infrastructure/outbox/outbox.entity';
 import { Transactional } from '@mikro-orm/core';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
+import { Cache } from '@nestjs/cache-manager';
 import { ConflictException } from '@nestjs/common';
+import {
+  IProductPublicService,
+  PRODUCT_PUBLIC_SERVICE,
+} from 'src/modules/product/application/public-services/product.public-service.interface';
+import { CheckoutCreatedEvent } from 'src/modules/order/domain/events/checkout-created.event';
+import { instanceToPlain } from 'class-transformer';
 
 const CHECKOUT_CACHE_TTL_15_MINUTES = 15 * 60;
 
@@ -29,7 +34,8 @@ export class CheckoutCommandHandler
   implements ICommandHandler<CheckoutCommand>
 {
   constructor(
-    private readonly productPublicService: ProductPublicService,
+    @Inject(PRODUCT_PUBLIC_SERVICE)
+    private readonly productPublicService: IProductPublicService,
     @Inject(ORDER_REPO)
     private readonly orderRepository: IOrderRepository,
     private readonly checkoutRepository: CheckoutRepository,
@@ -45,7 +51,7 @@ export class CheckoutCommandHandler
 
     const existingCheckoutId =
       await this.cacheManager.get<string>(idempotencyKey);
-    if (existingCheckoutId) return existingCheckoutId;
+    if (existingCheckoutId) return `existingCheckoutId:${existingCheckoutId}`;
 
     const ordersData = await Promise.all(
       checkoutData.orders.map(async (order) => {
@@ -98,8 +104,10 @@ export class CheckoutCommandHandler
       }),
     );
 
-    checkoutAggRoot.addCreatedEvent(
-      createdOrders.map((order) => ({
+    const event = new CheckoutCreatedEvent({
+      checkoutId: checkoutAggRoot.getId(),
+      customerId: checkoutAggRoot.getCustomerId(),
+      orders: createdOrders.map((order) => ({
         orderId: order.getId(),
         vendorId: order.getVendorId(),
         items: order.getOrderItems().map((item) => ({
@@ -109,21 +117,18 @@ export class CheckoutCommandHandler
         })),
         subtotal: order.getTotalAmount(),
       })),
-    );
+      totalAmount: checkoutAggRoot.getTotalAmount(),
+    });
 
     await this.checkoutRepository.insert(checkoutAggRoot);
     await this.orderRepository.bulkInsert(createdOrders);
 
-    const events = checkoutAggRoot.getUncommittedEvents();
-    for (const event of events) {
-      await this.outboxRepository.save({
-        id: uuidV7(),
-        name: event.constructor.name,
-        payload: event,
-        status: Status.PENDING,
-        createdAt: new Date(),
-      });
-    }
+    await this.outboxRepository.save({
+      id: uuidV7(),
+      name: event.constructor.name,
+      payload: instanceToPlain(event),
+      status: Status.PENDING,
+    });
 
     await this.cacheManager.set(
       idempotencyKey,
