@@ -4,6 +4,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryKey,
+  Rel,
 } from '@mikro-orm/core';
 import { CartItemEntity } from './cart-item.entity';
 import { AccountEntity } from 'src/modules/account/infrastructure/entities/account.entity';
@@ -14,7 +15,7 @@ export class CartEntity {
   id!: string;
 
   @ManyToOne(() => AccountEntity)
-  customer!: AccountEntity;
+  customer!: Rel<AccountEntity>;
 
   @OneToMany(() => CartItemEntity, (item) => item.cart, {
     orphanRemoval: true,

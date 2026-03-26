@@ -1,6 +1,6 @@
 import { CartItem } from '../../domain/entities/cart-item.entity';
 import { CustomerIdVO } from '../../domain/value-objects/customer-id.vo';
-import { CartEntity } from '../persistences/entities/cart.entity';
+import { CartEntity } from '../entities/cart.entity';
 import { CartAggRoot } from 'src/modules/cart/domain/aggregate-roots/cart.agg-root';
 
 export class CartDomainMapper {

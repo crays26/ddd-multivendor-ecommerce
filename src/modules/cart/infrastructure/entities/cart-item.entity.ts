@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, Rel } from '@mikro-orm/core';
 import { CartEntity } from './cart.entity';
 import { ProductVariantEntity } from 'src/modules/product/infrastructure/entities/product-variant.entity';
 
@@ -8,11 +8,11 @@ export class CartItemEntity {
   id!: string;
 
   @ManyToOne(() => ProductVariantEntity)
-  productVariant!: ProductVariantEntity;
+  productVariant!: Rel<ProductVariantEntity>;
 
   @Property({ type: 'int' })
   quantity: number;
 
   @ManyToOne(() => CartEntity)
-  cart!: CartEntity;
+  cart!: Rel<CartEntity>;
 }

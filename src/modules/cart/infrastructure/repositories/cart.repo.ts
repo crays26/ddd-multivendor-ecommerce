@@ -3,7 +3,7 @@ import { CartAggRoot } from 'src/modules/cart/domain/aggregate-roots/cart.agg-ro
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { CartEntity } from '../entities/cart.entity';
-import { CartDomainMapper } from '../../mappers/cart.mapper';
+import { CartDomainMapper } from '../mappers/cart.mapper';
 import { AccountEntity } from 'src/modules/account/infrastructure/entities/account.entity';
 import { CartItemEntity } from '../entities/cart-item.entity';
 import { ProductVariantEntity } from 'src/modules/product/infrastructure/entities/product-variant.entity';
