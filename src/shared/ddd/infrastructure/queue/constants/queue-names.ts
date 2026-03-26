@@ -2,6 +2,7 @@ export const QUEUE_NAMES = {
   ORDER_QUEUE: 'order-queue',
   PAYMENT_QUEUE: 'payment-queue',
   INVENTORY_QUEUE: 'inventory-queue',
+  CART_QUEUE: 'cart-queue',
   PRODUCT_QUEUE: 'product-queue',
   ACCOUNT_QUEUE: 'account-queue',
   NOTIFICATION_QUEUE: 'notification-queue',

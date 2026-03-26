@@ -1,7 +1,7 @@
 export const EVENT_NAMES = {
   // Order events
   ORDER_CREATED: 'OrderCreatedEvent',
-  ORDER_GROUP_CREATED: 'OrderGroupCreatedEvent',
+  CHECKOUT_CREATED: 'CheckoutCreatedEvent',
   ORDER_SHIPPED: 'OrderShippedEvent',
   ORDER_CANCELLED: 'OrderCancelledEvent',
 
@@ -10,7 +10,9 @@ export const EVENT_NAMES = {
   PAYMENT_FAILED: 'PaymentFailedEvent',
 
   // Inventory events
+  STOCK_RESERVED: 'StockReservedEvent',
   STOCK_CONFIRMATION_FAILED: 'StockConfirmationFailedEvent',
+  INSUFFICIENT_STOCK: 'InsufficientStockEvent',
 
   // Product events
   PRODUCT_CREATED: 'ProductCreatedEvent',

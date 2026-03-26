@@ -7,19 +7,20 @@ import { JwtTokenPair } from 'src/shared/auth/types/jwt-token-pair.type';
 const SALT_ROUND = 10;
 import { Cache } from '@nestjs/cache-manager';
 @Injectable()
-export class AuthService {
+export class AuthService extends JwtService {
   constructor(
-    private readonly jwtService: JwtService,
     @Inject('CACHE_MANAGER')
     private readonly cache: Cache,
-  ) {}
+  ) {
+    super();
+  }
 
   generateTokens(payload: AuthPayload): JwtTokenPair {
-    const accessToken = this.jwtService.sign(payload, {
+    const accessToken = this.sign(payload, {
       expiresIn: '10m',
       secret: process.env.ACCESS_TOKEN_SECRET_KEY!,
     });
-    const refreshToken = this.jwtService.sign(payload, {
+    const refreshToken = this.sign(payload, {
       expiresIn: '7d',
       secret: process.env.REFRESH_TOKEN_SECRET_KEY!,
     });
@@ -29,13 +30,13 @@ export class AuthService {
   setAuthCookies(response: Response, tokens: JwtTokenPair): void {
     response.cookie('access_token', tokens.accessToken, {
       httpOnly: true,
-      sameSite: 'strict',
+      sameSite: 'none',
       secure: true,
       maxAge: 10 * 60 * 1000,
     });
     response.cookie('refresh_token', tokens.refreshToken, {
       httpOnly: true,
-      sameSite: 'strict',
+      sameSite: 'none',
       secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -51,9 +52,9 @@ export class AuthService {
   }
 
   async blacklistTokenPair(tokenPair: JwtTokenPair): Promise<void> {
-    const access = this.jwtService.decode(tokenPair.accessToken);
+    const access = this.decode(tokenPair.accessToken);
     const accessRemainingTime = access.exp - Math.floor(Date.now() / 1000);
-    const refresh = this.jwtService.decode(tokenPair.refreshToken);
+    const refresh = this.decode(tokenPair.refreshToken);
     const refreshRemainingTime = refresh.exp - Math.floor(Date.now() / 1000);
 
     if (accessRemainingTime > 0) {

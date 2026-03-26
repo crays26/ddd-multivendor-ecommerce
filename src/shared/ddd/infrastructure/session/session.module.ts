@@ -4,6 +4,15 @@ import RedisStore from 'connect-redis';
 import { REDIS_CLIENT, RedisProvider } from '../providers/redis.provider';
 import Redis from 'ioredis';
 
+declare module 'express-session' {
+  interface SessionData {
+    cart: {
+      productVariantId: string;
+      quantity: number;
+    }[];
+  }
+}
+
 const MAX_AGE_ONE_WEEK = 1000 * 60 * 60 * 24 * 7;
 
 @Module({
