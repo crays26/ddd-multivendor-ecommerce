@@ -1,98 +1,99 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Multi-Vendor E-Commerce Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This project is a scalable, modular monolith backend built with NestJS, adhering to Domain-Driven Design (DDD) and Command Query Responsibility Segregation (CQRS) principles. It handles complex multi-vendor workflows, including split payments, inventory management, and eventually consistent communication between bounded contexts.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Architecture
 
-## Description
+The system is designed as a Modular Monolith. Each module represents a distinct bounded context, maintaining its own internal domain logic, application services, and infrastructure adapters.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Key Patterns
+- **DDD (Domain-Driven Design)**: Business logic is encapsulated within Aggregate Roots and Domain Entities.
+- **CQRS (Command Query Responsibility Segregation)**: Write operations (Commands) are handled separately from read operations (Queries) via the NestJS CqrsModule.
+- **Outbox Pattern**: Ensures reliable event delivery between modules by persisting domain events to a database-backed outbox before publishing them to the message queue.
+- **Queue-Based Communication**: BullMQ and Redis are used for asynchronous inter-module communication and background tasks.
 
-## Project setup
+## Project Structure
 
-```bash
-$ npm install
+```text
+src/
+├── modules/
+│   ├── account/          # Account management and authentication
+│   ├── billing/          # Payments, transfers, and refund logic (Stripe integration)
+│   ├── cart/             # Shopping cart management
+│   ├── inventory/        # Stock management and reservation workflows
+│   ├── order/            # Checkout, order splitting, and fulfillment status
+│   ├── product/          # Product catalog, variants, and attributes
+│   └── vendor/           # Vendor profiles and management
+├── shared/
+│   └── ddd/              # Shared kernel and base tactical DDD classes
+│       ├── domain/       # AggregateRoot, Entity, ValueObject bases
+│       ├── application/  # Integration event bases
+│       └── infrastructure/# Shared repositories, database, queue, and outbox configurations
+└── main.ts               # Application entry point
 ```
 
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+### Module Anatomy
+Each module follows a layered structure:
+```text
+module-name/
+├── domain/               # Aggregates, Entities, Value Objects, Domain Events, Repositories Interfaces
+├── application/          # Command/Query Handlers, DTOs, Event Processors (Sagas)
+├── infrastructure/       # MikroORM Entities, Repository Implementations, External Adapters
+└── presentation/         # Controllers (REST API)
 ```
 
-## Run tests
+## Core Tech Stack
 
-```bash
-# unit tests
-$ npm run test
+- **Framework**: NestJS 11.0.1
+- **Database**: PostgreSQL 16
+- **ORM**: MikroORM 6.4.16
+- **Queue System**: BullMQ 5.65.0 + Redis
+- **Payment Provider**: Stripe 16.11.0
+- **Validation**: Class-validator 0.14.2 + Class-transformer 0.5.1
+- **Storage**: AWS S3 SDK 3.952.0
 
-# e2e tests
-$ npm run test:e2e
+## Setup and Installation
 
-# test coverage
-$ npm run test:cov
-```
+### Prerequisites
+- Node.js >= 20
+- Docker and Docker Compose
+- Redis
 
-## Deployment
+### Getting Started
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+2. **Environment Configuration**:
+   Copy `.env.example` to `.env` and fill in the required credentials for PostgreSQL, Redis, and Stripe.
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+3. **Infrastructure**:
+   Start the required services using Docker:
+   ```bash
+   docker compose up -d
+   ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+4. **Database Migrations**:
+   Run the migrations to set up the database schema:
+   ```bash
+   npx mikro-orm migration:up
+   ```
 
-## Resources
+5. **Running the Application**:
+   ```bash
+   # Development mode
+   npm run start:dev
 
-Check out a few resources that may come in handy when working with NestJS:
+   # Production mode
+   npm run build
+   npm run start:prod
+   ```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Development Guidelines
 
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- **Domain Isolation**: Aggregate Roots must not depend on application services or repositories.
+- **Communication**: Cross-module communication should happen via Shared Public Services or asynchronous integration events.
+- **Persistence**: Domain events should be published through the Outbox to maintain transactional integrity between the primary database and the message queue.
+- **Validation**: All incoming requests must be validated using the global ValidationPipe and DTO classes.
