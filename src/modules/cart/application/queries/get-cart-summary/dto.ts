@@ -37,6 +37,32 @@ export class CartItemSummaryDto {
   lineTotal: number;
 }
 
+export class CartVendorDto {
+  @Expose()
+  @IsString()
+  id: string;
+
+  @Expose()
+  @IsString()
+  name: string;
+}
+
+export class CartPerVendorSummaryDto {
+  @Expose()
+  @ValidateNested()
+  @Type(() => CartVendorDto)
+  vendor: CartVendorDto;
+
+  @Expose()
+  @ValidateNested({ each: true })
+  @Type(() => CartItemSummaryDto)
+  items: CartItemSummaryDto[];
+
+  @Expose()
+  @IsNumber()
+  totalAmount: number;
+}
+
 export class CartSummaryDto {
   @Expose()
   @IsUUID()
@@ -44,8 +70,8 @@ export class CartSummaryDto {
 
   @Expose()
   @ValidateNested({ each: true })
-  @Type(() => CartItemSummaryDto)
-  items: CartItemSummaryDto[];
+  @Type(() => CartPerVendorSummaryDto)
+  vendors: CartPerVendorSummaryDto[];
 
   @Expose()
   @IsNumber()

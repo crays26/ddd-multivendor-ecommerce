@@ -1,14 +1,19 @@
 import { Module } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { CqrsModule } from '@nestjs/cqrs';
-import { CartEntity } from './infrastructure/persistences/entities/cart.entity';
-import { CartItemEntity } from './infrastructure/persistences/entities/cart-item.entity';
-import { CartRepository } from './infrastructure/persistences/repositories/cart.repo';
+import { CartEntity } from './infrastructure/entities/cart.entity';
+import { CartItemEntity } from './infrastructure/entities/cart-item.entity';
+import { CartRepository } from './infrastructure/repositories/cart.repo';
 import { CART_REPO } from './domain/repositories/cart.repo.interface';
 import { GetCartSummaryQueryHandler } from './application/queries/get-cart-summary/handler';
 import { CartController } from './presentation/controllers/cart.controller';
+import { AddItemToCartCommandHandler } from './application/commands/add-item-to-cart/handler';
+import { MergeGuestCartCommandHandler } from './application/commands/merge-guest-cart/handler';
 
-const CommandHandlers = [];
+const CommandHandlers = [
+  AddItemToCartCommandHandler,
+  MergeGuestCartCommandHandler,
+];
 const QueryHandlers = [GetCartSummaryQueryHandler];
 
 @Module({
