@@ -5,4 +5,6 @@ export type AuthPayload = {
   username: string;
   email: string;
   roles: RoleName[];
-}
+};
+
+export type VendorId = string;
