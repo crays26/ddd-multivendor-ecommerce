@@ -10,6 +10,7 @@ import { INVENTORY_PUBLIC_SERVICE } from './application/public-services/inventor
 import { ReserveStockCommandHandler } from './application/commands/reserve-stock/handler';
 import { ReleaseStockCommandHandler } from './application/commands/release-stock/handler';
 import { ConfirmReservationCommandHandler } from './application/commands/confirm-reservation/handler';
+import { CreateInventoryCommandHandler } from './application/commands/create-inventory/handler';
 import { RestockCommandHandler } from './application/commands/restock/handler';
 import { GetAvailableStockQueryHandler } from './application/queries/get-available-stock/handler';
 import { InventoryEventProcessor } from './application/processors/inventory-event.processor';
@@ -22,6 +23,7 @@ const CommandHandlers = [
   ReleaseStockCommandHandler,
   ConfirmReservationCommandHandler,
   RestockCommandHandler,
+  CreateInventoryCommandHandler,
 ];
 
 const QueryHandlers = [GetAvailableStockQueryHandler];
@@ -52,6 +54,26 @@ export class InventoryModule implements OnModuleInit {
   constructor(private readonly eventRegistry: EventQueueRegistry) {}
 
   onModuleInit() {
+    this.eventRegistry.subscribe(
+      EVENT_NAMES.STOCK_CONFIRMATION_FAILED,
+      QUEUE_NAMES.PAYMENT_QUEUE,
+    );
+
+    this.eventRegistry.subscribe(
+      EVENT_NAMES.STOCK_RESERVED,
+      QUEUE_NAMES.ORDER_QUEUE,
+    );
+
+    this.eventRegistry.subscribe(
+      EVENT_NAMES.STOCK_RESERVED,
+      QUEUE_NAMES.PAYMENT_QUEUE,
+    );
+
+    this.eventRegistry.subscribe(
+      EVENT_NAMES.STOCK_CONFIRMATION_COMPLETED,
+      QUEUE_NAMES.ORDER_QUEUE,
+    );
+
     this.eventRegistry.subscribe(
       EVENT_NAMES.STOCK_CONFIRMATION_FAILED,
       QUEUE_NAMES.PAYMENT_QUEUE,
