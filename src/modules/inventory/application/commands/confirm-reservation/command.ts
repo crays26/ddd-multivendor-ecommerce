@@ -1,20 +1,26 @@
 import { Command } from '@nestjs/cqrs';
 
-export interface ConfirmReservationItem {
+interface ConfirmReservationItem {
   variantId: string;
   quantity: number;
   priceAtPurchase: number;
 }
 
+interface ConfirmReservationOrder {
+  orderId: string;
+  vendorId: string;
+  items: ConfirmReservationItem[];
+  subtotal: number;
+}
+
 export class ConfirmReservationCommand extends Command<void> {
   constructor(
     public readonly payload: {
-      orderId: string;
-      vendorId: string;
+      orders: ConfirmReservationOrder[];
       checkoutId: string;
       transactionId: string;
-      items: ConfirmReservationItem[];
-      amount: number;
+      customerId: string;
+      totalAmount: number;
     },
   ) {
     super();

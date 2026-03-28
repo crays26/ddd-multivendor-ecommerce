@@ -48,7 +48,7 @@ export class InventoryEventProcessor extends WorkerHost {
   ): Promise<void> {
     await this.commandBus.execute(
       new CreateInventoryCommand(
-        event.variants.map((v) => ({
+        event.payload.variants.map((v) => ({
           productVariantId: v.id,
           quantity: v.stock,
         })),
@@ -77,19 +77,14 @@ export class InventoryEventProcessor extends WorkerHost {
   private async handlePaymentSucceeded(
     event: PaymentSucceededEvent,
   ): Promise<void> {
-    await Promise.allSettled(
-      event.orders.map((order) =>
-        this.commandBus.execute(
-          new ConfirmReservationCommand({
-            orderId: order.orderId,
-            vendorId: order.vendorId,
-            checkoutId: event.checkoutId,
-            transactionId: event.transactionId,
-            items: order.items,
-            amount: order.subtotal,
-          }),
-        ),
-      ),
+    await this.commandBus.execute(
+      new ConfirmReservationCommand({
+        orders: event.payload.orders,
+        checkoutId: event.payload.checkoutId,
+        transactionId: event.payload.transactionId,
+        customerId: event.payload.customerId,
+        totalAmount: event.payload.totalAmount,
+      }),
     );
   }
 

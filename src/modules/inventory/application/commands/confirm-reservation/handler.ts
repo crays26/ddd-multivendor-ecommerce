@@ -6,10 +6,18 @@ import {
   INVENTORY_REPO,
 } from '../../../domain/repositories/inventory.repo.interface';
 import { OutboxRepository } from 'src/shared/ddd/infrastructure/outbox/outbox.repo';
-import { StockConfirmationFailedEvent } from '../../../domain/events/stock-confirmation-failed.event';
 import { v7 as uuidV7 } from 'uuid';
 import { Status } from 'src/shared/ddd/infrastructure/outbox/outbox.entity';
-import { Transactional } from '@mikro-orm/core';
+import {
+  IUnitOfWork,
+  UNIT_OF_WORK,
+} from 'src/shared/ddd/infrastructure/unit-of-work/unit-of-work.interface';
+import { StockConfirmationCompletedEvent } from 'src/modules/inventory/domain/events/stock-confirmation-completed.event';
+import {
+  OrderResult,
+  OrderResultStatus,
+} from 'src/modules/inventory/domain/events/stock-confirmation-completed.event';
+import { instanceToPlain } from 'class-transformer';
 
 @CommandHandler(ConfirmReservationCommand)
 export class ConfirmReservationCommandHandler
@@ -19,38 +27,64 @@ export class ConfirmReservationCommandHandler
     @Inject(INVENTORY_REPO)
     private readonly inventoryRepo: IInventoryRepository,
     private readonly outboxRepository: OutboxRepository,
+    @Inject(UNIT_OF_WORK)
+    private readonly uow: IUnitOfWork,
   ) {}
 
-  @Transactional()
   async execute(command: ConfirmReservationCommand): Promise<void> {
-    const { orderId, vendorId, checkoutId, transactionId, items, amount } =
+    const { orders, checkoutId, transactionId, customerId, totalAmount } =
       command.payload;
 
-    try {
-      await Promise.all(
-        items.map((item) =>
-          this.inventoryRepo.confirmReservation(item.variantId, item.quantity),
-        ),
-      );
-    } catch (error) {
-      const failedEvent = new StockConfirmationFailedEvent({
-        orderId,
-        vendorId,
+    await this.uow.transactional(async () => {
+      const orderResults: OrderResult[] = [];
+
+      for (const order of orders) {
+        try {
+          await this.uow.transactional(async () => {
+            for (const item of order.items) {
+              await this.inventoryRepo.confirmReservation(
+                item.variantId,
+                item.quantity,
+              );
+            }
+          });
+          orderResults.push({
+            orderId: order.orderId,
+            subtotal: order.subtotal,
+            vendorId: order.vendorId,
+            status: OrderResultStatus.SUCCEEDED,
+          });
+        } catch (error) {
+          await this.uow.transactional(async () => {
+            for (const item of order.items) {
+              await this.inventoryRepo.releaseStock(
+                item.variantId,
+                item.quantity,
+              );
+            }
+          });
+          orderResults.push({
+            orderId: order.orderId,
+            subtotal: order.subtotal,
+            vendorId: order.vendorId,
+            status: OrderResultStatus.FAILED,
+          });
+        }
+      }
+      const event = new StockConfirmationCompletedEvent({
         checkoutId,
         transactionId,
-        items,
-        amount,
-        reason:
-          error instanceof Error ? error.message : 'Stock confirmation failed',
+        customerId,
+        totalAmount,
+        orderResults,
       });
 
       await this.outboxRepository.save({
         id: uuidV7(),
-        name: failedEvent.constructor.name,
-        payload: failedEvent,
+        name: event.constructor.name,
+        payload: instanceToPlain(event),
         status: Status.PENDING,
       });
-      throw error;
-    }
+    });
   }
 }
