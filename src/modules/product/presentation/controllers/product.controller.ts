@@ -18,7 +18,7 @@ import { ProductDto } from '../dtos/responses/product.dto';
 import { JwtRequiredGuard } from 'src/shared/auth/guards/jwt/jwt.required.guard';
 import { RequiredRolesGuard } from 'src/shared/auth/guards/role/roles.guard';
 import { Roles } from 'src/shared/auth/decorators/class-decorators/roles.decorator';
-import { AuthPayload } from 'src/shared/auth/types/auth-payload.type';
+import { AuthPayload, VendorId } from 'src/shared/auth/types/auth-payload.type';
 import { CurrentUser } from 'src/shared/auth/decorators/param-decorators/current-user.decorator';
 import { GetVendorByAccountIdQuery } from 'src/modules/vendor/application/queries/get-vendor-by-account-id/query';
 import { GetProductsByVendorId } from 'src/modules/product/application/queries/get-products-by-vendor-id/query';
@@ -29,6 +29,9 @@ import { PaginatedDto } from 'src/shared/ddd/application/dtos/paginated-response
 import { RoleName } from 'src/shared/auth/types/role.type';
 import { CreateProductDto } from '../../application/commands/create-product/dto';
 import { UpdateProductDto } from '../../application/commands/update-product/dto';
+import { GetProductBySlugDto } from '../../application/queries/get-product-by-slug/dto';
+import { GetProductBySlugQuery } from '../../application/queries/get-product-by-slug/query';
+import { CurrentVendor } from 'src/shared/auth/decorators/param-decorators/current-vendor.decorator';
 
 @Controller('products')
 export class ProductController {
@@ -36,6 +39,21 @@ export class ProductController {
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
   ) {}
+
+  @Roles(RoleName.VENDOR)
+  @UseGuards(JwtRequiredGuard, RequiredRolesGuard)
+  @Post()
+  async createProduct(
+    @CurrentVendor() currentVendorId: VendorId,
+    @Body() body: CreateProductDto,
+  ): Promise<string> {
+    const command = new CreateProductCommand({
+      ...body,
+      vendorId: currentVendorId,
+    });
+
+    return await this.commandBus.execute(command);
+  }
 
   @Get('search')
   async searchProducts(
@@ -45,25 +63,6 @@ export class ProductController {
     return await this.queryBus.execute(
       new GetProductsBySearchTermQuery(searchTerm, pagination),
     );
-  }
-
-  // @Roles(RoleName.VENDOR)
-  // @UseGuards(JwtRequiredGuard, RequiredRolesGuard)
-  @Post()
-  async createProduct(
-    // @CurrentUser() currentUser: AuthPayload,
-    @Body() body: CreateProductDto,
-  ): Promise<string> {
-    // const vendor = await this.queryBus.execute(
-    //  new GetVendorByAccountIdQuery(currentUser.id),
-    // );
-    // if (!vendor) throw new BadRequestException('Vendor not found.');
-    
-    // Hardcoded dummy vendor ID for testing purposes as requested
-    const dummyVendorId = '00000000-0000-0000-0000-000000000000';
-    const command = new CreateProductCommand({ ...body, vendorId: dummyVendorId });
-
-    return await this.commandBus.execute(command);
   }
 
   @Get(':productId')
@@ -84,6 +83,14 @@ export class ProductController {
     return await this.queryBus.execute(
       new GetProductsByVendorId(vendorId, pagination),
     );
+  }
+
+  @Get('/slug/:slug')
+  async findProductBySlug(
+    @Param('slug') slug: string,
+  ): Promise<GetProductBySlugDto> {
+    const query = new GetProductBySlugQuery(slug);
+    return await this.queryBus.execute(query);
   }
 
   @Roles(RoleName.VENDOR)
