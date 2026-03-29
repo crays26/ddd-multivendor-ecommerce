@@ -8,6 +8,10 @@ import { UpdateCheckoutStatusCommand } from '../commands/update-checkout-status/
 import { CheckoutStatus } from '../../domain/aggregate-roots/checkout.agg-root';
 import { CreateRequestContext, MikroORM } from '@mikro-orm/postgresql';
 import { StockReservedEvent } from 'src/modules/inventory/domain/events/stock-reserved.event';
+import { StockConfirmationCompletedEvent } from 'src/modules/inventory/domain/events/stock-confirmation-completed.event';
+import { UpdateOrdersStatusFromStockCommand } from '../commands/update-orders-status-from-stock/command';
+import { MarkCheckoutStockReservedCommand } from '../commands/mark-checkout-stock-reserved/command';
+import { ExpireReservationCommand } from '../commands/expire-reservation/command';
 
 @Processor(QUEUE_NAMES.ORDER_QUEUE)
 export class OrderEventProcessor extends WorkerHost {
@@ -29,6 +33,14 @@ export class OrderEventProcessor extends WorkerHost {
           job.data as StockReservationFailedEvent,
         );
         break;
+      case EVENT_NAMES.STOCK_CONFIRMATION_COMPLETED:
+        await this.handleStockConfirmationCompleted(
+          job.data as StockConfirmationCompletedEvent,
+        );
+        break;
+      case EVENT_NAMES.CHECK_RESERVATION_EXPIRY:
+        await this.handleReservationExpiry(job.data as { checkoutId: string });
+        break;
       default:
         break;
     }
@@ -36,10 +48,12 @@ export class OrderEventProcessor extends WorkerHost {
 
   private async handleStockReserved(event: StockReservedEvent): Promise<void> {
     await this.commandBus.execute(
-      new UpdateCheckoutStatusCommand(
-        event.payload.checkoutId,
-        CheckoutStatus.STOCK_RESERVED,
-      ),
+      new MarkCheckoutStockReservedCommand({
+        checkoutId: event.payload.checkoutId,
+        orders: event.payload.orders,
+        customerId: event.payload.customerId,
+        totalAmount: event.payload.totalAmount,
+      }),
     );
   }
 
@@ -51,6 +65,25 @@ export class OrderEventProcessor extends WorkerHost {
         event.payload.checkoutId,
         CheckoutStatus.INSUFFICIENT_STOCK,
       ),
+    );
+  }
+
+  private async handleStockConfirmationCompleted(
+    event: StockConfirmationCompletedEvent,
+  ): Promise<void> {
+    await this.commandBus.execute(
+      new UpdateOrdersStatusFromStockCommand({
+        checkoutId: event.payload.checkoutId,
+        orderResults: event.payload.orderResults,
+      }),
+    );
+  }
+
+  private async handleReservationExpiry(data: {
+    checkoutId: string;
+  }): Promise<void> {
+    await this.commandBus.execute(
+      new ExpireReservationCommand(data.checkoutId),
     );
   }
 }

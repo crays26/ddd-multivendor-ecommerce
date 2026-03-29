@@ -19,10 +19,18 @@ import { GetCheckoutStatusQueryHandler } from './application/queries/get-checkou
 import { UpdateCheckoutStatusCommandHandler } from './application/commands/update-checkout-status/handler';
 import { GetOrdersByCheckoutIdHandler } from './application/queries/get-orders-by-checkout-id/handler';
 import { ORDER_PUBLIC_SERVICE } from './application/public-services/order.public-service.interface';
+import { OrderEventProcessor } from './application/processors/order-event.processor';
+import { MarkCheckoutStockReservedCommandHandler } from './application/commands/mark-checkout-stock-reserved/handler';
+import { UpdateOrdersStatusFromStockHandler } from './application/commands/update-orders-status-from-stock/handler';
+import { ExpireReservationCommandHandler } from './application/commands/expire-reservation/handler';
+import { ReservationExpiryScheduler } from './application/schedulers/reservation-expiry.scheduler';
 
 const CommandHandlers = [
   CheckoutCommandHandler,
   UpdateCheckoutStatusCommandHandler,
+  MarkCheckoutStockReservedCommandHandler,
+  UpdateOrdersStatusFromStockHandler,
+  ExpireReservationCommandHandler,
 ];
 const QueryHandlers = [
   GetCheckoutStatusQueryHandler,
@@ -51,6 +59,8 @@ const QueryHandlers = [
       provide: ORDER_PUBLIC_SERVICE,
       useClass: OrderPublicService,
     },
+    OrderEventProcessor,
+    ReservationExpiryScheduler,
     ...CommandHandlers,
     ...QueryHandlers,
   ],
@@ -71,32 +81,33 @@ export class OrderModule implements OnModuleInit {
     );
 
     this.eventRegistry.subscribe(
-      EVENT_NAMES.PAYMENT_SUCCEEDED,
-      QUEUE_NAMES.PAYMENT_QUEUE,
-    );
-    this.eventRegistry.subscribe(
       EVENT_NAMES.CHECKOUT_CREATED,
       QUEUE_NAMES.INVENTORY_QUEUE,
     );
+
     this.eventRegistry.subscribe(
-      EVENT_NAMES.PAYMENT_SUCCEEDED,
+      EVENT_NAMES.STOCK_RESERVED,
+      QUEUE_NAMES.ORDER_QUEUE,
+    );
+
+    this.eventRegistry.subscribe(
+      EVENT_NAMES.INSUFFICIENT_STOCK,
+      QUEUE_NAMES.ORDER_QUEUE,
+    );
+
+    this.eventRegistry.subscribe(
+      EVENT_NAMES.STOCK_CONFIRMATION_COMPLETED,
+      QUEUE_NAMES.ORDER_QUEUE,
+    );
+
+    this.eventRegistry.subscribe(
+      EVENT_NAMES.RESERVATION_EXPIRED,
       QUEUE_NAMES.INVENTORY_QUEUE,
     );
+
     this.eventRegistry.subscribe(
-      EVENT_NAMES.PAYMENT_FAILED,
-      QUEUE_NAMES.INVENTORY_QUEUE,
-    );
-    this.eventRegistry.subscribe(
-      EVENT_NAMES.ORDER_SHIPPED,
-      QUEUE_NAMES.NOTIFICATION_QUEUE,
-    );
-    this.eventRegistry.subscribe(
-      EVENT_NAMES.ORDER_CANCELLED,
-      QUEUE_NAMES.PAYMENT_QUEUE,
-    );
-    this.eventRegistry.subscribe(
-      EVENT_NAMES.ORDER_CANCELLED,
-      QUEUE_NAMES.INVENTORY_QUEUE,
+      EVENT_NAMES.CHECK_RESERVATION_EXPIRY,
+      QUEUE_NAMES.ORDER_QUEUE,
     );
   }
 }
