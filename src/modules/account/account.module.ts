@@ -7,8 +7,6 @@ import { RoleEntity } from './infrastructure/entities/role.entity';
 import { RoleRepository } from './infrastructure/repositories/role.repo';
 import { SignUpAccountCommandHandler } from './application/commands/sign-up-account/handler';
 import { LogInAccountCommandHandler } from './application/commands/log-in-account/handler';
-import { AuthService } from 'src/shared/auth/auth.service';
-import { ShareAuthModule } from 'src/shared/auth/auth.module';
 import { CqrsModule } from '@nestjs/cqrs';
 import { UnitOfWork } from 'src/shared/ddd/infrastructure/unit-of-work/unit-of-work';
 import { UNIT_OF_WORK } from 'src/shared/ddd/infrastructure/unit-of-work/unit-of-work.interface';
@@ -23,6 +21,7 @@ import { AddAddressToAccountCommandHandler } from 'src/modules/account/applicati
 import { EventQueueRegistry } from 'src/shared/ddd/infrastructure/queue/event-queue.registry';
 import { EVENT_NAMES } from 'src/shared/ddd/infrastructure/queue/constants/event-names';
 import { QUEUE_NAMES } from 'src/shared/ddd/infrastructure/queue/constants/queue-names';
+import { CartModule } from '../cart/cart.module';
 
 const CommandHandlers = [
   SignUpAccountCommandHandler,
@@ -36,9 +35,9 @@ const QueryHandlers = [GetAccountByIdQueryHandler];
 @Module({
   imports: [
     MikroOrmModule.forFeature([AccountEntity, RoleEntity, AddressEntity]),
-    ShareAuthModule,
     CqrsModule,
     UnitOfWorkModule,
+    CartModule,
   ],
 
   controllers: [AuthController],
@@ -52,7 +51,6 @@ const QueryHandlers = [GetAccountByIdQueryHandler];
       useClass: RoleRepository,
     },
     AccountPublicService,
-    AuthService,
     ...CommandHandlers,
     ...QueryHandlers,
     {

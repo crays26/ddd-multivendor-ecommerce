@@ -1,14 +1,22 @@
 import { CommandHandler, EventPublisher, ICommandHandler } from '@nestjs/cqrs';
 import { LogInAccountCommand } from './command';
-import { IAccountRepository } from "src/modules/account/domain/repositories/account.repo.interface";
+import { IAccountRepository } from 'src/modules/account/domain/repositories/account.repo.interface';
 import { ConflictException, Inject, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from 'src/shared/auth/auth.service';
 import { AuthPayload } from 'src/shared/auth/types/auth-payload.type';
 import { ACCOUNT_REPO } from 'src/modules/account/domain/repositories/account.repo.interface';
 import { JwtTokenPair } from 'src/shared/auth/types/jwt-token-pair.type';
-import {IRoleRepository, ROLE_REPO} from "src/modules/account/domain/repositories/role.repo.interface";
+import {
+  IRoleRepository,
+  ROLE_REPO,
+} from 'src/modules/account/domain/repositories/role.repo.interface';
 import { RoleName } from 'src/shared/auth/types/role.type';
+import { Transactional } from '@mikro-orm/core';
+import { OutboxRepository } from 'src/shared/ddd/infrastructure/outbox/outbox.repo';
+import { instanceToPlain } from 'class-transformer';
+import { Status } from 'src/shared/ddd/infrastructure/outbox/outbox.entity';
+import { v7 as uuidV7 } from 'uuid';
 
 @CommandHandler(LogInAccountCommand)
 export class LogInAccountCommandHandler
@@ -20,9 +28,10 @@ export class LogInAccountCommandHandler
     @Inject(ROLE_REPO)
     private readonly roleRepo: IRoleRepository,
     private readonly authService: AuthService,
-    private readonly eventPublisher: EventPublisher,
+    private readonly outboxRepo: OutboxRepository,
   ) {}
 
+  @Transactional()
   async execute(command: LogInAccountCommand): Promise<JwtTokenPair> {
     const { email, password } = command.data;
     const accountDomain = await this.accountRepo.findByEmail(email);
@@ -34,11 +43,7 @@ export class LogInAccountCommandHandler
     );
     if (!isPasswordValid)
       throw new ConflictException('Password does not match');
-
-    const accountWithContext =
-      this.eventPublisher.mergeObjectContext(accountDomain);
-    accountWithContext.logIn();
-    accountWithContext.commit();
+    accountDomain.logIn();
 
     const roleIds = accountDomain.getRoles().map((role) => role.getId());
     const roles = await this.roleRepo.findByIds(roleIds);
@@ -50,6 +55,17 @@ export class LogInAccountCommandHandler
       email: accountDomain.getEmail(),
       roles: roleNames,
     };
+
+    const events = accountDomain.getUncommittedEvents();
+    for (const event of events) {
+      await this.outboxRepo.save({
+        id: uuidV7(),
+        name: event.constructor.name,
+        payload: instanceToPlain(event),
+        status: Status.PENDING,
+      });
+    }
+
     return this.authService.generateTokens(tokenPayload);
   }
 }

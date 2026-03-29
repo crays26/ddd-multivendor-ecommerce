@@ -1,3 +1,4 @@
+import { AddItemToCartCommand } from 'src/modules/cart/application/commands/add-item-to-cart/command';
 import {
   Body,
   Controller,
@@ -25,6 +26,7 @@ import { GetAccountByIdQuery } from 'src/modules/account/application/queries/get
 import { AddAddressDto } from 'src/modules/account/application/commands/add-address-to-account/dto';
 import { AddAddressToAccountCommand } from 'src/modules/account/application/commands/add-address-to-account/command';
 import { RoleName } from 'src/shared/auth/types/role.type';
+import { MergeGuestCartCommand } from 'src/modules/cart/application/commands/merge-guest-cart/command';
 
 @Controller('account')
 export class AuthController {
@@ -41,10 +43,32 @@ export class AuthController {
   }
 
   @Post('log-in')
-  async logInAccount(@Body() body: LogInAccountDto, @Res() response: Response) {
+  async logInAccount(
+    @Req() request: Request,
+    @Body() body: LogInAccountDto,
+    @Res() response: Response,
+  ) {
     const command = new LogInAccountCommand(body);
     const tokenPair = await this.commandBus.execute(command);
 
+    const payload = this.authService.decode(
+      tokenPair.accessToken,
+    ) as AuthPayload;
+
+    if (
+      request.session &&
+      request.session.cart &&
+      request.session.cart.length > 0
+    ) {
+      await this.commandBus.execute(
+        new MergeGuestCartCommand({
+          customerId: payload.id,
+          items: request.session.cart,
+        }),
+      );
+
+      request.session.cart = [];
+    }
     this.authService.setAuthCookies(response, tokenPair);
     response.send(tokenPair);
   }
