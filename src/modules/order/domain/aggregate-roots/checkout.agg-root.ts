@@ -30,9 +30,9 @@ interface CreateCheckoutProps {
 }
 
 export class CheckoutAggRoot extends AggregateRootBase<string, CheckoutProps> {
-  constructor(props: CheckoutProps) {
+  private constructor(props: CheckoutProps, skipDateValidation = false) {
     super(props);
-    this.validate();
+    this.validate(skipDateValidation);
   }
 
   static create(props: CreateCheckoutProps): CheckoutAggRoot {
@@ -46,14 +46,14 @@ export class CheckoutAggRoot extends AggregateRootBase<string, CheckoutProps> {
   }
 
   static rehydrate(props: CheckoutProps): CheckoutAggRoot {
-    return new CheckoutAggRoot(props);
+    return new CheckoutAggRoot(props, true);
   }
 
-  private validate() {
+  private validate(skipDateValidation = false) {
     if (this.props.totalAmount <= 0) {
       throw new Error('Total amount must be greater than 0');
     }
-    if (this.props.paymentDueAt < new Date()) {
+    if (!skipDateValidation && this.props.paymentDueAt < new Date()) {
       throw new Error('Payment due at must be in the future');
     }
   }

@@ -10,6 +10,8 @@ export enum OrderStatus {
   PENDING = 'PENDING',
   STOCK_RESERVED = 'STOCK_RESERVED',
   PAID = 'PAID',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
   SHIPPED = 'SHIPPED',
   CANCELLED = 'CANCELLED',
 }
@@ -84,14 +86,6 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
     }
   }
 
-  public payOrder(): void {
-    if (this.props.status !== OrderStatus.STOCK_RESERVED) {
-      throw new ConflictException('Only stock-reserved orders can be paid.');
-    }
-    this.props.status = OrderStatus.PAID;
-    // this.addEvent(new OrderPaidEvent(this.getId()));
-  }
-
   public shipOrder(): void {
     if (this.props.status !== OrderStatus.PAID) {
       throw new ConflictException('Only paid orders can be shipped.');
@@ -109,11 +103,31 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
         'Cannot cancel a paid order directly. Initiate a refund instead.',
       );
     }
-    if (this.props.status === OrderStatus.CANCELLED) {
-      return; // Already cancelled, do nothing
+    if (
+      this.props.status === OrderStatus.CANCELLED ||
+      this.props.status === OrderStatus.FAILED
+    ) {
+      return;
     }
     this.props.status = OrderStatus.CANCELLED;
-    // this.addEvent(new OrderCancelledEvent(this.getId()));
+  }
+
+  public confirmStockSuccess(): void {
+    if (this.props.status !== OrderStatus.PAID) {
+      throw new ConflictException(
+        'Order must be in PAID status to be completed by stock confirmation.',
+      );
+    }
+    this.props.status = OrderStatus.COMPLETED;
+  }
+
+  public confirmStockFailed(): void {
+    if (this.props.status !== OrderStatus.PAID) {
+      throw new ConflictException(
+        'Order must be in PAID status to be marked as FAILED by stock confirmation.',
+      );
+    }
+    this.props.status = OrderStatus.FAILED;
   }
 
   public addLineItem(item: OrderLineItem): void {
@@ -152,8 +166,11 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
 
     if (this.props.orderItems.length < initialLength) {
       this.recalculateTotal();
-      // this.addEvent(new OrderItemRemovedEvent(...));
     }
+  }
+
+  public setStatus(status: OrderStatus): void {
+    this.props.status = status;
   }
 
   public updateLineItemQuantity(
@@ -173,7 +190,6 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
     item.changeQuantity(newQuantity);
 
     this.recalculateTotal();
-    // this.addEvent(new OrderItemQuantityUpdatedEvent(...));
   }
 
   // --- Private Helpers ---
