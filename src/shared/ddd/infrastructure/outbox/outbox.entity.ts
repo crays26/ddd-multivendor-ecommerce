@@ -1,10 +1,11 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, Opt, PrimaryKey, Property } from '@mikro-orm/core';
 
 export enum Status {
   PENDING = 'PENDING',
   COMPLETED = 'COMPLETED',
   FAILED = 'FAILED',
 }
+
 @Entity({ tableName: 'outbox' })
 export class OutboxEntity {
   @PrimaryKey({ type: 'uuid' })
@@ -24,4 +25,7 @@ export class OutboxEntity {
 
   @Property({ nullable: true })
   processedAt?: Date;
+
+  @Property({ default: 0 })
+  delay: number & Opt;
 }

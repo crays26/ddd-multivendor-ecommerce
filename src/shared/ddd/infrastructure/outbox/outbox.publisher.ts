@@ -36,7 +36,9 @@ export class OutboxPublisher {
           targetQueues.map(async (queueName) => {
             const queue = this.queueRegistry.get(queueName);
             if (queue) {
-              await queue.add(message.name, message.payload);
+              await queue.add(message.name, message.payload, {
+                delay: message.delay,
+              });
               console.log(
                 `Event "${message.name}" dispatched to queue "${queueName}"`,
               );

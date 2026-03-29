@@ -25,6 +25,7 @@ export class OutboxRepository {
     outboxEntity.name = outbox.name;
     outboxEntity.payload = outbox.payload;
     outboxEntity.status = outbox.status;
+    outboxEntity.delay = outbox.delay ?? 0;
 
     const em = fork ? this.em.fork() : this.em;
     await em.persist(outboxEntity).flush();

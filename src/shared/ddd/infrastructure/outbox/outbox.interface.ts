@@ -6,5 +6,6 @@ export class Outbox {
     public readonly name: string,
     public readonly payload: Record<string, any>,
     public readonly status: Status,
+    public readonly delay?: number,
   ) {}
 }
