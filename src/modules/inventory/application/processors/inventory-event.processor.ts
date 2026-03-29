@@ -12,6 +12,7 @@ import { CreateInventoryCommand } from '../commands/create-inventory/command';
 import { CheckoutCreatedEvent } from 'src/modules/order/domain/events/checkout-created.event';
 import { ReserveStockCommand } from '../commands/reserve-stock/command';
 import { CreateRequestContext, MikroORM } from '@mikro-orm/postgresql';
+import { ReservationExpiredEvent } from 'src/modules/order/domain/events/reservation-expired.event';
 
 @Processor(QUEUE_NAMES.INVENTORY_QUEUE)
 export class InventoryEventProcessor extends WorkerHost {
@@ -37,6 +38,11 @@ export class InventoryEventProcessor extends WorkerHost {
         break;
       case EVENT_NAMES.PAYMENT_FAILED:
         await this.handlePaymentFailed(job.data as PaymentFailedEvent);
+        break;
+      case EVENT_NAMES.RESERVATION_EXPIRED:
+        await this.handleReservationExpired(
+          job.data as ReservationExpiredEvent,
+        );
         break;
       default:
         break;
@@ -89,15 +95,30 @@ export class InventoryEventProcessor extends WorkerHost {
   }
 
   private async handlePaymentFailed(event: PaymentFailedEvent): Promise<void> {
+    const flattedItems = event.orders.flatMap((order) => order.items);
     await Promise.allSettled(
-      event.orders.flatMap((order) =>
-        order.items.map((item) =>
-          this.commandBus.execute(
-            new ReleaseStockCommand({
-              variantId: item.variantId,
-              quantity: item.quantity,
-            }),
-          ),
+      flattedItems.map((item) =>
+        this.commandBus.execute(
+          new ReleaseStockCommand({
+            variantId: item.variantId,
+            quantity: item.quantity,
+          }),
+        ),
+      ),
+    );
+  }
+
+  private async handleReservationExpired(
+    event: ReservationExpiredEvent,
+  ): Promise<void> {
+    const flattedItems = event.payload.orders.flatMap((order) => order.items);
+    await Promise.allSettled(
+      flattedItems.map((item) =>
+        this.commandBus.execute(
+          new ReleaseStockCommand({
+            variantId: item.variantId,
+            quantity: item.quantity,
+          }),
         ),
       ),
     );

@@ -1,22 +1,18 @@
-export enum OrderResultStatus {
-  SUCCEEDED = 'SUCCEEDED',
-  FAILED = 'FAILED',
-}
+import { IEvent } from '@nestjs/cqrs';
 
-export interface OrderResult {
+interface SucceededOrder {
   orderId: string;
   vendorId: string;
   subtotal: number;
-  status: OrderResultStatus;
 }
-export class StockConfirmationCompletedEvent {
+export class StockConfirmationSucceededEvent implements IEvent {
   constructor(
     public readonly payload: {
       checkoutId: string;
       transactionId: string;
       customerId: string;
       totalAmount: number;
-      orderResults: OrderResult[];
+      orders: SucceededOrder[];
     },
   ) {}
 }
