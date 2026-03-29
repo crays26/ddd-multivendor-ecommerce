@@ -78,13 +78,17 @@ export class PaymentEventProcessor extends WorkerHost {
   private async handleStockConfirmationFailed(
     event: StockConfirmationFailedEvent,
   ): Promise<void> {
-    await this.commandBus.execute(
+    this.commandBus.execute(
       new RefundOrderCommand({
-        orderId: event.payload.orderId,
-        vendorId: event.payload.vendorId,
+        checkoutId: event.payload.checkoutId,
         transactionId: event.payload.transactionId,
-        amount: event.payload.amount,
-        reason: event.payload.reason,
+        orders: event.payload.orders.map((o) => ({
+          orderId: o.orderId,
+          vendorId: o.vendorId,
+          subtotal: o.subtotal,
+        })),
+        customerId: event.payload.customerId,
+        totalAmount: event.payload.totalAmount,
       }),
     );
   }
@@ -101,18 +105,18 @@ export class PaymentEventProcessor extends WorkerHost {
       (order) => order.status === OrderResultStatus.SUCCEEDED,
     );
     if (failedOrders.length > 0) {
-      await Promise.all(
-        failedOrders.map((order) =>
-          this.commandBus.execute(
-            new RefundOrderCommand({
-              orderId: order.orderId,
-              vendorId: order.vendorId,
-              transactionId: transactionId,
-              amount: order.subtotal,
-              reason: 'Stock confirmation failed',
-            }),
-          ),
-        ),
+      await this.commandBus.execute(
+        new RefundOrderCommand({
+          checkoutId,
+          transactionId,
+          orders: failedOrders.map((order) => ({
+            orderId: order.orderId,
+            vendorId: order.vendorId,
+            subtotal: order.subtotal,
+          })),
+          customerId,
+          totalAmount,
+        }),
       );
     }
 

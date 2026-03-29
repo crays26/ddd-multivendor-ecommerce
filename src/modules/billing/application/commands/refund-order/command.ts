@@ -1,13 +1,18 @@
 import { Command } from '@nestjs/cqrs';
 
+interface Order {
+  orderId: string;
+  vendorId: string;
+  subtotal: number;
+}
 export class RefundOrderCommand extends Command<void> {
   constructor(
     public readonly payload: {
-      orderId: string;
-      vendorId: string;
+      checkoutId: string;
       transactionId: string;
-      amount: number;
-      reason: string;
+      orders: Order[];
+      customerId: string;
+      totalAmount: number;
     },
   ) {
     super();

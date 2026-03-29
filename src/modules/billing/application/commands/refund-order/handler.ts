@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Inject } from '@nestjs/common';
+import { Inject, NotFoundException } from '@nestjs/common';
 import { RefundOrderCommand } from './command';
 import {
   IBillingProvider,
@@ -22,35 +22,31 @@ export class RefundOrderCommandHandler
   ) {}
 
   async execute(command: RefundOrderCommand): Promise<void> {
-    const { transactionId, amount, orderId, vendorId, reason } =
-      command.payload;
+    const { transactionId, checkoutId, orders } = command.payload;
 
-    // Find the transaction to get the provider payment intent ID
     const transaction = await this.transactionRepo.findById(transactionId);
     if (!transaction) {
-      throw new Error(`Transaction ${transactionId} not found`);
+      throw new NotFoundException(`Transaction ${transactionId} not found`);
     }
 
     const providerIntentId = transaction.getProviderIntentId();
     if (!providerIntentId) {
-      throw new Error(`Transaction ${transactionId} has no provider intent ID`);
+      throw new NotFoundException(
+        `Transaction ${transactionId} has no provider intent ID`,
+      );
     }
 
-    // Process partial refund via Stripe
-    const refundResult = await this.billingProvider.refund({
-      paymentIntentId: providerIntentId,
-      amount,
-      reason: 'requested_by_customer',
-      metadata: {
-        orderId,
-        vendorId,
-        originalReason: reason,
-      },
-    });
-
-    // TODO: Optionally create a refund record or update transaction status
-    console.log(
-      `Refund processed: ${refundResult.providerRefundId} for order ${orderId}`,
-    );
+    for (const order of orders) {
+      await this.billingProvider.refund({
+        paymentIntentId: providerIntentId,
+        amount: order.subtotal,
+        reason: 'requested_by_customer',
+        metadata: {
+          checkoutId,
+          orderId: order.orderId,
+          vendorId: order.vendorId,
+        },
+      });
+    }
   }
 }
