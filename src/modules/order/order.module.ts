@@ -16,7 +16,6 @@ import { CheckoutCommandHandler } from './application/commands/checkout/handler'
 import { OrderController } from './presentation/controllers/order.controller';
 import { ProductModule } from '../product/product.module';
 import { GetCheckoutStatusQueryHandler } from './application/queries/get-checkout-status/handler';
-import { UpdateCheckoutStatusCommandHandler } from './application/commands/update-checkout-status/handler';
 import { GetOrdersByCheckoutIdHandler } from './application/queries/get-orders-by-checkout-id/handler';
 import { ORDER_PUBLIC_SERVICE } from './application/public-services/order.public-service.interface';
 import { OrderEventProcessor } from './application/processors/order-event.processor';
@@ -24,11 +23,14 @@ import { MarkCheckoutStockReservedCommandHandler } from './application/commands/
 import { UpdateOrdersStatusFromStockHandler } from './application/commands/update-orders-status-from-stock/handler';
 import { ExpireReservationCommandHandler } from './application/commands/expire-reservation/handler';
 import { ReservationExpiryScheduler } from './application/schedulers/reservation-expiry.scheduler';
+import { MarkCheckoutPaidCommandHandler } from './application/commands/mark-checkout-paid/handler';
+import { MarkCheckoutFailedCommandHandler } from './application/commands/mark-checkout-failed/handler';
 
 const CommandHandlers = [
   CheckoutCommandHandler,
-  UpdateCheckoutStatusCommandHandler,
   MarkCheckoutStockReservedCommandHandler,
+  MarkCheckoutPaidCommandHandler,
+  MarkCheckoutFailedCommandHandler,
   UpdateOrdersStatusFromStockHandler,
   ExpireReservationCommandHandler,
 ];

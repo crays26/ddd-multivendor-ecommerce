@@ -1,15 +1,14 @@
 import { v7 as uuidV7 } from 'uuid';
 import { CustomerIdVO } from '../value-objects/customer-id.vo';
 import { AggregateRootBase } from 'src/shared/ddd/domain/base/aggregate-root.base';
-import { CheckoutCreatedEvent } from '../events/checkout-created.event';
+import { ConflictException } from '@nestjs/common';
 
 export enum CheckoutStatus {
   PENDING = 'PENDING',
   STOCK_RESERVED = 'STOCK_RESERVED',
-  INSUFFICIENT_STOCK = 'INSUFFICIENT_STOCK',
-  PAYMENT_SUCCEEDED = 'PAYMENT_SUCCEEDED',
-  PAYMENT_FAILED = 'PAYMENT_FAILED',
+  PAID = 'PAID',
   COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
   CANCELLED = 'CANCELLED',
 }
 
@@ -78,8 +77,57 @@ export class CheckoutAggRoot extends AggregateRootBase<string, CheckoutProps> {
     return this.props.paymentDueAt;
   }
 
-  public setStatus(status: CheckoutStatus): void {
-    this.props.status = status;
+  public markStockReserved(): void {
+    if (this.props.status !== CheckoutStatus.PENDING) {
+      throw new ConflictException('Checkout must be PENDING to reserve stock.');
+    }
+    this.props.status = CheckoutStatus.STOCK_RESERVED;
+  }
+
+  public markPaid(): void {
+    if (this.props.status !== CheckoutStatus.STOCK_RESERVED) {
+      throw new ConflictException(
+        'Checkout must be STOCK_RESERVED to be marked as PAID.',
+      );
+    }
+    this.props.status = CheckoutStatus.PAID;
+  }
+
+  public markFailed(): void {
+    if (this.props.status === CheckoutStatus.COMPLETED) {
+      throw new ConflictException('Cannot fail a completed checkout.');
+    }
+    if (this.props.status === CheckoutStatus.CANCELLED) {
+      return;
+    }
+    this.props.status = CheckoutStatus.FAILED;
+  }
+
+  public markCompleted(): void {
+    if (this.props.status !== CheckoutStatus.PAID) {
+      throw new ConflictException(
+        'Checkout must be PAID to be marked as COMPLETED.',
+      );
+    }
+    this.props.status = CheckoutStatus.COMPLETED;
+  }
+
+  public cancel(): void {
+    if (this.props.status === CheckoutStatus.COMPLETED) {
+      throw new ConflictException('Cannot cancel a completed checkout.');
+    }
+    if (this.props.status === CheckoutStatus.PAID) {
+      throw new ConflictException(
+        'Cannot cancel a paid checkout directly. Initiate a refund instead.',
+      );
+    }
+    if (
+      this.props.status === CheckoutStatus.CANCELLED ||
+      this.props.status === CheckoutStatus.FAILED
+    ) {
+      return;
+    }
+    this.props.status = CheckoutStatus.CANCELLED;
   }
 
   public setTotalAmount(totalAmount: number): void {

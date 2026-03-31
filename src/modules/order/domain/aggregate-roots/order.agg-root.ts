@@ -12,7 +12,6 @@ export enum OrderStatus {
   PAID = 'PAID',
   COMPLETED = 'COMPLETED',
   FAILED = 'FAILED',
-  SHIPPED = 'SHIPPED',
   CANCELLED = 'CANCELLED',
 }
 
@@ -86,17 +85,9 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
     }
   }
 
-  public shipOrder(): void {
-    if (this.props.status !== OrderStatus.PAID) {
-      throw new ConflictException('Only paid orders can be shipped.');
-    }
-    this.props.status = OrderStatus.SHIPPED;
-    // this.addEvent(new OrderShippedEvent(this.getId()));
-  }
-
   public cancelOrder(): void {
-    if (this.props.status === OrderStatus.SHIPPED) {
-      throw new ConflictException('Cannot cancel a shipped order.');
+    if (this.props.status === OrderStatus.COMPLETED) {
+      throw new ConflictException('Cannot cancel a completed order.');
     }
     if (this.props.status === OrderStatus.PAID) {
       throw new ConflictException(
@@ -121,11 +112,12 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
     this.props.status = OrderStatus.COMPLETED;
   }
 
-  public confirmStockFailed(): void {
-    if (this.props.status !== OrderStatus.PAID) {
-      throw new ConflictException(
-        'Order must be in PAID status to be marked as FAILED by stock confirmation.',
-      );
+  public failOrder(): void {
+    if (this.props.status === OrderStatus.COMPLETED) {
+      throw new ConflictException('Cannot fail a completed order.');
+    }
+    if (this.props.status === OrderStatus.CANCELLED) {
+      return;
     }
     this.props.status = OrderStatus.FAILED;
   }
@@ -169,8 +161,22 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
     }
   }
 
-  public setStatus(status: OrderStatus): void {
-    this.props.status = status;
+  public markStockReserved(): void {
+    if (this.props.status !== OrderStatus.PENDING) {
+      throw new ConflictException(
+        'Order must be in PENDING status to reserve stock.',
+      );
+    }
+    this.props.status = OrderStatus.STOCK_RESERVED;
+  }
+
+  public markPaid(): void {
+    if (this.props.status !== OrderStatus.STOCK_RESERVED) {
+      throw new ConflictException(
+        'Order must be in STOCK_RESERVED status to become PAID.',
+      );
+    }
+    this.props.status = OrderStatus.PAID;
   }
 
   public updateLineItemQuantity(
@@ -204,11 +210,11 @@ export class OrderAggRoot extends AggregateRootBase<string, OrderProps> {
   private assertOrderIsModifiable(): void {
     if (
       this.props.status === OrderStatus.PAID ||
-      this.props.status === OrderStatus.SHIPPED ||
+      this.props.status === OrderStatus.COMPLETED ||
       this.props.status === OrderStatus.CANCELLED
     ) {
       throw new ConflictException(
-        'Cannot modify an order that is paid, shipped, or cancelled.',
+        'Cannot modify an order that is paid, completed, or cancelled.',
       );
     }
   }
