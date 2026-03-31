@@ -4,14 +4,15 @@ import { CommandBus } from '@nestjs/cqrs';
 import { QUEUE_NAMES } from 'src/shared/ddd/infrastructure/queue/constants/queue-names';
 import { EVENT_NAMES } from 'src/shared/ddd/infrastructure/queue/constants';
 import { StockReservationFailedEvent } from 'src/modules/inventory/domain/events/stock-reservation-failed.event';
-import { UpdateCheckoutStatusCommand } from '../commands/update-checkout-status/command';
-import { CheckoutStatus } from '../../domain/aggregate-roots/checkout.agg-root';
 import { CreateRequestContext, MikroORM } from '@mikro-orm/postgresql';
 import { StockReservedEvent } from 'src/modules/inventory/domain/events/stock-reserved.event';
 import { StockConfirmationCompletedEvent } from 'src/modules/inventory/domain/events/stock-confirmation-completed.event';
 import { UpdateOrdersStatusFromStockCommand } from '../commands/update-orders-status-from-stock/command';
 import { MarkCheckoutStockReservedCommand } from '../commands/mark-checkout-stock-reserved/command';
 import { ExpireReservationCommand } from '../commands/expire-reservation/command';
+import { PaymentSucceededEvent } from 'src/modules/billing/domain/events/payment-succeeded.event';
+import { MarkCheckoutPaidCommand } from '../commands/mark-checkout-paid/command';
+import { MarkCheckoutFailedCommand } from '../commands/mark-checkout-failed/command';
 
 @Processor(QUEUE_NAMES.ORDER_QUEUE)
 export class OrderEventProcessor extends WorkerHost {
@@ -27,6 +28,9 @@ export class OrderEventProcessor extends WorkerHost {
     switch (job.name) {
       case EVENT_NAMES.STOCK_RESERVED:
         await this.handleStockReserved(job.data as StockReservedEvent);
+        break;
+      case EVENT_NAMES.PAYMENT_SUCCEEDED:
+        await this.handlePaymentSucceeded(job.data as PaymentSucceededEvent);
         break;
       case EVENT_NAMES.INSUFFICIENT_STOCK:
         await this.handleInsufficientStock(
@@ -61,10 +65,15 @@ export class OrderEventProcessor extends WorkerHost {
     event: StockReservationFailedEvent,
   ): Promise<void> {
     await this.commandBus.execute(
-      new UpdateCheckoutStatusCommand(
-        event.payload.checkoutId,
-        CheckoutStatus.INSUFFICIENT_STOCK,
-      ),
+      new MarkCheckoutFailedCommand(event.payload.checkoutId),
+    );
+  }
+
+  private async handlePaymentSucceeded(
+    event: PaymentSucceededEvent,
+  ): Promise<void> {
+    await this.commandBus.execute(
+      new MarkCheckoutPaidCommand(event.payload.checkoutId),
     );
   }
 
