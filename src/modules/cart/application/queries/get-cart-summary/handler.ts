@@ -39,7 +39,7 @@ export class GetCartSummaryQueryHandler
       throw new ConflictException(
         outOfStockItems.map(
           (item) =>
-            `Not enough stock for ${item.productVariant.name} (available: ${item.productVariant.stock}, requested: ${item.quantity})`,
+            `Not enough stock for ${item.productVariant.name} (available: ${item.productVariant.inventory!.quantity}, requested: ${item.quantity})`,
         ),
       );
     }
