@@ -26,6 +26,13 @@ import { BillingVendorRepository } from './infrastructure/repositories/billing-v
 import { BILLING_VENDOR_REPO } from './domain/repositories/billing-vendor.repo.interface';
 import { RegisterVendorStripeAccountHandler } from './application/commands/register-vendor-stripe-account/handler';
 import { BillingVendorController } from './presentation/controllers/billing-vendor.controller';
+import { GetTransactionByCheckoutIdQueryHandler } from './application/queries/get-transaction-by-checkout-id/handler';
+import { SubtransactionEntity } from './infrastructure/entities/subtransaction.entity';
+import { BillingController } from './presentation/controllers/billing.controller';
+import {
+  EVENT_NAMES,
+  QUEUE_NAMES,
+} from 'src/shared/ddd/infrastructure/queue/constants';
 
 const CommandHandlers = [
   CreateOrderPaymentCommandHandler,
@@ -36,12 +43,16 @@ const CommandHandlers = [
   RegisterVendorStripeAccountHandler,
 ];
 
-const QueryHandlers = [GetTransactionByIdHandler];
+const QueryHandlers = [
+  GetTransactionByIdHandler,
+  GetTransactionByCheckoutIdQueryHandler,
+];
 
 @Module({
   imports: [
     MikroOrmModule.forFeature([
       TransactionEntity,
+      SubtransactionEntity,
       BillingCustomerEntity,
       BillingVendorEntity,
     ]),
@@ -49,7 +60,7 @@ const QueryHandlers = [GetTransactionByIdHandler];
     ShareOutboxModule,
     OrderModule,
   ],
-  controllers: [WebhookController, BillingVendorController],
+  controllers: [WebhookController, BillingVendorController, BillingController],
   providers: [
     {
       provide: TRANSACTION_REPO,
@@ -72,10 +83,29 @@ const QueryHandlers = [GetTransactionByIdHandler];
     BillingWebhookService,
     PaymentEventProcessor,
   ],
-  exports: [TRANSACTION_REPO, BILLING_CUSTOMER_REPO],
+  exports: [],
 })
 export class BillingModule implements OnModuleInit {
   constructor(private readonly eventRegistry: EventQueueRegistry) {}
 
-  onModuleInit() {}
+  onModuleInit() {
+    this.eventRegistry.subscribe(
+      EVENT_NAMES.PAYMENT_SUCCEEDED,
+      QUEUE_NAMES.INVENTORY_QUEUE,
+    );
+    this.eventRegistry.subscribe(
+      EVENT_NAMES.PAYMENT_SUCCEEDED,
+      QUEUE_NAMES.ORDER_QUEUE,
+    );
+
+    this.eventRegistry.subscribe(
+      EVENT_NAMES.PAYMENT_FAILED,
+      QUEUE_NAMES.ORDER_QUEUE,
+    );
+
+    this.eventRegistry.subscribe(
+      EVENT_NAMES.PAYMENT_FAILED,
+      QUEUE_NAMES.INVENTORY_QUEUE,
+    );
+  }
 }

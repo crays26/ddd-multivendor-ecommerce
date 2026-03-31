@@ -15,6 +15,7 @@ import {
   BILLING_PROVIDER,
 } from 'src/modules/billing/infrastructure/external/billing.provider.interface';
 import { Transactional } from '@mikro-orm/core';
+import { SubTransaction } from 'src/modules/billing/domain/entities/sub-transaction.entity';
 
 export interface CreateOrderPaymentResult {
   transactionId: string;
@@ -63,7 +64,11 @@ export class CreateOrderPaymentCommandHandler
     });
 
     for (const order of orders) {
-      transaction.addSubTransaction(order.orderId, order.subtotal);
+      const subTransaction = SubTransaction.create({
+        orderId: order.orderId,
+        amount: order.subtotal,
+      });
+      transaction.addSubTransaction(subTransaction);
     }
 
     const paymentIntentResult = await this.billingProvider.createPaymentIntent({

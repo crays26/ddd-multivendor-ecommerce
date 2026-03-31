@@ -36,22 +36,20 @@ export class TransactionRepository implements ITransactionRepository {
   }
 
   async findById(id: string): Promise<TransactionAggRoot | null> {
-    const entity = await this.em.findOne(
+    const entity: TransactionEntity | null = await this.em.findOne(
       TransactionEntity,
       { id },
-      { populate: ['checkout', 'subtransactions'] },
+      { populate: ['checkout', 'subtransactions.order'] },
     );
     if (!entity) return null;
     return TransactionDomainMapper.fromPersistence(entity);
   }
 
   async findByProviderIntentId(id: string): Promise<TransactionAggRoot | null> {
-    const entity = await this.em.findOne(
+    const entity: TransactionEntity | null = await this.em.findOne(
       TransactionEntity,
-      {
-        providerIntentId: id,
-      },
-      { populate: ['checkout', 'subtransactions'] },
+      { providerIntentId: id },
+      { populate: ['checkout', 'subtransactions.order'] },
     );
     if (!entity) return null;
     return TransactionDomainMapper.fromPersistence(entity);
@@ -84,16 +82,18 @@ export class TransactionRepository implements ITransactionRepository {
   ) {
     const subtransactions = entity.subtransactions.getItems();
     for (const subtx of domain.getSubTransactions()) {
-      let entity = subtransactions.find(
+      let subTxEntity = subtransactions.find(
         (entitySubtx) => subtx.getId() === entitySubtx.id,
       );
-      if (!entity) {
-        entity = new SubtransactionEntity();
+      if (!subTxEntity) {
+        subTxEntity = new SubtransactionEntity();
+        subTxEntity.id = subtx.getId();
       }
-      entity.status = subtx.getStatus();
-      entity.amount = subtx.getAmount();
-      entity.order = this.em.getReference(OrderEntity, subtx.getOrderId());
-      entity.transferId = subtx.getTransferId();
+      subTxEntity.status = subtx.getStatus();
+      subTxEntity.amount = subtx.getAmount();
+      subTxEntity.order = this.em.getReference(OrderEntity, subtx.getOrderId());
+      subTxEntity.transferId = subtx.getTransferId();
+      entity.subtransactions.add(subTxEntity);
     }
   }
 

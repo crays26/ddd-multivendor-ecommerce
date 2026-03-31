@@ -87,10 +87,7 @@ export class StripeBillingProvider implements IBillingProvider {
       customer: input.customerId,
       transfer_group: input.transferGroup,
       metadata: input.metadata,
-      automatic_payment_methods: {
-        enabled: true,
-        allow_redirects: 'never',
-      },
+      payment_method_types: ['card'],
     });
     console.log(intent);
 
