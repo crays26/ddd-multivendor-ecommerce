@@ -18,18 +18,20 @@ import { OrderModule } from './modules/order/order.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { ShareSessionModule } from './shared/ddd/infrastructure/session/session.module';
+import { CartModule } from './modules/cart/cart.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    MikroOrmModule.forRoot({ ...mikroConfig, autoLoadEntities: true }),
+    MikroOrmModule.forRoot(mikroConfig),
     CqrsModule.forRoot(),
     AccountModule,
     ProductModule,
     VendorModule,
     OrderModule,
+    CartModule,
     InventoryModule,
     BillingModule,
     ShareAuthModule,
