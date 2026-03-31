@@ -473,10 +473,9 @@
           "enumItems": [
             "PENDING",
             "STOCK_RESERVED",
-            "INSUFFICIENT_STOCK",
-            "PAYMENT_SUCCEEDED",
-            "PAYMENT_FAILED",
+            "PAID",
             "COMPLETED",
+            "FAILED",
             "CANCELLED"
           ],
           "mappedType": "enum"
@@ -674,6 +673,16 @@
           "nullable": true,
           "length": 6,
           "mappedType": "datetime"
+        },
+        "delay": {
+          "name": "delay",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "0",
+          "mappedType": "integer"
         }
       },
       "name": "outbox",
@@ -959,6 +968,87 @@
             "id"
           ],
           "referencedTableName": "public.checkout",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "amount": {
+          "name": "amount",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
+        },
+        "transfer_id": {
+          "name": "transfer_id",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 255,
+          "mappedType": "string"
+        },
+        "transaction_id": {
+          "name": "transaction_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        }
+      },
+      "name": "subtransaction_entity",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "subtransaction_entity_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "subtransaction_entity_transaction_id_foreign": {
+          "constraintName": "subtransaction_entity_transaction_id_foreign",
+          "columnNames": [
+            "transaction_id"
+          ],
+          "localTableName": "public.subtransaction_entity",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.transaction",
           "updateRule": "cascade"
         }
       },
@@ -1568,7 +1658,8 @@
             "PENDING",
             "STOCK_RESERVED",
             "PAID",
-            "SHIPPED",
+            "COMPLETED",
+            "FAILED",
             "CANCELLED"
           ],
           "mappedType": "enum"
@@ -1599,11 +1690,30 @@
           "primary": false,
           "nullable": false,
           "mappedType": "uuid"
+        },
+        "sub_transaction_id": {
+          "name": "sub_transaction_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "uuid"
         }
       },
       "name": "order",
       "schema": "public",
       "indexes": [
+        {
+          "columnNames": [
+            "sub_transaction_id"
+          ],
+          "composite": false,
+          "keyName": "order_sub_transaction_id_unique",
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
         {
           "keyName": "order_pkey",
           "columnNames": [
@@ -1651,6 +1761,19 @@
             "id"
           ],
           "referencedTableName": "public.checkout",
+          "updateRule": "cascade"
+        },
+        "order_sub_transaction_id_foreign": {
+          "constraintName": "order_sub_transaction_id_foreign",
+          "columnNames": [
+            "sub_transaction_id"
+          ],
+          "localTableName": "public.order",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.subtransaction_entity",
+          "deleteRule": "set null",
           "updateRule": "cascade"
         }
       },
