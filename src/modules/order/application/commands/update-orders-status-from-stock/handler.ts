@@ -21,28 +21,31 @@ export class UpdateOrdersStatusFromStockHandler
   async execute(command: UpdateOrdersStatusFromStockCommand): Promise<void> {
     const { checkoutId, orderResults } = command.payload;
 
-    const orders = await this.orderRepository.findByCheckoutId(checkoutId);
+    try {
+      const orders = await this.orderRepository.findByCheckoutId(checkoutId);
 
-    if (orders.length === 0) {
-      return;
-    }
-
-    for (const result of orderResults) {
-      const order = orders.find((o) => o.getId() === result.orderId);
-
-      if (!order) {
-        throw new NotFoundException(
-          `Order ${result.orderId} not found in checkout ${checkoutId}`,
-        );
+      if (orders.length === 0) {
+        return;
       }
+      for (const result of orderResults) {
+        const order = orders.find((o) => o.getId() === result.orderId);
 
-      if (result.status === OrderResultStatus.SUCCEEDED) {
-        order.confirmStockSuccess();
-      } else {
-        order.confirmStockFailed();
+        if (!order) {
+          throw new NotFoundException(
+            `Order ${result.orderId} not found in checkout ${checkoutId}`,
+          );
+        }
+
+        if (result.status === OrderResultStatus.SUCCEEDED) {
+          order.confirmStockSuccess();
+        } else {
+          order.failOrder();
+        }
+
+        await this.orderRepository.update(order);
       }
-
-      await this.orderRepository.update(order);
+    } catch (error) {
+      console.log(error.message);
     }
   }
 }

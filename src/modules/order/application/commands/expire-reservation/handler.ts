@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Inject, Logger } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { Transactional } from '@mikro-orm/core';
 import { ExpireReservationCommand } from './command';
 import { CheckoutRepository } from 'src/modules/order/infrastructure/repositories/checkout.repo';
@@ -21,8 +21,6 @@ import {
 export class ExpireReservationCommandHandler
   implements ICommandHandler<ExpireReservationCommand>
 {
-  private readonly logger = new Logger(ExpireReservationCommandHandler.name);
-
   constructor(
     private readonly checkoutRepository: CheckoutRepository,
     @Inject(ORDER_REPO)
@@ -36,17 +34,13 @@ export class ExpireReservationCommandHandler
 
     const checkout = await this.checkoutRepository.findById(checkoutId);
     if (!checkout) {
-      this.logger.warn(`Checkout ${checkoutId} not found, skipping expiry.`);
       return;
     }
 
     if (checkout.getStatus() !== CheckoutStatus.STOCK_RESERVED) {
-      this.logger.log(
-        `Checkout ${checkoutId} is in ${checkout.getStatus()} state, not STOCK_RESERVED. Skipping expiry.`,
-      );
       return;
     }
-    checkout.setStatus(CheckoutStatus.CANCELLED);
+    checkout.cancel();
     await this.checkoutRepository.update(checkout);
 
     const orders = await this.orderRepository.findByCheckoutId(checkoutId);
@@ -55,7 +49,6 @@ export class ExpireReservationCommandHandler
     for (const order of orders) {
       order.cancelOrder();
       await this.orderRepository.update(order);
-
       expiredOrders.push({
         orderId: order.getId(),
         vendorId: order.getVendorId(),
@@ -76,9 +69,5 @@ export class ExpireReservationCommandHandler
       payload: instanceToPlain(event),
       status: Status.PENDING,
     });
-
-    this.logger.log(
-      `Checkout ${checkoutId} expired. ${orders.length} orders cancelled, stock release event emitted.`,
-    );
   }
 }
