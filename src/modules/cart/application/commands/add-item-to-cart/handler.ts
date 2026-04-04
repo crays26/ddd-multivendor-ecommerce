@@ -10,6 +10,9 @@ import { CartItem } from '../../../domain/entities/cart-item.entity';
 import { CustomerIdVO } from '../../../domain/value-objects/customer-id.vo';
 import { v7 as uuidV7 } from 'uuid';
 import { Transactional } from '@mikro-orm/core';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+
+const GUEST_CART_TTL = 7 * 24 * 60 * 60 * 1000;
 
 @CommandHandler(AddItemToCartCommand)
 export class AddItemToCartCommandHandler
@@ -18,35 +21,56 @@ export class AddItemToCartCommandHandler
   constructor(
     @Inject(CART_REPO)
     private readonly cartRepo: ICartRepository,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
   ) {}
 
   @Transactional()
-  async execute(command: AddItemToCartCommand): Promise<void> {
-    const { productVariantId, quantity, customerId } = command.payload;
+  async execute(command: AddItemToCartCommand): Promise<void | string> {
+    const { productVariantId, quantity, customerId, guestCartSessionId } =
+      command.payload;
 
-    if (!customerId) {
-      throw new BadRequestException(
-        'customerId is required for DB cart operations',
-      );
-    }
+    if (customerId) {
+      let cart = await this.cartRepo.findByCustomerId(customerId);
 
-    let cart = await this.cartRepo.findByCustomerId(customerId);
+      if (!cart) {
+        cart = CartAggRoot.create({
+          customerId: CustomerIdVO.create({ id: customerId }),
+        });
+        await this.cartRepo.insert(cart);
+      }
 
-    if (!cart) {
-      cart = CartAggRoot.create({
-        customerId: CustomerIdVO.create({ id: customerId }),
+      const cartItem = CartItem.create({
+        id: uuidV7(),
+        productVariantId: productVariantId,
+        quantity,
       });
-      await this.cartRepo.insert(cart);
+
+      cart.addItem(cartItem);
+
+      return await this.cartRepo.update(cart);
     }
 
-    const cartItem = CartItem.create({
-      id: uuidV7(),
-      productVariantId: productVariantId,
-      quantity,
-    });
+    const sessionId = guestCartSessionId || uuidV7();
+    let sessionCart = await this.cacheManager.get<
+      { productVariantId: string; quantity: number }[]
+    >(`guest-cart:${sessionId}`);
+    sessionCart = sessionCart || [];
 
-    cart.addItem(cartItem);
+    const existingItem = sessionCart.find(
+      (item) => item.productVariantId === productVariantId,
+    );
+    if (existingItem) {
+      existingItem.quantity += quantity;
+    } else {
+      sessionCart.push({ productVariantId, quantity });
+    }
 
-    await this.cartRepo.update(cart);
+    await this.cacheManager.set(
+      `guest-cart:${sessionId}`,
+      sessionCart,
+      GUEST_CART_TTL,
+    );
+    return sessionId;
   }
 }
