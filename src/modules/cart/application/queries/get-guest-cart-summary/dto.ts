@@ -9,7 +9,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-export class CartItemSummaryDto {
+export class GuestCartItemSummaryDto {
   @Expose()
   @IsUUID()
   variantId: string;
@@ -33,16 +33,16 @@ export class CartItemSummaryDto {
   quantity: number;
 
   @Expose()
+  @IsBoolean()
+  isOutOfStock: boolean;
+
+  @Expose()
   @IsNumber()
   @Min(0)
   lineTotal: number;
-
-  @Expose()
-  @IsBoolean()
-  isOutOfStock: boolean;
 }
 
-export class CartVendorDto {
+export class GuestCartVendorDto {
   @Expose()
   @IsString()
   id: string;
@@ -52,31 +52,31 @@ export class CartVendorDto {
   name: string;
 }
 
-export class CartPerVendorSummaryDto {
+export class GuestCartPerVendorSummaryDto {
   @Expose()
   @ValidateNested()
-  @Type(() => CartVendorDto)
-  vendor: CartVendorDto;
+  @Type(() => GuestCartVendorDto)
+  vendor: GuestCartVendorDto;
 
   @Expose()
   @ValidateNested({ each: true })
-  @Type(() => CartItemSummaryDto)
-  items: CartItemSummaryDto[];
+  @Type(() => GuestCartItemSummaryDto)
+  items: GuestCartItemSummaryDto[];
 
   @Expose()
   @IsNumber()
   subtotal: number;
 }
 
-export class CartSummaryDto {
+export class GuestCartSummaryDto {
   @Expose()
   @IsUUID()
   cartId: string;
 
   @Expose()
   @ValidateNested({ each: true })
-  @Type(() => CartPerVendorSummaryDto)
-  vendors: CartPerVendorSummaryDto[];
+  @Type(() => GuestCartPerVendorSummaryDto)
+  vendors: GuestCartPerVendorSummaryDto[];
 
   @Expose()
   @IsNumber()

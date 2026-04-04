@@ -5,7 +5,6 @@ import { EntityRepository } from '@mikro-orm/postgresql';
 import { CartEntity } from '../../../infrastructure/entities/cart.entity';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { ConflictException, NotFoundException } from '@nestjs/common';
-import { plainToClass } from 'class-transformer';
 
 @QueryHandler(GetCartSummaryQuery)
 export class GetCartSummaryQueryHandler
@@ -56,7 +55,7 @@ export class GetCartSummaryQueryHandler
               name: item.productVariant.product.vendor.name,
             },
             items: [],
-            totalAmount: 0,
+            subtotal: 0,
           };
         }
         acc[vendorId].items.push({
@@ -64,24 +63,22 @@ export class GetCartSummaryQueryHandler
           variantName: item.productVariant.name,
           skuCode: item.productVariant.skuCode,
           price: item.productVariant.price,
+          isOutOfStock: item.productVariant.inventory!.quantity < item.quantity,
           quantity: item.quantity,
           lineTotal: item.productVariant.price * item.quantity,
         });
-        acc[vendorId].totalAmount += item.productVariant.price * item.quantity;
+        acc[vendorId].subtotal += item.productVariant.price * item.quantity;
         itemCount += item.quantity;
         totalAmount += item.productVariant.price * item.quantity;
         return acc;
       },
       {} as Record<string, CartPerVendorSummaryDto>,
     );
-    const finalCart: CartSummaryDto = {
+    return {
       cartId: cart.id,
       vendors: Object.values(vendorAccumulator),
       totalAmount,
       itemCount,
     };
-    return plainToClass(CartSummaryDto, finalCart, {
-      excludeExtraneousValues: true,
-    });
   }
 }
