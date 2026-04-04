@@ -9,12 +9,16 @@ import { GetCartSummaryQueryHandler } from './application/queries/get-cart-summa
 import { CartController } from './presentation/controllers/cart.controller';
 import { AddItemToCartCommandHandler } from './application/commands/add-item-to-cart/handler';
 import { MergeGuestCartCommandHandler } from './application/commands/merge-guest-cart/handler';
+import { GetGuestCartSummaryQueryHandler } from './application/queries/get-guest-cart-summary/handler';
 
 const CommandHandlers = [
   AddItemToCartCommandHandler,
   MergeGuestCartCommandHandler,
 ];
-const QueryHandlers = [GetCartSummaryQueryHandler];
+const QueryHandlers = [
+  GetCartSummaryQueryHandler,
+  GetGuestCartSummaryQueryHandler,
+];
 
 @Module({
   imports: [
