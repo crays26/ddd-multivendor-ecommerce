@@ -46,31 +46,21 @@ export class AuthController {
   async logInAccount(
     @Req() request: Request,
     @Body() body: LogInAccountDto,
-    @Res() response: Response,
+    @Res({ passthrough: true }) response: Response,
   ) {
     const command = new LogInAccountCommand(body);
-    const tokenPair = await this.commandBus.execute(command);
+    const { tokenPair, user } = await this.commandBus.execute(command);
 
-    const payload = this.authService.decode(
-      tokenPair.accessToken,
-    ) as AuthPayload;
-
-    if (
-      request.session &&
-      request.session.cart &&
-      request.session.cart.length > 0
-    ) {
-      await this.commandBus.execute(
-        new MergeGuestCartCommand({
-          customerId: payload.id,
-          items: request.session.cart,
-        }),
-      );
-
-      request.session.cart = [];
-    }
+    await this.commandBus.execute(
+      new MergeGuestCartCommand({
+        customerId: user.id,
+        guestCartSessionId: request.cookies['guest-cart-session-id'],
+      }),
+    );
     this.authService.setAuthCookies(response, tokenPair);
-    response.send(tokenPair);
+    response.clearCookie('guest-cart-session-id');
+
+    return { tokenPair, user };
   }
 
   @UseGuards(JwtRequiredGuard)

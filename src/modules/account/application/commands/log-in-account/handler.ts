@@ -32,7 +32,10 @@ export class LogInAccountCommandHandler
   ) {}
 
   @Transactional()
-  async execute(command: LogInAccountCommand): Promise<JwtTokenPair> {
+  async execute(command: LogInAccountCommand): Promise<{
+    tokenPair: JwtTokenPair;
+    user: AuthPayload;
+  }> {
     const { email, password } = command.data;
     const accountDomain = await this.accountRepo.findByEmail(email);
     if (!accountDomain) throw new NotFoundException('Account does not exist');
@@ -66,6 +69,14 @@ export class LogInAccountCommandHandler
       });
     }
 
-    return this.authService.generateTokens(tokenPayload);
+    return {
+      tokenPair: this.authService.generateTokens(tokenPayload),
+      user: {
+        id: accountDomain.getId(),
+        username: accountDomain.getUsername(),
+        email: accountDomain.getEmail(),
+        roles: roleNames,
+      },
+    };
   }
 }
